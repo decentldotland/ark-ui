@@ -1,0 +1,15 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+
+body {
+  background-color: #1c1e23;
+  font-family: "Inter", sans-serif;
+}
+
+button, input, select, textarea {
+  font-family: "Inter", sans-serif;
+  outline: none;
+  background: transparent;
+  border: none;
+  min-width: unset;
+  width: auto;
+}
