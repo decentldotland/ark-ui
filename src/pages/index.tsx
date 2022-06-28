@@ -44,7 +44,7 @@ const Home: NextPage = () => {
           <Spacer y={1.25} />
           <WalletContainer>
             <WalletChainLogo>
-              <Image src="/arweave.png" width={30} height={30} />
+              <Image src="/arweave.png" width={30} height={30} draggable={false} />
               <ChainName>
                 Arweave
                 <ChainTicker>
@@ -63,7 +63,7 @@ const Home: NextPage = () => {
           <Spacer y={1} />
           <WalletContainer>
             <WalletChainLogo>
-              <Image src="/eth.png" width={30} height={30} />
+              <Image src="/eth.png" width={30} height={30} draggable={false} />
               <ChainName>
                 Ethereum
                 <ChainTicker>
@@ -81,6 +81,9 @@ const Home: NextPage = () => {
           </Button>
         </IdentityCard>
         <Spacer y={4} />
+        <Permanent href="https://arweave.org">
+          <Image src="/permanent.svg" width={150} height={75} />
+        </Permanent>
       </Page>
     </>
   );
@@ -199,6 +202,14 @@ const LinkSymbol = styled.div`
     width: 1em;
     height: 1em;
   }
+`;
+
+const Permanent = styled.a`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18vw;
+  margin: 0 auto;
 `;
 
 export default Home;
