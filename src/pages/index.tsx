@@ -137,7 +137,6 @@ const Title = styled.h1`
 
   @media screen and (max-width: 720px) {
     font-size: 2rem;
-    margin-bottom: .1em;
   }
 `;
 
@@ -224,6 +223,10 @@ const Permanent = styled.a`
   justify-content: center;
   width: 18vw;
   margin: 0 auto;
+
+  @media screen and (max-width: 720px) {
+    width: 40vw;
+  }
 `;
 
 const FAQCard = styled(Card)`
@@ -232,7 +235,7 @@ const FAQCard = styled(Card)`
   margin: 0 auto;
 
   @media screen and (max-width: 720px) {
-    width: calc(100% - 2rem);
+    width: 100%;
   }
 `;
 
