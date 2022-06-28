@@ -80,6 +80,7 @@ const Home: NextPage = () => {
             Submit
           </Button>
         </IdentityCard>
+        <Spacer y={4} />
       </Page>
     </>
   );
@@ -90,6 +91,10 @@ const TopSection = styled.div`
   align-items: center;
   justify-content: stretch;
   gap: 3.5rem;
+
+  @media screen and (max-width: 720px) {
+    gap: 2rem;
+  }
 `;
 
 const ConceptImageWrapper = styled.div`
@@ -98,6 +103,11 @@ const ConceptImageWrapper = styled.div`
   height: 16vw;
   border-radius: 10px;
   overflow: hidden;
+
+  @media screen and (max-width: 720px) {
+    width: 30vw;
+    height: 30vw;
+  }
 `;
 
 const Title = styled.h1`
@@ -107,6 +117,11 @@ const Title = styled.h1`
   line-height: 1.1em;
   margin: 0;
   margin-bottom: .2em;
+
+  @media screen and (max-width: 720px) {
+    font-size: 2rem;
+    margin-bottom: .1em;
+  }
 `;
 
 const Subtitle = styled.h2`
@@ -115,6 +130,10 @@ const Subtitle = styled.h2`
   color: #fff;
   margin: 0;
   margin-bottom: 2em;
+
+  @media screen and (max-width: 720px) {
+    font-size: 1rem;
+  }
 `;
 
 const ProtocolName = styled.span`
@@ -124,6 +143,10 @@ const ProtocolName = styled.span`
 const IdentityCard = styled(Card)`
   width: 33vw;
   margin: 0 auto;
+
+  @media screen and (max-width: 720px) {
+    width: calc(100% - 2rem);
+  }
 `;
 
 const WalletContainer = styled.div`
