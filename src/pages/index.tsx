@@ -11,8 +11,6 @@ import Spacer from "../components/Spacer"
 import Faq from "../components/Faq"
 
 const Home: NextPage = () => {
-  const router = useRouter();
-
   return (
     <>
       <Head>
