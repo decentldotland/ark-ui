@@ -83,7 +83,7 @@ const Home: NextPage = () => {
           </Button>
         </IdentityCard>
         <Spacer y={4} />
-        <Permanent href="https://arweave.org">
+        <Permanent href="https://arweave.org" target="_blank" rel="noopener noreferer">
           <Image src="/permanent.svg" width={150} height={75} />
         </Permanent>
         <Spacer id="faq" y={4} />

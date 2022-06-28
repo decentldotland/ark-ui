@@ -1,5 +1,6 @@
 import type { AppProps } from "next/app";
 import styled, { ThemeProvider } from "styled-components";
+import Footer from "../components/Footer"
 import "../styles/globals.css";
 
 function App({ Component, pageProps }: AppProps) {
@@ -11,6 +12,7 @@ function App({ Component, pageProps }: AppProps) {
     }}>
       <Gradient />
       <Component {...pageProps} />
+      <Footer />
     </ThemeProvider>
   );
 }
