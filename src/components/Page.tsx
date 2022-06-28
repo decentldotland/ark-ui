@@ -1,8 +1,16 @@
+import { PropsWithChildren } from "react"
+import { motion, Variants } from "framer-motion";
 import styled from "styled-components";
 
 const top_padding = "4rem";
 
-const Page = styled.div`
+const Page = ({ children }: PropsWithChildren<{}>) => (
+  <PageBase variants={fadeUp} initial="hidden" animate="shown">
+    {children}
+  </PageBase>
+);
+
+const PageBase = styled(motion.div)`
   position: relative;
   padding: ${top_padding} 18vw;
   min-height: calc(100vh - ${top_padding} * 2);
@@ -19,5 +27,12 @@ const Page = styled.div`
     padding: ${top_padding} 7.4vw;
   }
 `;
+
+const fadeUpTransition = { duration: 0.43, ease: "easeInOut" };
+
+const fadeUp: Variants = {
+  hidden: { opacity: 0, translateY: 10, transition: fadeUpTransition },
+  shown: { opacity: 1, translateY: 0, transition: fadeUpTransition }
+};
 
 export default Page;
