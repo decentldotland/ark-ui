@@ -1,6 +1,7 @@
-import { ArrowUpIcon } from "@iconicicons/react"
+import { LinkIcon } from "@iconicicons/react"
 import type { NextPage } from "next";
 import Card, { CardSubtitle } from "../components/Card";
+import { useRouter } from "next/router";
 import Head from "next/head";
 import Image from "next/image";
 import styled from "styled-components";
@@ -10,33 +11,33 @@ import Spacer from "../components/Spacer"
 import Faq from "../components/Faq"
 
 const Home: NextPage = () => {
+  const router = useRouter();
+
   return (
     <>
       <Head>
         <title>Ark</title>
         <link rel="icon" href="/icon.png" />
       </Head>
-      <Page>
-        <TopSection>
-          <ConceptImageWrapper>
-            <Image src="/art.jpg" width={1280} height={1280} />
-          </ConceptImageWrapper>
-          <div>
-            <Title>
-              <ProtocolName>
-                Ark
-              </ProtocolName>
-              Protocol
-            </Title>
-            <Subtitle>
-              The crosschain identity protocol for web3 social
-            </Subtitle>
+      <TopSection>
+        <TopContent>
+          <Title>
+            <ProtocolName>
+              Ark
+            </ProtocolName>
+            Protocol
+          </Title>
+          <Subtitle>
+            The crosschain identity protocol for web3 social
+          </Subtitle>
+          <a href="#faq">
             <Button>
               Read More
             </Button>
-          </div>
-        </TopSection>
-        <Spacer y={4} />
+          </a>
+        </TopContent>
+      </TopSection>
+      <Page>
         <IdentityCard>
           <Spacer y={.25} />
           <CardSubtitle>
@@ -59,7 +60,7 @@ const Home: NextPage = () => {
           </WalletContainer>
           <Spacer y={1} />
           <LinkSymbol>
-            <ArrowUpIcon />
+            <LinkIcon />
           </LinkSymbol>
           <Spacer y={1} />
           <WalletContainer>
@@ -85,7 +86,7 @@ const Home: NextPage = () => {
         <Permanent href="https://arweave.org">
           <Image src="/permanent.svg" width={150} height={75} />
         </Permanent>
-        <Spacer y={4} />
+        <Spacer id="faq" y={4} />
         <FAQCard>
           <Spacer y={1.5} />
           <Title style={{ textAlign: "center" }}>F.A.Q.</Title>
@@ -109,27 +110,21 @@ const Home: NextPage = () => {
 }
 
 const TopSection = styled.div`
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: stretch;
-  gap: 3.5rem;
-
-  @media screen and (max-width: 720px) {
-    gap: 2rem;
-  }
+  justify-content: center;
+  padding: 4.5rem 0;
+  overflow: hidden;
+  z-index: 0;
 `;
 
-const ConceptImageWrapper = styled.div`
-  position: relative;
-  width: 16vw;
-  height: 16vw;
-  border-radius: 10px;
-  overflow: hidden;
-
-  @media screen and (max-width: 720px) {
-    width: 30vw;
-    height: 30vw;
-  }
+const TopContent = styled.div`
+  display: flex;
+  text-align: center;
+  align-items: center;
+  flex-direction: column;
+  width: max-content;
 `;
 
 const Title = styled.h1`
@@ -206,7 +201,7 @@ const ChainTicker = styled.span`
 const LinkSymbol = styled.div`
   width: 1.95rem;
   height: 1.95rem;
-  border-radius: 12px;
+  border-radius: 10px;
   background-color: #1c1e23;
   color: ${props => props.theme.secondaryText};
   font-size: 1rem;
