@@ -7,6 +7,7 @@ import styled from "styled-components";
 import Button from "../components/Button";
 import Page from "../components/Page";
 import Spacer from "../components/Spacer"
+import Faq from "../components/Faq"
 
 const Home: NextPage = () => {
   return (
@@ -84,6 +85,24 @@ const Home: NextPage = () => {
         <Permanent href="https://arweave.org">
           <Image src="/permanent.svg" width={150} height={75} />
         </Permanent>
+        <Spacer y={4} />
+        <FAQCard>
+          <Spacer y={1.5} />
+          <Title style={{ textAlign: "center" }}>F.A.Q.</Title>
+          <Spacer y={1.5} />
+          <Faq title="A question, is this?">
+            Lorem ipsum dolor, sit amet consectetur adipisicing elit. Animi deleniti consequuntur vero voluptates quaerat ea minima atque qui quam facere laudantium, reiciendis omnis nulla ullam autem aliquid possimus nostrum tempore!
+          </Faq>
+          <Faq title="A question, is this?">
+            Lorem ipsum dolor, sit amet consectetur adipisicing elit. Animi deleniti consequuntur vero voluptates quaerat ea minima atque qui quam facere laudantium, reiciendis omnis nulla ullam autem aliquid possimus nostrum tempore!
+          </Faq>
+          <Faq title="A question, is this?">
+            Lorem ipsum dolor, sit amet consectetur adipisicing elit. Animi deleniti consequuntur vero voluptates quaerat ea minima atque qui quam facere laudantium, reiciendis omnis nulla ullam autem aliquid possimus nostrum tempore!
+          </Faq>
+          <Faq title="A question, is this?">
+            Lorem ipsum dolor, sit amet consectetur adipisicing elit. Animi deleniti consequuntur vero voluptates quaerat ea minima atque qui quam facere laudantium, reiciendis omnis nulla ullam autem aliquid possimus nostrum tempore!
+          </Faq>
+        </FAQCard>
       </Page>
     </>
   );
@@ -210,6 +229,16 @@ const Permanent = styled.a`
   justify-content: center;
   width: 18vw;
   margin: 0 auto;
+`;
+
+const FAQCard = styled(Card)`
+  padding: 0;
+  width: 70vw;
+  margin: 0 auto;
+
+  @media screen and (max-width: 720px) {
+    width: calc(100% - 2rem);
+  }
 `;
 
 export default Home;

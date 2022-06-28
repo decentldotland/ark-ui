@@ -6,6 +6,7 @@ const Card = styled.div`
   background-color: #121317;
   border: 1px solid #292c34;
   width: max-content;
+  overflow: hidden;
 `;
 
 export const CardSubtitle = styled.p`
