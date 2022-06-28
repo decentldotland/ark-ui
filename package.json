@@ -5,6 +5,8 @@
     "start": "next start"
   },
   "dependencies": {
+    "@iconicicons/react": "^1.5.0",
+    "framer-motion": "^6.3.16",
     "next": "12.1.6",
     "react": "18.2.0",
     "react-dom": "18.2.0",

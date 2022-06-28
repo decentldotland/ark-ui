@@ -5,7 +5,8 @@ import "../styles/globals.css";
 function App({ Component, pageProps }: AppProps) {
   return (
     <ThemeProvider theme={{
-      primary: "41, 7, 252"
+      primary: "94, 69, 250",
+      secondaryText: "#d3d3d3"
     }}>
       <Gradient />
       <Component {...pageProps} />
