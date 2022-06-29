@@ -1,7 +1,7 @@
 import { LinkIcon } from "@iconicicons/react"
+import { useArconnect } from "../utils/arconnect"
 import type { NextPage } from "next";
 import Card, { CardSubtitle } from "../components/Card";
-import { useRouter } from "next/router";
 import Head from "next/head";
 import Image from "next/image";
 import styled from "styled-components";
@@ -9,8 +9,11 @@ import Button from "../components/Button";
 import Page from "../components/Page";
 import Spacer from "../components/Spacer"
 import Faq from "../components/Faq"
+import ANS from "../components/ANS"
 
 const Home: NextPage = () => {
+  const [address, connect, disconnect] = useArconnect();
+
   return (
     <>
       <Head>
@@ -52,9 +55,18 @@ const Home: NextPage = () => {
                 </ChainTicker>
               </ChainName>
             </WalletChainLogo>
-            <Button secondary style={{ paddingLeft: "2.5rem", paddingRight: "2.5rem" }}>
-              Connect ANS
-            </Button>
+            {(address && <ANS address={address} onClick={() => disconnect()} />) || (
+              <Button
+                secondary
+                style={{
+                  paddingLeft: "2.5rem",
+                  paddingRight: "2.5rem"
+                }}
+                onClick={() => connect()}
+              >
+                Connect ANS
+              </Button>
+            )}
           </WalletContainer>
           <Spacer y={1} />
           <LinkSymbol>
