@@ -1,5 +1,5 @@
 import { LinkIcon } from "@iconicicons/react"
-import { useArconnect } from "../utils/arconnect"
+import { arweave, useArconnect } from "../utils/arconnect"
 import type { NextPage } from "next";
 import Card, { CardSubtitle } from "../components/Card";
 import { Modal, useModal } from "../components/Modal";
@@ -9,6 +9,8 @@ import { metaMask } from "../utils/connectors/metamask";
 import { ETHConnector, useETH } from "../utils/eth";
 import { formatAddress } from "../utils/format";
 import { useState } from "react";
+import { interactWrite } from "smartweave";
+import { ARWEAVE_CONTRACT } from "../utils/constants";
 import Head from "next/head";
 import Image from "next/image";
 import styled from "styled-components";
@@ -43,8 +45,16 @@ const Home: NextPage = () => {
 
     const interaction = await eth.contract.linkIdentity(address);
     await interaction.wait();
+console.log(interaction)
+    setLinkStatus("Writting to Arweave...");
 
-    console.log(interaction);
+    await interactWrite(arweave, "use_wallet", ARWEAVE_CONTRACT, {
+      function: "linkIdentity",
+      address: eth.address,
+      verificationReq: interaction.hash,
+    });
+
+    setLinkStatus("Linked");
     setLinkStatus(undefined);
   }
 

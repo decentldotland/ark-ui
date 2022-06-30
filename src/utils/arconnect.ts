@@ -1,5 +1,6 @@
 import { PermissionType } from "arconnect";
 import { useEffect, useState } from "react";
+import Arweave from "arweave";
 
 const permissions: PermissionType[] = [
   "ACCESS_ADDRESS",
@@ -62,3 +63,9 @@ export const useArconnect = (): Hook => {
 
   return [address, connect, disconnect];
 };
+
+export const arweave = new Arweave({
+  host: "arweave.net",
+  port: 443,
+  protocol: "https"
+});
