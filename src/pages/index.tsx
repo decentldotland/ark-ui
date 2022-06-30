@@ -2,17 +2,36 @@ import { LinkIcon } from "@iconicicons/react"
 import { useArconnect } from "../utils/arconnect"
 import type { NextPage } from "next";
 import Card, { CardSubtitle } from "../components/Card";
+import { Modal, useModal } from "../components/Modal";
+import { coinbaseWallet } from "../utils/connectors/coinbase";
+import { walletConnect } from "../utils/connectors/walletconnect";
+import { metaMask } from "../utils/connectors/metamask";
+import { ETHConnector, useETH } from "../utils/eth";
+import { useEffect } from "react";
 import Head from "next/head";
 import Image from "next/image";
 import styled from "styled-components";
 import Button from "../components/Button";
 import Page from "../components/Page";
-import Spacer from "../components/Spacer"
-import Faq from "../components/Faq"
-import ANS from "../components/ANS"
+import Spacer from "../components/Spacer";
+import Faq from "../components/Faq";
+import ANS from "../components/ANS";
 
 const Home: NextPage = () => {
   const [address, connect, disconnect] = useArconnect();
+  const ehtModal = useModal();
+  const eth = useETH();
+
+  async function connectEth(connector: ETHConnector) {
+    try {
+      await eth.connect(connector);
+      ehtModal.setState(false);
+    } catch (e) {
+      console.log("Failed to connect", e);
+    }
+  }
+
+  useEffect(() => console.log(eth.address), [eth]);
 
   return (
     <>
@@ -83,7 +102,7 @@ const Home: NextPage = () => {
                 </ChainTicker>
               </ChainName>
             </WalletChainLogo>
-            <Button secondary style={{ paddingLeft: "2.5rem", paddingRight: "2.5rem" }}>
+            <Button secondary style={{ paddingLeft: "2.5rem", paddingRight: "2.5rem" }} onClick={() => ehtModal.setState(true)}>
               Verify identity
             </Button>
           </WalletContainer>
@@ -115,6 +134,22 @@ const Home: NextPage = () => {
           </Faq>
         </FAQCard>
       </Page>
+      <Modal title="Choose a wallet" {...ehtModal.bindings}>
+        <CoinbaseButton onClick={() => connectEth(coinbaseWallet)} fullWidth>
+          <Image src="/coinbase_wallet.png" width={25} height={25} />
+          Coinbase Wallet
+        </CoinbaseButton>
+        <Spacer y={1} />
+        <WalletConnectButton onClick={() => connectEth(walletConnect)} fullWidth>
+          <Image src="/walletconnect.png" width={25} height={25} />
+          Wallet Connect
+        </WalletConnectButton>
+        <Spacer y={1} />
+        <MetamaskButton onClick={() => connectEth(metaMask)} fullWidth>
+          <Image src="/metamask.png" width={25} height={25} />
+          Metamask
+        </MetamaskButton>
+      </Modal>
     </>
   );
 }
@@ -247,6 +282,20 @@ const FAQCard = styled(Card)`
   @media screen and (max-width: 720px) {
     width: 100%;
   }
+`;
+
+const CoinbaseButton = styled(Button)`
+  background-color: #1652f0;
+`;
+
+const WalletConnectButton = styled(Button)`
+  background-color: #fff;
+  color: #2b6cb0;
+`;
+
+const MetamaskButton = styled(Button)`
+  background-color: #fff;
+  color: #000;
 `;
 
 export default Home;
