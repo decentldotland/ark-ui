@@ -20,6 +20,7 @@ import Spacer from "../components/Spacer";
 import Faq from "../components/Faq";
 import ANS from "../components/ANS";
 import Loading from "../components/Loading"
+import { AnimatePresence, motion } from "framer-motion"
 
 const Home: NextPage = () => {
   const [address, connect, disconnect] = useArconnect();
@@ -27,34 +28,56 @@ const Home: NextPage = () => {
 
   const eth = useETH();
 
+  const [status, setStatus] = useState<{ type: "success" | "error", message: string }>();
+
   async function connectEth(connector: ETHConnector) {
     try {
       await eth.connect(connector);
       ehtModal.setState(false);
+      setStatus(undefined);
     } catch (e) {
       console.log("Failed to connect", e);
+      setStatus({ type: "error", message: "Failed to connect" });
     }
   }
 
   const [linkStatus, setLinkStatus] = useState<string>();
 
   async function link() {
-    if (!address || !eth.address || !eth.contract) return;
+    setStatus(undefined);
 
-    setLinkStatus("Interacting with ETH contract...");
+    if (!address || !eth.address || !eth.contract) {
+      return setStatus({
+        type: "error",
+        message: "Arweave or Ethereum not connected"
+      });
+    };
 
-    const interaction = await eth.contract.linkIdentity(address);
-    await interaction.wait();
-console.log(interaction)
-    setLinkStatus("Writting to Arweave...");
+    try {
+      setLinkStatus("Interacting with ETH contract...");
 
-    await interactWrite(arweave, "use_wallet", ARWEAVE_CONTRACT, {
-      function: "linkIdentity",
-      address: eth.address,
-      verificationReq: interaction.hash,
-    });
+      const interaction = await eth.contract.linkIdentity(address);
+      await interaction.wait();
 
-    setLinkStatus("Linked");
+      setLinkStatus("Writting to Arweave...");
+
+      await interactWrite(arweave, "use_wallet", ARWEAVE_CONTRACT, {
+        function: "linkIdentity",
+        address: eth.address,
+        verificationReq: interaction.hash,
+      });
+
+      setLinkStatus("Linked");
+      setStatus(undefined);
+    } catch (e) {
+      console.log("Failed to link", e);
+
+      setStatus({
+        type: "error",
+        message: "Could not link account"
+      });
+    }
+
     setLinkStatus(undefined);
   }
 
@@ -83,6 +106,22 @@ console.log(interaction)
         </TopContent>
       </TopSection>
       <Page>
+        <AnimatePresence>
+          {status && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.185, ease: "easeInOut" }}
+            >
+              <Status type={status.type}>
+                <span>{status.type}:</span>
+                {status.message}
+              </Status>
+              <Spacer y={1} />
+            </motion.div>
+          )}
+        </AnimatePresence>
         <IdentityCard>
           <Spacer y={.25} />
           <CardSubtitle>
@@ -333,6 +372,28 @@ const WalletConnectButton = styled(Button)`
 const MetamaskButton = styled(Button)`
   background-color: #fff;
   color: #000;
+`;
+
+const Status = styled.p<{ type: "error" | "succes" }>`
+  padding: 1rem;
+  border-radius: 12px;
+  color: ${props => props.theme.secondaryText};
+  border: 2px solid ${props => props.type === "error" ? "#ca0000" : "#00ff00"};
+  font-weight: 400;
+  width: 50%;
+  font-size: 1rem;
+  margin: 0 auto;
+  
+  span {
+    font-weight: 500;
+    color: ${props => props.type === "error" ? "#ca0000" : "#00ff00"};
+    text-transform: uppercase;
+    margin-right: .4rem;
+  }
+
+  @media screen and (max-width: 720px) {
+    width: unset;
+  }
 `;
 
 export default Home;
