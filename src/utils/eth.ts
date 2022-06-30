@@ -20,7 +20,7 @@ export const useETH = () => {
     tryConnection([coinbaseWallet, walletConnect, metaMask]);
   }, []);
 
-  async function tryConnection(connectors: any[]) {
+  async function tryConnection(connectors: ETHConnector[]) {
     for (const connector of connectors) {
       try {
         await connector.connectEagerly();
@@ -34,15 +34,22 @@ export const useETH = () => {
     else if (metamaskAcc) setState({ provider: "metamask", address: metamaskAcc });
   }, [coinbaseAcc, metamaskAcc, walletConnectAcc]);
 
-  const connect = (connector: ETHConnector) => connector.activate(1);
+  const connect = (connector: ETHConnector) => connector.activate(5);
 
   async function disconnect() {
     if (!state) return;
 
-    if (state.provider === "coinbase") await coinbaseWallet.deactivate();
-    else if (state.provider === "walletconnect") await walletConnect.deactivate();
-    // @ts-expect-error
-    else if (state.provider === "metamask") await metaMask.deactivate();
+    if (state.provider === "coinbase") tryDisconnect(coinbaseWallet);
+    else if (state.provider === "walletconnect") tryDisconnect(walletConnect);
+    else if (state.provider === "metamask") tryDisconnect(metaMask);
+  }
+
+  async function tryDisconnect(connector: ETHConnector) {
+    if (connector?.deactivate) {
+      await connector.deactivate()
+    } else {
+      await connector.resetState()
+    }
 
     setState(undefined);
   }

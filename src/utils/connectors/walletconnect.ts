@@ -7,7 +7,7 @@ export const [walletConnect, hooks] = initializeConnector<WalletConnect>(
       actions,
       options: {
         rpc: {
-          1: "https://cloudflare-eth.com"
+          5: "https://rpc.goerli.mudit.blog/"
         },
       },
     })
