@@ -5,11 +5,20 @@ import { walletConnect, hooks as walletConnectHooks } from "./connectors/walletc
 import { MetaMask } from "@web3-react/metamask";
 import { CoinbaseWallet } from "@web3-react/coinbase-wallet";
 import { WalletConnect } from "@web3-react/walletconnect";
+import { Contract, ethers } from "ethers"
+import { EVM_ORACLE_ADDRESS } from "./constants"
+import ArkNetwork from "../assets/ArkNetwork.json";
 
 export const useETH = () => {
   const coinbaseAcc = coinbaseHooks.useAccount();
   const metamaskAcc = metaMaskHooks.useAccount();
   const walletConnectAcc = walletConnectHooks.useAccount();
+
+  const coinbaseProvider = coinbaseHooks.useProvider();
+  const walletConnectProvider = walletConnectHooks.useProvider();
+  const metamaskProvider = metaMaskHooks.useProvider();
+
+  const [contract, setContract] = useState<Contract>();
 
   const [state, setState] = useState<{
     provider: "coinbase" | "walletconnect" | "metamask";
@@ -54,10 +63,24 @@ export const useETH = () => {
     setState(undefined);
   }
 
+  useEffect(() => {
+    if (!state || !state.provider) return;
+
+    const ArkContract = new ethers.Contract(
+      EVM_ORACLE_ADDRESS,
+      // @ts-ignore
+      ArkNetwork.abi,
+      coinbaseProvider || walletConnectProvider || metamaskProvider
+    );
+
+    setContract(ArkContract);
+  }, [state]);
+
   return {
     ...state,
     connect,
-    disconnect
+    disconnect,
+    contract
   };
 }
 

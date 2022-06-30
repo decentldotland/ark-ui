@@ -8,6 +8,7 @@ import { walletConnect } from "../utils/connectors/walletconnect";
 import { metaMask } from "../utils/connectors/metamask";
 import { ETHConnector, useETH } from "../utils/eth";
 import { formatAddress } from "../utils/format";
+import { useState } from "react";
 import Head from "next/head";
 import Image from "next/image";
 import styled from "styled-components";
@@ -16,6 +17,7 @@ import Page from "../components/Page";
 import Spacer from "../components/Spacer";
 import Faq from "../components/Faq";
 import ANS from "../components/ANS";
+import Loading from "../components/Loading"
 
 const Home: NextPage = () => {
   const [address, connect, disconnect] = useArconnect();
@@ -31,6 +33,8 @@ const Home: NextPage = () => {
       console.log("Failed to connect", e);
     }
   }
+
+  const [linkStatus, setLinkStatus] = useState<string>();
 
   return (
     <>
@@ -117,8 +121,9 @@ const Home: NextPage = () => {
             </Button>
           </WalletContainer>
           <Spacer y={2.5} />
-          <Button secondary fullWidth>
-            Submit
+          <Button secondary fullWidth disabled={!(address && eth.address)}>
+            {linkStatus && <Loading />}
+            {linkStatus || "Submit"}
           </Button>
         </IdentityCard>
         <Spacer y={4} />

@@ -1,5 +1,6 @@
 import { initializeConnector } from "@web3-react/core";
 import { WalletConnect } from "@web3-react/walletconnect";
+import { RCP } from "../constants"
 
 export const [walletConnect, hooks] = initializeConnector<WalletConnect>(
   (actions) =>
@@ -7,7 +8,7 @@ export const [walletConnect, hooks] = initializeConnector<WalletConnect>(
       actions,
       options: {
         rpc: {
-          5: "https://rpc.goerli.mudit.blog/"
+          5: RCP
         },
       },
     })

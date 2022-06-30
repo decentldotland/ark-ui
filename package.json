@@ -16,6 +16,7 @@
     "@web3-react/walletconnect": "8.0.34-beta.0",
     "arconnect": "^0.4.2",
     "color-hash": "^2.0.1",
+    "ethers": "^5.6.9",
     "framer-motion": "^6.3.16",
     "next": "12.1.6",
     "react": "18.2.0",

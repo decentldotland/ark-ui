@@ -8,7 +8,7 @@ const Button = styled.button<{ secondary?: boolean; fullWidth?: boolean; }>`
   justify-content: center;
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: .5rem;
   font-size: .9rem;
   font-weight: ${props => props.secondary ? "400" : "500"};
   text-transform: capitalize;
@@ -37,6 +37,11 @@ const Button = styled.button<{ secondary?: boolean; fullWidth?: boolean; }>`
       `;
     }
   }}
+
+  &:disabled {
+    opacity: .7;
+    cursor: not-allowed;
+  }
 `;
 
 export default Button;
