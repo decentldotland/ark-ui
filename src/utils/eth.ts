@@ -66,13 +66,15 @@ export const useETH = () => {
   useEffect(() => {
     if (!state || !state.provider) return;
 
+    let provider = (state.provider === "coinbase" && coinbaseProvider) || (state.provider === "walletconnect" && walletConnectProvider) || (state.provider === "metamask" && metamaskProvider) || undefined;
+
+    if (!provider) return;
+
     const ArkContract = new ethers.Contract(
       EVM_ORACLE_ADDRESS,
       // @ts-ignore
       ArkNetwork.abi,
-      coinbaseProvider?.getSigner(state.address) || 
-      walletConnectProvider?.getSigner(state.address) || 
-      metamaskProvider?.getSigner(state.address)
+      provider.getSigner().connectUnchecked()
     );
 
     setContract(ArkContract);
