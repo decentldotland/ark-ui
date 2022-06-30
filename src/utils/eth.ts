@@ -17,10 +17,16 @@ export const useETH = () => {
   }>();
 
   useEffect(() => {
-    coinbaseWallet.connectEagerly().catch();
-    walletConnect.connectEagerly().catch();
-    metaMask.connectEagerly().catch();
+    tryConnection([coinbaseWallet, walletConnect, metaMask]);
   }, []);
+
+  async function tryConnection(connectors: any[]) {
+    for (const connector of connectors) {
+      try {
+        await connector.connectEagerly();
+      } catch {}
+    }
+  }
 
   useEffect(() => {
     if (coinbaseAcc) setState({ provider: "coinbase", address: coinbaseAcc });
@@ -30,9 +36,21 @@ export const useETH = () => {
 
   const connect = (connector: ETHConnector) => connector.activate(1);
 
+  async function disconnect() {
+    if (!state) return;
+
+    if (state.provider === "coinbase") await coinbaseWallet.deactivate();
+    else if (state.provider === "walletconnect") await walletConnect.deactivate();
+    // @ts-expect-error
+    else if (state.provider === "metamask") await metaMask.deactivate();
+
+    setState(undefined);
+  }
+
   return {
     ...state,
-    connect
+    connect,
+    disconnect
   };
 }
 

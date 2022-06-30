@@ -7,7 +7,7 @@ import { coinbaseWallet } from "../utils/connectors/coinbase";
 import { walletConnect } from "../utils/connectors/walletconnect";
 import { metaMask } from "../utils/connectors/metamask";
 import { ETHConnector, useETH } from "../utils/eth";
-import { useEffect } from "react";
+import { formatAddress } from "../utils/format";
 import Head from "next/head";
 import Image from "next/image";
 import styled from "styled-components";
@@ -20,6 +20,7 @@ import ANS from "../components/ANS";
 const Home: NextPage = () => {
   const [address, connect, disconnect] = useArconnect();
   const ehtModal = useModal();
+
   const eth = useETH();
 
   async function connectEth(connector: ETHConnector) {
@@ -30,8 +31,6 @@ const Home: NextPage = () => {
       console.log("Failed to connect", e);
     }
   }
-
-  useEffect(() => console.log(eth.address), [eth]);
 
   return (
     <>
@@ -102,8 +101,19 @@ const Home: NextPage = () => {
                 </ChainTicker>
               </ChainName>
             </WalletChainLogo>
-            <Button secondary style={{ paddingLeft: "2.5rem", paddingRight: "2.5rem" }} onClick={() => ehtModal.setState(true)}>
-              Verify identity
+            <Button secondary style={{ paddingLeft: "2.5rem", paddingRight: "2.5rem" }} onClick={() => {
+              if (!eth.address) {
+                ehtModal.setState(true)
+              } else {
+                eth.disconnect();
+              }
+            }}>
+              {(eth.address && (
+                <>
+                  <Image src={`/${eth.provider}.png`} width={25} height={25} draggable={false} />
+                  {formatAddress(eth.address, 8)}
+                </>
+              )) || "Verify identity"}
             </Button>
           </WalletContainer>
           <Spacer y={2.5} />
@@ -136,7 +146,7 @@ const Home: NextPage = () => {
       </Page>
       <Modal title="Choose a wallet" {...ehtModal.bindings}>
         <CoinbaseButton onClick={() => connectEth(coinbaseWallet)} fullWidth>
-          <Image src="/coinbase_wallet.png" width={25} height={25} />
+          <Image src="/coinbase.png" width={25} height={25} />
           Coinbase Wallet
         </CoinbaseButton>
         <Spacer y={1} />
