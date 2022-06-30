@@ -70,7 +70,9 @@ export const useETH = () => {
       EVM_ORACLE_ADDRESS,
       // @ts-ignore
       ArkNetwork.abi,
-      coinbaseProvider || walletConnectProvider || metamaskProvider
+      coinbaseProvider?.getSigner(state.address) || 
+      walletConnectProvider?.getSigner(state.address) || 
+      metamaskProvider?.getSigner(state.address)
     );
 
     setContract(ArkContract);

@@ -36,6 +36,18 @@ const Home: NextPage = () => {
 
   const [linkStatus, setLinkStatus] = useState<string>();
 
+  async function link() {
+    if (!address || !eth.address || !eth.contract) return;
+
+    setLinkStatus("Interacting with ETH contract...");
+
+    const interaction = await eth.contract.linkIdentity(address);
+    await interaction.wait();
+
+    console.log(interaction);
+    setLinkStatus(undefined);
+  }
+
   return (
     <>
       <Head>
@@ -121,7 +133,7 @@ const Home: NextPage = () => {
             </Button>
           </WalletContainer>
           <Spacer y={2.5} />
-          <Button secondary fullWidth disabled={!(address && eth.address)}>
+          <Button secondary fullWidth disabled={!(address && eth.address)} onClick={() => link()}>
             {linkStatus && <Loading />}
             {linkStatus || "Submit"}
           </Button>
