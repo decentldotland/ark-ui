@@ -35,7 +35,7 @@ const ANS = ({ address, onClick }: { address: string, onClick?: MouseEventHandle
 const Wrapper = styled.div`
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: .75rem;
   padding: .55rem 0;
   cursor: pointer;
 `;
