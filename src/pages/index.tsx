@@ -1,4 +1,4 @@
-import { LinkIcon } from "@iconicicons/react"
+import { CloseIcon, LinkIcon } from "@iconicicons/react"
 import { arweave, useArconnect } from "../utils/arconnect"
 import type { NextPage } from "next";
 import Card, { CardSubtitle } from "../components/Card";
@@ -11,6 +11,7 @@ import { formatAddress } from "../utils/format";
 import { useState } from "react";
 import { interactWrite } from "smartweave";
 import { ARWEAVE_CONTRACT } from "../utils/constants";
+import { AnimatePresence, motion } from "framer-motion";
 import Head from "next/head";
 import Image from "next/image";
 import styled from "styled-components";
@@ -20,7 +21,6 @@ import Spacer from "../components/Spacer";
 import Faq from "../components/Faq";
 import ANS from "../components/ANS";
 import Loading from "../components/Loading"
-import { AnimatePresence, motion } from "framer-motion"
 
 const Home: NextPage = () => {
   const [address, connect, disconnect] = useArconnect();
@@ -28,7 +28,7 @@ const Home: NextPage = () => {
 
   const eth = useETH();
 
-  const [status, setStatus] = useState<{ type: "success" | "error", message: string }>();
+  const [status, setStatus] = useState<{ type: StatusType, message: string }>();
 
   async function connectEth(connector: ETHConnector) {
     try {
@@ -115,8 +115,11 @@ const Home: NextPage = () => {
               transition={{ duration: 0.185, ease: "easeInOut" }}
             >
               <Status type={status.type}>
-                <span>{status.type}:</span>
-                {status.message}
+                <p>
+                  <span>{status.type}:</span>
+                  {status.message}
+                </p>
+                <CloseStatusIcon onClick={() => setStatus(undefined)} />
               </Status>
               <Spacer y={1} />
             </motion.div>
@@ -374,7 +377,10 @@ const MetamaskButton = styled(Button)`
   color: #000;
 `;
 
-const Status = styled.p<{ type: "error" | "succes" }>`
+const Status = styled.div<{ type: StatusType }>`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 1rem;
   border-radius: 12px;
   color: ${props => props.theme.secondaryText};
@@ -383,6 +389,10 @@ const Status = styled.p<{ type: "error" | "succes" }>`
   width: 50%;
   font-size: 1rem;
   margin: 0 auto;
+
+  p {
+    margin: 0;
+  }
   
   span {
     font-weight: 500;
@@ -395,5 +405,24 @@ const Status = styled.p<{ type: "error" | "succes" }>`
     width: unset;
   }
 `;
+
+const CloseStatusIcon = styled(CloseIcon)`
+  font-size: 1.2em;
+  width: 1em;
+  height: 1em;
+  color: ${props => props.theme.secondaryText};
+  cursor: pointer;
+  transition: all .23s ease-in-out;
+
+  &:hover {
+    opacity: .83;
+  }
+
+  &:active {
+    transform: scale(.93);
+  }
+`;
+
+type StatusType = "error" | "success";
 
 export default Home;
