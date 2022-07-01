@@ -1,6 +1,7 @@
-import { ChevronDownIcon } from "@iconicicons/react"
-import { AnimatePresence, motion } from "framer-motion"
-import { PropsWithChildren, useState } from "react"
+import { ChevronDownIcon } from "@iconicicons/react";
+import { AnimatePresence, motion } from "framer-motion";
+import { PropsWithChildren, useState } from "react";
+import { collapseAnimation } from "../utils/animations";
 import styled from "styled-components";
 
 const Faq = ({ title, children }: PropsWithChildren<Props>) => {
@@ -34,10 +35,6 @@ const Faq = ({ title, children }: PropsWithChildren<Props>) => {
 };
 
 const padding = "1rem 2rem";
-const collapseAnimation = {
-  open: { opacity: 1, height: "auto" },
-  collapsed: { opacity: 0, height: 0 }
-};
 
 const Wrapper = styled.div`
   border-top: 1px solid rgba(255, 255, 255, 0.05);

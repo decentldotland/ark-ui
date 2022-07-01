@@ -1,6 +1,7 @@
 import { CloseIcon } from "@iconicicons/react"
 import { motion, AnimatePresence } from "framer-motion"
 import { MouseEventHandler, PropsWithChildren, useEffect, useState } from "react"
+import { opacityAnimation } from "../utils/animations"
 import styled from "styled-components"
 import Card from "./Card"
 
@@ -8,9 +9,10 @@ export const Modal = ({ open, onClose, children, title }: PropsWithChildren<Prop
   <AnimatePresence>
     {open && (
       <Wrapper
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
+        initial="transparent"
+        animate="visible"
+        exit="transparent"
+        variants={opacityAnimation}
         transition={{ duration: 0.185, ease: "easeInOut" }}
       >
         <ModalOverlay onClick={onClose} />

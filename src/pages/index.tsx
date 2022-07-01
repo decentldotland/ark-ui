@@ -12,6 +12,7 @@ import { useState } from "react";
 import { interactWrite } from "smartweave";
 import { ARWEAVE_CONTRACT } from "../utils/constants";
 import { AnimatePresence, motion } from "framer-motion";
+import { opacityAnimation } from "../utils/animations";
 import Head from "next/head";
 import Image from "next/image";
 import styled from "styled-components";
@@ -20,7 +21,7 @@ import Page from "../components/Page";
 import Spacer from "../components/Spacer";
 import Faq from "../components/Faq";
 import ANS from "../components/ANS";
-import Loading from "../components/Loading"
+import Loading from "../components/Loading";
 
 const Home: NextPage = () => {
   const [address, connect, disconnect] = useArconnect();
@@ -42,6 +43,7 @@ const Home: NextPage = () => {
   }
 
   const [linkStatus, setLinkStatus] = useState<string>();
+  const [linkingOverlay, setLinkingOverlay] = useState<"in-progress" | "linked">();
 
   async function link() {
     setStatus(undefined);
@@ -77,7 +79,10 @@ const Home: NextPage = () => {
       ]);
 
       setLinkStatus("Linked");
-      setStatus(undefined);
+      setStatus({
+        type: "success",
+        message: "Linked identity"
+      });
     } catch (e) {
       console.log("Failed to link", e);
 
@@ -194,6 +199,19 @@ const Home: NextPage = () => {
             {linkStatus && <Loading />}
             {linkStatus || "Submit"}
           </Button>
+          <AnimatePresence>
+            {linkingOverlay && (
+              <LinkingInProgress
+                initial="transparent"
+                animate="visible"
+                exit="transparent"
+                variants={opacityAnimation}
+                transition={{ duration: 0.23, ease: "easeInOut" }}
+              >
+                test
+              </LinkingInProgress>
+            )}
+          </AnimatePresence>
         </IdentityCard>
         <Spacer y={4} />
         <Permanent href="https://arweave.org" target="_blank" rel="noopener noreferer">
@@ -294,6 +312,7 @@ const ProtocolName = styled.span`
 `;
 
 const IdentityCard = styled(Card)`
+  position: relative;
   width: 33vw;
   margin: 0 auto;
 
@@ -447,5 +466,19 @@ const ConnectButton = styled(Button)`
 `;
 
 type StatusType = "error" | "success";
+
+const LinkingInProgress = styled(motion.div)`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(3px);
+`;
 
 export default Home;
