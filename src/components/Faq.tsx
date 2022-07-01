@@ -86,6 +86,11 @@ const Body = styled.div`
   color: ${props => props.theme.tertiaryText};
   line-height: 1.3em;
   text-align: justify;
+
+  a {
+    color: rgb(${props => props.theme.primary});
+    text-decoration: none;
+  }
 `;
 
 interface Props {

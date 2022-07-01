@@ -199,17 +199,25 @@ const Home: NextPage = () => {
           <Spacer y={1.5} />
           <Title style={{ textAlign: "center" }}>F.A.Q.</Title>
           <Spacer y={1.5} />
-          <Faq title="A question, is this?">
-            Lorem ipsum dolor, sit amet consectetur adipisicing elit. Animi deleniti consequuntur vero voluptates quaerat ea minima atque qui quam facere laudantium, reiciendis omnis nulla ullam autem aliquid possimus nostrum tempore!
+          <Faq title="What is Ark Protocol?">
+            Ark is a multichain identity linking protocol built to power decent.land, ANS, and any other application or protocol layers that relies on users linking multiple other wallets to one identity on Arweave.
           </Faq>
-          <Faq title="A question, is this?">
-            Lorem ipsum dolor, sit amet consectetur adipisicing elit. Animi deleniti consequuntur vero voluptates quaerat ea minima atque qui quam facere laudantium, reiciendis omnis nulla ullam autem aliquid possimus nostrum tempore!
+          <Faq title="Why did you build Ark?">
+            decent.land is a collection of social and identity primitives built on Arweave to support the creation of token-gated social networks and groups. The core contracts live on Arweave for permanent storage of any size data, but interact with other chains to build a chain-agnostic way to save your identity and control access to DAO discussions and governance.
+            <Spacer y={.5} />
+            Ark is our way to verifiable associate any number of Ethereum addresses with an Arweave wallet or ANS profile, and makes it so our other protocols can read token holdings and activity from Ethereum
           </Faq>
-          <Faq title="A question, is this?">
-            Lorem ipsum dolor, sit amet consectetur adipisicing elit. Animi deleniti consequuntur vero voluptates quaerat ea minima atque qui quam facere laudantium, reiciendis omnis nulla ullam autem aliquid possimus nostrum tempore!
+          <Faq title="What do I need to start?">
+            You need the <a href="https://arconnect.io" target="_blank" rel="noopener noreferrer">ArConnect extension</a> to get an Arweave wallet and sign Arweave transactions. It should have enough AR for the interaction, e.g. 0.01 AR.
+            <Spacer y={.5} />
+            You need either <a href="https://metamask.io" target="_blank" rel="noopener noreferrer">Metamask</a>, <a href="https://www.coinbase.com/wallet" target="_blank" rel="noopener noreferrer">Coinbase Wallet</a> or a Wallet Connect compatible Ethereum wallet extension and a wallet on Ethereum mainnet, with enough ETH for gas, e.g. 0.003 ETH.
+            <Spacer y={.5} />
+            Connect both wallets on the UI, confirm the transactions, and wait for the data to populate on Arweave.
           </Faq>
-          <Faq title="A question, is this?">
-            Lorem ipsum dolor, sit amet consectetur adipisicing elit. Animi deleniti consequuntur vero voluptates quaerat ea minima atque qui quam facere laudantium, reiciendis omnis nulla ullam autem aliquid possimus nostrum tempore!
+          <Faq title="What can I do once my identities are linked with Ark?">
+            We are building token-gating protocols for both Telegram and the upcoming decent.land web app. We are also working on aggregation of multichain data for the ANS identity layer, to show activity from any chain on your own ar.page profile.
+            <Spacer y={.5} />
+            Early Ark adopters may be eligible for future beta testing opportunities as we expand the set of protocols and use cases
           </Faq>
         </FAQCard>
       </Page>
