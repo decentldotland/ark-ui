@@ -24,7 +24,7 @@ const PageBase = styled(motion.div)`
   }
 
   @media screen and (max-width: 720px) {
-    padding: ${top_padding} 7.4vw;
+    padding: ${top_padding} 3.5vw;
   }
 `;
 

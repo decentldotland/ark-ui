@@ -142,16 +142,12 @@ const Home: NextPage = () => {
               </ChainName>
             </WalletChainLogo>
             {(address && <ANS address={address} onClick={() => disconnect()} />) || (
-              <Button
+              <ConnectButton
                 secondary
-                style={{
-                  paddingLeft: "2.5rem",
-                  paddingRight: "2.5rem"
-                }}
                 onClick={() => connect()}
               >
                 Connect ANS
-              </Button>
+              </ConnectButton>
             )}
           </WalletContainer>
           <Spacer y={1} />
@@ -169,7 +165,7 @@ const Home: NextPage = () => {
                 </ChainTicker>
               </ChainName>
             </WalletChainLogo>
-            <Button secondary style={{ paddingLeft: "2.5rem", paddingRight: "2.5rem" }} onClick={() => {
+            <ConnectButton secondary onClick={() => {
               if (!eth.address) {
                 ehtModal.setState(true)
               } else {
@@ -182,7 +178,7 @@ const Home: NextPage = () => {
                   {formatAddress(eth.address, 8)}
                 </>
               )) || "Verify identity"}
-            </Button>
+            </ConnectButton>
           </WalletContainer>
           <Spacer y={2.5} />
           <Button secondary fullWidth disabled={!(address && eth.address)} onClick={() => link()}>
@@ -428,6 +424,16 @@ const CloseStatusIcon = styled(CloseIcon)`
 
   &:active {
     transform: scale(.93);
+  }
+`;
+
+const ConnectButton = styled(Button)`
+  padding-left: 2.5rem;
+  padding-right: 2.5rem;
+
+  @media screen and (max-width: 720px) {
+    padding-left: 1.1rem;
+    padding-right: 1.1rem;
   }
 `;
 
