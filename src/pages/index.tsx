@@ -65,7 +65,16 @@ const Home: NextPage = () => {
         function: "linkIdentity",
         address: eth.address,
         verificationReq: interaction.hash,
-      });
+      }, [
+        {
+          name: "Protocol-Name",
+          value: "Ark-Network"
+        },
+        {
+          name: "Protocol-Action",
+          value: "Link-Identity"
+        }
+      ]);
 
       setLinkStatus("Linked");
       setStatus(undefined);
