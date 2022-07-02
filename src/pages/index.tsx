@@ -22,6 +22,7 @@ import Spacer from "../components/Spacer";
 import Faq from "../components/Faq";
 import ANS from "../components/ANS";
 import Loading from "../components/Loading";
+import Network from "../components/Network";
 
 const Home: NextPage = () => {
   const [address, connect, disconnect] = useArconnect();
@@ -260,6 +261,7 @@ const Home: NextPage = () => {
           Metamask
         </MetamaskButton>
       </Modal>
+      <Network defaultValue={5} onChange={() => {}} />
     </>
   );
 }

@@ -1,13 +1,13 @@
 import { CoinbaseWallet } from "@web3-react/coinbase-wallet"
 import { initializeConnector } from "@web3-react/core"
-import { RCP } from "../constants"
+import { URLS } from "../constants"
 
 export const [coinbaseWallet, hooks] = initializeConnector<CoinbaseWallet>(
   (actions) =>
     new CoinbaseWallet({
       actions,
       options: {
-        url: RCP,
+        url: URLS[5][0],
         appName: "Ark Protocol"
       },
     })

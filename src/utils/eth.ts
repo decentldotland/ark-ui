@@ -6,7 +6,7 @@ import { MetaMask } from "@web3-react/metamask";
 import { CoinbaseWallet } from "@web3-react/coinbase-wallet";
 import { WalletConnect } from "@web3-react/walletconnect";
 import { Contract, ethers } from "ethers"
-import { EVM_ORACLE_ADDRESS, RCP } from "./constants"
+import { EVM_ORACLE_ADDRESS } from "./constants"
 import ArkNetwork from "../assets/ArkNetwork.json";
 
 export const useETH = () => {
@@ -46,7 +46,7 @@ export const useETH = () => {
     else if (metamaskAcc) setState({ provider: "metamask", address: metamaskAcc });
   }, [coinbaseAcc, metamaskAcc, walletConnectAcc]);
 
-  const connect = (connector: ETHConnector) => connector.activate(5);
+  const connect = (connector: ETHConnector, chainId = 5) => connector.activate(chainId);
 
   async function disconnect() {
     if (!state) return;
@@ -69,9 +69,7 @@ export const useETH = () => {
   useEffect(() => {
     (async () => {
       if (!state || !state.provider) return;
-
-      let provider = (state.provider === "coinbase" && coinbaseProvider) || (state.provider === "walletconnect" && walletConnectProvider) || (state.provider === "metamask" && metamaskProvider) || undefined;
-
+      let provider = getProvider();
       if (!provider) return;
 
       // load Ark Protocol ETH contract
@@ -95,6 +93,13 @@ export const useETH = () => {
       }
     })();
   }, [state]);
+
+  function getProvider() {
+    if (state?.provider === "coinbase") return coinbaseProvider;
+    else if (state?.provider === "walletconnect") return walletConnectProvider;
+    else if (state?.provider === "metamask") return metamaskProvider;
+    else return undefined;
+  }
 
   return {
     ...state,
