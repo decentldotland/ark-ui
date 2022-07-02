@@ -6,7 +6,7 @@ import { MetaMask } from "@web3-react/metamask";
 import { CoinbaseWallet } from "@web3-react/coinbase-wallet";
 import { WalletConnect } from "@web3-react/walletconnect";
 import { Contract, ethers } from "ethers"
-import { EVM_ORACLE_ADDRESS } from "./constants"
+import { EVM_ORACLE_ADDRESS, RCP } from "./constants"
 import ArkNetwork from "../assets/ArkNetwork.json";
 
 export const useETH = () => {
@@ -20,10 +20,13 @@ export const useETH = () => {
 
   const [contract, setContract] = useState<Contract>();
 
-  const [state, setState] = useState<{
+  type State = {
     provider: "coinbase" | "walletconnect" | "metamask";
     address: string;
-  }>();
+    ens?: string;
+  };
+
+  const [state, setState] = useState<State>();
 
   useEffect(() => {
     tryConnection([coinbaseWallet, walletConnect, metaMask]);
@@ -64,20 +67,33 @@ export const useETH = () => {
   }
 
   useEffect(() => {
-    if (!state || !state.provider) return;
+    (async () => {
+      if (!state || !state.provider) return;
 
-    let provider = (state.provider === "coinbase" && coinbaseProvider) || (state.provider === "walletconnect" && walletConnectProvider) || (state.provider === "metamask" && metamaskProvider) || undefined;
+      let provider = (state.provider === "coinbase" && coinbaseProvider) || (state.provider === "walletconnect" && walletConnectProvider) || (state.provider === "metamask" && metamaskProvider) || undefined;
 
-    if (!provider) return;
+      if (!provider) return;
 
-    const ArkContract = new ethers.Contract(
-      EVM_ORACLE_ADDRESS,
-      // @ts-ignore
-      ArkNetwork.abi,
-      provider.getSigner().connectUnchecked()
-    );
+      // load Ark Protocol ETH contract
+      const ArkContract = new ethers.Contract(
+        EVM_ORACLE_ADDRESS,
+        // @ts-ignore
+        ArkNetwork.abi,
+        provider.getSigner().connectUnchecked()
+      );
 
-    setContract(ArkContract);
+      setContract(ArkContract);
+
+      // lookup ENS name
+      const ensName = await provider.lookupAddress(state.address);
+
+      if (ensName && state) {
+        setState((val) => ({
+          ...val as State,
+          ens: ensName
+        }));
+      }
+    })();
   }, [state]);
 
   return {

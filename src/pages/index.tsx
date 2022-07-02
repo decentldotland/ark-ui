@@ -179,7 +179,7 @@ const Home: NextPage = () => {
                 </ChainTicker>
               </ChainName>
             </WalletChainLogo>
-            <ConnectButton secondary onClick={() => {
+            <ConnectButton secondary style={{ textTransform: eth.address ? "none" : undefined }} onClick={() => {
               if (!eth.address) {
                 ehtModal.setState(true)
               } else {
@@ -189,7 +189,7 @@ const Home: NextPage = () => {
               {(eth.address && (
                 <>
                   <Image src={`/${eth.provider}.png`} width={25} height={25} draggable={false} />
-                  {formatAddress(eth.address, 8)}
+                  {eth.ens || formatAddress(eth.address, 8)}
                 </>
               )) || "Verify identity"}
             </ConnectButton>
