@@ -30,13 +30,20 @@ export const useETH = () => {
   const [chain, setChain] = useState<number>();
 
   useEffect(() => {
-    tryConnection([coinbaseWallet, walletConnect, metaMask]);
-  }, []);
+    if (chain !== undefined) return;
+    tryConnection(coinbaseWallet, walletConnect, metaMask);
+  }, [coinbaseProvider, walletConnectProvider, metamaskProvider]);
 
-  async function tryConnection(connectors: ETHConnector[]) {
+  async function tryConnection(...connectors: ETHConnector[]) {
     for (const connector of connectors) {
       try {
         await connector.connectEagerly();
+        const provider = getProvider()?.provider;
+
+        if (provider && provider.request) {
+          const chainId = await provider.request({ method: "eth_chainId" });
+          setChain(parseInt(chainId, 16));
+        }
       } catch {}
     }
   }

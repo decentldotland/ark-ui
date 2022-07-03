@@ -10,9 +10,11 @@ import { addHarmony, ETHConnector, useETH } from "../utils/eth";
 import { formatAddress } from "../utils/format";
 import { useEffect, useState } from "react";
 import { interactWrite } from "smartweave";
-import { ACTIVE_NETWORK_STORE, ARWEAVE_CONTRACT } from "../utils/constants";
+import { ACTIVE_NETWORK_STORE, ARWEAVE_CONTRACT, NETWORKS } from "../utils/constants";
 import { AnimatePresence, motion } from "framer-motion";
 import { opacityAnimation } from "../utils/animations";
+import { run } from "ar-gql";
+import linkQuery from "../utils/link_query";
 import Head from "next/head";
 import Image from "next/image";
 import styled from "styled-components";
@@ -48,7 +50,6 @@ const Home: NextPage = () => {
 
   // linking functionality
   const [linkStatus, setLinkStatus] = useState<string>();
-  const [linkingOverlay, setLinkingOverlay] = useState<"in-progress" | "linked">();
 
   async function link() {
     setStatus(undefined);
@@ -72,6 +73,7 @@ const Home: NextPage = () => {
         function: "linkIdentity",
         address: eth.address,
         verificationReq: interaction.hash,
+        network: NETWORKS[activeNetwork].networkKey
       }, [
         {
           name: "Protocol-Name",
@@ -88,6 +90,7 @@ const Home: NextPage = () => {
         type: "success",
         message: "Linked identity"
       });
+      setLinkingOverlay("in-progress");
     } catch (e) {
       console.log("Failed to link", e);
 
@@ -135,6 +138,24 @@ const Home: NextPage = () => {
       }
     })();
   }, [activeNetwork]);
+
+  // load if already linked or in progress
+  const [linkingOverlay, setLinkingOverlay] = useState<"in-progress" | "linked">();
+
+  useEffect(() => {
+    (async () => {
+      if (!address) return;
+      const inProgressQuery = await run(linkQuery, { owner: address, arkContract: ARWEAVE_CONTRACT });
+
+      // filter mining transactions
+      // these suggest that a linking is in progress
+      const mining = inProgressQuery.data.transactions.edges.filter(({ node }) => !node.block);
+
+      if (mining.length > 0) {
+        setLinkingOverlay("in-progress");
+      }
+    })();
+  }, [address]);
 
   return (
     <>
@@ -241,7 +262,7 @@ const Home: NextPage = () => {
             {linkStatus || "Submit"}
           </Button>
           <AnimatePresence>
-            {linkingOverlay && (
+            {!!linkingOverlay && (
               <LinkingInProgress
                 initial="transparent"
                 animate="visible"
@@ -249,7 +270,11 @@ const Home: NextPage = () => {
                 variants={opacityAnimation}
                 transition={{ duration: 0.23, ease: "easeInOut" }}
               >
-                test
+                {(linkingOverlay === "linked" && (
+                  <p>
+                    🥳 Congratulations! You have linked your identity.
+                  </p>
+                )) || <p>Linking in progress 🤔. Check back later...</p>}
               </LinkingInProgress>
             )}
           </AnimatePresence>
@@ -524,6 +549,15 @@ const LinkingInProgress = styled(motion.div)`
   justify-content: center;
   background-color: rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(3px);
+
+  p {
+    margin: 0;
+    font-size: 1rem;
+    color: ${props => props.theme.secondaryText};
+    font-weight: 500;
+    text-align: center;
+    max-width: 80%;
+  }
 `;
 
 export default Home;
