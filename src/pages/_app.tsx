@@ -1,5 +1,5 @@
 import { Web3ReactProvider } from "@web3-react/core"
-import { createContext, Dispatch, PropsWithChildren, useContext, useReducer } from "react";
+import { createContext, Dispatch, PropsWithChildren, useReducer } from "react";
 import { Connector } from "@web3-react/types";
 import styled, { ThemeProvider } from "styled-components";
 import type { AppProps } from "next/app";
@@ -15,25 +15,19 @@ function App({ Component, pageProps }: AppProps) {
       tertiaryText: "#a3a3a3"
     }}>
       <Gradient />
-      <ConnectorProvider>
-        <WalletWrapper>
-          <Component {...pageProps} />
-        </WalletWrapper>
-      </ConnectorProvider>
+      <ConnectorContext.Consumer>
+        {({ state: activeConnector }) => (
+          <Web3ReactProvider connectors={Object.values(connectors)} connectorOverride={activeConnector}>
+            <ConnectorProvider>
+              <Component {...pageProps} />
+            </ConnectorProvider>
+          </Web3ReactProvider>
+        )}
+      </ConnectorContext.Consumer>
       <Footer />
     </ThemeProvider>
   );
 }
-
-const WalletWrapper = ({ children }: PropsWithChildren<{}>) => {
-  const { state } = useContext(ConnectorContext);
-
-  return (
-    <Web3ReactProvider connectors={Object.values(connectors)} connectorOverride={state}>
-      {children}
-    </Web3ReactProvider>
-  );
-};
 
 const Gradient = styled.div`
   position: fixed;
@@ -49,6 +43,7 @@ const Gradient = styled.div`
 `;
 
 export const ConnectorContext = createContext<ConnectorContextType>({} as ConnectorContextType);
+
 const ConnectorProvider = ({ children }: PropsWithChildren<{}>) => {
   const [state, dispatch] = useReducer((state = connectors.walletconnect[0], action: ConnectorReducerAction) => {
     if (action.type === "SET_CONNECTOR") {
