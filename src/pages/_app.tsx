@@ -16,7 +16,7 @@ function App({ Component, pageProps }: AppProps) {
     }}>
       <Gradient />
       <ConnectorContext.Consumer>
-        {({ state: activeConnector }) => (
+        {({ activeConnector }) => (
           <Web3ReactProvider connectors={Object.values(connectors)} connectorOverride={activeConnector}>
             <ConnectorProvider>
               <Component {...pageProps} />
@@ -45,29 +45,21 @@ const Gradient = styled.div`
 export const ConnectorContext = createContext<ConnectorContextType>({} as ConnectorContextType);
 
 const ConnectorProvider = ({ children }: PropsWithChildren<{}>) => {
-  const [state, dispatch] = useReducer((state = connectors.walletconnect[0], action: ConnectorReducerAction) => {
-    if (action.type === "SET_CONNECTOR") {
-      return action.payload;
-    }
-
-    return state;
-  }, connectors.walletconnect[0]);
+  const [activeConnector, setActiveConnector] = useReducer(
+    (state = connectors.walletconnect[0], connector: Connector) => connector || state, 
+    connectors.walletconnect[0]
+  );
 
   return (
-    <ConnectorContext.Provider value={{ state, dispatch }}>
+    <ConnectorContext.Provider value={{ activeConnector, setActiveConnector }}>
       {children}
     </ConnectorContext.Provider>
   );
 };
 
-type ConnectorReducerAction = {
-  type: "SET_CONNECTOR";
-  payload: Connector;
-}
-
 type ConnectorContextType = {
-  state: Connector;
-  dispatch: Dispatch<ConnectorReducerAction>
+  activeConnector: Connector;
+  setActiveConnector: (connector: Connector) => void;
 };
 
 export default App;
