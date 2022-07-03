@@ -1,23 +1,35 @@
 export const RCP = "https://rpc.goerli.mudit.blog/";
-export const NETWORKS: Record<number, { name: string; urls: string[], theme: string }> = {
+export const NETWORKS: Record<number, {
+  name: string;
+  urls: string[];
+  theme: string;
+  networkKey: string; // Ark Protocol identifier for network
+}> = {
   1: {
     name: "Mainnet",
+    networkKey: "ETH-MAINNET",
     urls: ["https://cloudflare-eth.com/"],
     theme: "73, 71, 178"
   },
   5: {
     name: "Goerli Testnet",
+    networkKey: "ETH-GOERLI",
     urls: ["https://rpc.goerli.mudit.blog/"],
     theme: "48, 153, 242"
   },
   1666700000: {
     name: "Aurora Testnet",
+    networkKey: "AURORA-TESTNET",
     urls: ["https://testnet.aurora.dev/"],
     theme: "120, 214, 75"
   }
 };
-export const ARWEAVE_CONTRACT = "qP614umsvOo9Szvl-xqvnXH0xLOg2eKOsLYnKx2l5SA";
-export const EVM_ORACLE_ADDRESS = "0xdE44d3fB118E0f007f2C0D8fFFE98b994383949A"; // Goerli Testnet
+export const ARWEAVE_CONTRACT = "i9Q9Y14HnJUmnSOVdxlPQkHHsT0W6kTv9PXCblZ_kAA";
+export const EVM_ORACLES: Record<number, string> = {
+  1: "0xdE44d3fB118E0f007f2C0D8fFFE98b994383949A",
+  5: "0xdE44d3fB118E0f007f2C0D8fFFE98b994383949A",
+  1666700000: "0xfb0200C27185185D7DEe0403D5f102ADb59B7c34"
+};
 
 export const URLS: { [chainId: number]: string[] } = Object.keys(NETWORKS).reduce<{ [chainId: number]: string[] }>(
   (accumulator, chainId) => {
