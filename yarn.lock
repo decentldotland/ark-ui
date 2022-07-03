@@ -264,7 +264,7 @@
     "@ethersproject/logger" "^5.6.0"
     "@ethersproject/properties" "^5.6.0"
 
-"@ethersproject/address@5.6.1", "@ethersproject/address@^5", "@ethersproject/address@^5.6.1":
+"@ethersproject/address@5.6.1", "@ethersproject/address@^5", "@ethersproject/address@^5.4.0", "@ethersproject/address@^5.6.1":
   version "5.6.1"
   resolved "https://registry.yarnpkg.com/@ethersproject/address/-/address-5.6.1.tgz#ab57818d9aefee919c5721d28cd31fd95eff413d"
   integrity sha512-uOgF0kS5MJv9ZvCz7x6T2EXJSzotiybApn4XlOgoTX0xdtyVIJ7pF+6cGPxiEq/dpBiTfMiw7Yc81JcwhSYA0Q==
@@ -1031,6 +1031,15 @@
     "@metamask/detect-provider" "^1.2.0"
     "@web3-react/types" "^8.0.19-beta.0"
 
+"@web3-react/store@^8.0.0-beta.0":
+  version "8.0.0-beta.0"
+  resolved "https://registry.yarnpkg.com/@web3-react/store/-/store-8.0.0-beta.0.tgz#b2c2d4cf77054437f6a2e288c4d45169a2ca4527"
+  integrity sha512-MIf5k1pG4EVDzl4GAJbohiA9IUeBjH266KtxvyjANWheRL0ylC6Go6scgG+1Japi/NUKBW1wtPO+biYTO4ws/w==
+  dependencies:
+    "@ethersproject/address" "^5.4.0"
+    "@web3-react/types" "^8.0.0-beta.0"
+    zustand "^4.0.0-beta.0"
+
 "@web3-react/store@^8.0.24-beta.0":
   version "8.0.24-beta.0"
   resolved "https://registry.yarnpkg.com/@web3-react/store/-/store-8.0.24-beta.0.tgz#fb7e25d8478fce8ae95e6f50d7310f97876dc591"
@@ -1046,6 +1055,13 @@
   integrity sha512-tM63N3IiL5E61HBvx62kDmQlQ/zCfnlYAkJCQnLWFpzQ2Kafcfpi0qAynvFye8DqSgy4E3d6kQah/NIs6BL+qw==
   dependencies:
     zustand "^4.0.0-rc.0"
+
+"@web3-react/types@^8.0.0-beta.0":
+  version "8.0.0-beta.0"
+  resolved "https://registry.yarnpkg.com/@web3-react/types/-/types-8.0.0-beta.0.tgz#40f686702a24d04db75a27759d3ff378ec982220"
+  integrity sha512-6yVwgf+zOt2/o6l0DeZXJcKV/85rcafS3MSLk8c2l98Jw8THc+ZyOeLWb0TUBzj7rc5v+PoKz4Fs2wsf8LOJew==
+  dependencies:
+    zustand "^4.0.0-beta.0"
 
 "@web3-react/walletconnect@8.0.34-beta.0":
   version "8.0.34-beta.0"
@@ -3443,7 +3459,7 @@ yargs@^17.5.1:
     y18n "^5.0.5"
     yargs-parser "^21.0.0"
 
-zustand@^4.0.0-rc.0:
+zustand@^4.0.0-beta.0, zustand@^4.0.0-rc.0:
   version "4.0.0-rc.1"
   resolved "https://registry.yarnpkg.com/zustand/-/zustand-4.0.0-rc.1.tgz#ec30a3afc03728adec7e1bd7bcc3592176372201"
   integrity sha512-qgcs7zLqBdHu0PuT3GW4WCIY5SgXdsv30GQMu9Qpp1BA2aS+sNS8l4x0hWuyEhjXkN+701aGWawhKDv6oWJAcw==

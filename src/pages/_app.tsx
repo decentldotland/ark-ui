@@ -1,6 +1,10 @@
-import type { AppProps } from "next/app";
+import { Web3ReactProvider } from "@web3-react/core"
+import { createContext, Dispatch, PropsWithChildren, useContext, useReducer } from "react";
+import { Connector } from "@web3-react/types";
 import styled, { ThemeProvider } from "styled-components";
+import type { AppProps } from "next/app";
 import Footer from "../components/Footer"
+import connectors from "../utils/connectors";
 import "../styles/globals.css";
 
 function App({ Component, pageProps }: AppProps) {
@@ -11,11 +15,25 @@ function App({ Component, pageProps }: AppProps) {
       tertiaryText: "#a3a3a3"
     }}>
       <Gradient />
-      <Component {...pageProps} />
+      <ConnectorProvider>
+        <WalletWrapper>
+          <Component {...pageProps} />
+        </WalletWrapper>
+      </ConnectorProvider>
       <Footer />
     </ThemeProvider>
   );
 }
+
+const WalletWrapper = ({ children }: PropsWithChildren<{}>) => {
+  const { state } = useContext(ConnectorContext);
+
+  return (
+    <Web3ReactProvider connectors={Object.values(connectors)} connectorOverride={state}>
+      {children}
+    </Web3ReactProvider>
+  );
+};
 
 const Gradient = styled.div`
   position: fixed;
@@ -29,5 +47,32 @@ const Gradient = styled.div`
   height: 220vh;
   transform: translate(-60vw, -110vh);
 `;
+
+export const ConnectorContext = createContext<ConnectorContextType>({} as ConnectorContextType);
+const ConnectorProvider = ({ children }: PropsWithChildren<{}>) => {
+  const [state, dispatch] = useReducer((state = connectors.walletconnect[0], action: ConnectorReducerAction) => {
+    if (action.type === "SET_CONNECTOR") {
+      return action.payload;
+    }
+
+    return state;
+  }, connectors.walletconnect[0]);
+
+  return (
+    <ConnectorContext.Provider value={{ state, dispatch }}>
+      {children}
+    </ConnectorContext.Provider>
+  );
+};
+
+type ConnectorReducerAction = {
+  type: "SET_CONNECTOR";
+  payload: Connector;
+}
+
+type ConnectorContextType = {
+  state: Connector;
+  dispatch: Dispatch<ConnectorReducerAction>
+};
 
 export default App;
