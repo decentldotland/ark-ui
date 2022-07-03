@@ -54,6 +54,13 @@ const Home: NextPage = () => {
   async function link() {
     setStatus(undefined);
 
+    if (!!linkingOverlay) {
+      return setStatus({
+        type: "error",
+        message: "Already linked one of the addresses on this network"
+      });
+    }
+
     if (!address || !eth.address || !eth.contract) {
       return setStatus({
         type: "error",
