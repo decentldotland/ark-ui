@@ -5,7 +5,7 @@
  *
  * @returns Formatted address
  */
- export function formatAddress(address: string, length = 26) {
+ export function formatAddress(address: string = "", length = 26) {
   if (!address) return "";
 
   return (

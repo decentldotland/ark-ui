@@ -6,14 +6,18 @@ import { Modal, useModal } from "../components/Modal";
 import { coinbaseWallet } from "../utils/connectors/coinbase";
 import { walletConnect } from "../utils/connectors/walletconnect";
 import { metaMask } from "../utils/connectors/metamask";
-import { addHarmony, ETHConnector, useETH } from "../utils/eth";
+import { addHarmony } from "../utils/eth";
+import { useWeb3React } from "@web3-react/core"
 import { formatAddress } from "../utils/format";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { interactWrite } from "smartweave";
-import { ACTIVE_NETWORK_STORE, ARWEAVE_CONTRACT, NETWORKS } from "../utils/constants";
+import { ACTIVE_NETWORK_STORE, ARWEAVE_CONTRACT, EVM_ORACLES, NETWORKS } from "../utils/constants";
 import { AnimatePresence, motion } from "framer-motion";
 import { opacityAnimation } from "../utils/animations";
 import { run } from "ar-gql";
+import { getName } from "../utils/connectors";
+import { ConnectorContext } from "./_app";
+import { ethers } from "ethers";
 import linkQuery from "../utils/link_query";
 import Head from "next/head";
 import Image from "next/image";
@@ -25,18 +29,33 @@ import Faq from "../components/Faq";
 import ANS from "../components/ANS";
 import Loading from "../components/Loading";
 import Network from "../components/Network";
+import ArkNetwork from "../assets/ArkNetwork.json";
 
 const Home: NextPage = () => {
+  // arweave
   const [address, connect, disconnect] = useArconnect();
+
+  // ethereum
+  const web3React = useWeb3React();
+  const connector = web3React.hooks.usePriorityConnector();
+  const ens = web3React.hooks.usePriorityENSName();
+  const account = web3React.hooks.usePriorityAccount();
+  const chainId = web3React.hooks.usePriorityChainId();
+  const provider = web3React.hooks.usePriorityProvider();
+
+  const { setActiveConnector, activeConnector } = useContext(ConnectorContext);
+
+  // other states
+  const [status, setStatus] = useState<{ type: StatusType, message: string }>();
   const ehtModal = useModal();
 
-  const eth = useETH();
-
-  const [status, setStatus] = useState<{ type: StatusType, message: string }>();
-  const [activeConnector, setActiveConnector] = useState<ETHConnector>();
-
-  // connect to wallet
-  async function connectEth(connector: ETHConnector) {
+  // connect to wallet on connector change
+  useEffect(() => {
+    if (!activeConnector) return;
+    console.log(getName(activeConnector));
+  }, [activeConnector]);
+  /*
+  async function connectEth(connector) {
     try {
       await eth.connect(connector, activeNetwork);
       setActiveConnector(connector);
@@ -46,7 +65,7 @@ const Home: NextPage = () => {
       console.log("Failed to connect", e);
       setStatus({ type: "error", message: "Failed to connect" });
     }
-  }
+  }*/
 
   // linking functionality
   const [linkStatus, setLinkStatus] = useState<string>();
@@ -61,24 +80,41 @@ const Home: NextPage = () => {
       });
     }
 
-    if (!address || !eth.address || !eth.contract) {
+    if (!address) {
       return setStatus({
         type: "error",
-        message: "Arweave or Ethereum not connected"
+        message: "Connect your Arweave wallet"
       });
     };
 
-    try {
-      setLinkStatus("Interacting with ETH contract...");
+    if (!account || !chainId || !provider) {
+      return setStatus({
+        type: "error",
+        message: "Connect your EVM compatible wallet"
+      });
+    } 
 
-      const interaction = await eth.contract.linkIdentity(address);
+    try {
+      setLinkStatus("Loading EVM contract...");
+      
+      // load Ark Protocol ETH contract
+      const contract = new ethers.Contract(
+        EVM_ORACLES[chainId],
+        // @ts-ignore
+        ArkNetwork.abi,
+        provider.getSigner().connectUnchecked()
+      );
+
+      setLinkStatus("Interacting with EVM contract...");
+
+      const interaction = await contract.linkIdentity(address);
       await interaction.wait();
 
       setLinkStatus("Writting to Arweave...");
 
       await interactWrite(arweave, "use_wallet", ARWEAVE_CONTRACT, {
         function: "linkIdentity",
-        address: eth.address,
+        address: account,
         verificationReq: interaction.hash,
         network: NETWORKS[activeNetwork].networkKey
       }, [
@@ -115,7 +151,7 @@ const Home: NextPage = () => {
   const [previousNetwork, setPreviousNetwork] = useState<number>(5);
   const [networkLoaded, setNetworkLoaded] = useState<boolean>(false);
 
-  useEffect(() => {
+  /*useEffect(() => {
     (async () => {
       const stored = localStorage.getItem(ACTIVE_NETWORK_STORE);
 
@@ -128,7 +164,7 @@ const Home: NextPage = () => {
         localStorage.setItem(ACTIVE_NETWORK_STORE, activeNetwork.toString());
 
         // reconnect with the new network
-        if (eth.address && activeConnector) {
+        if (account && activeConnector) {
           try {
             await eth.connect(activeConnector, activeNetwork);
           } catch (e: any) {
@@ -144,7 +180,7 @@ const Home: NextPage = () => {
         }
       }
     })();
-  }, [activeNetwork]);
+  }, [activeNetwork]);*/
 
   // load if already linked or in progress
   const [linkingOverlay, setLinkingOverlay] = useState<"in-progress" | "linked">();
@@ -158,7 +194,7 @@ const Home: NextPage = () => {
         const res = await fetch("https://thawing-lowlands-08726.herokuapp.com/ark/oracle/state");
         const { res: cachedState } = await res.clone().json();
 
-        if (cachedState.find((identity: Record<string, any>) => (identity.arweave_address === address || identity.evm_address === eth.address) && identity.ver_req_network === NETWORKS[activeNetwork].networkKey)) {
+        if (cachedState.find((identity: Record<string, any>) => (identity.arweave_address === address || identity.evm_address === account) && identity.ver_req_network === NETWORKS[activeNetwork].networkKey)) {
           return setLinkingOverlay("linked");
         }
       } catch {}
@@ -264,23 +300,23 @@ const Home: NextPage = () => {
                 </ChainTicker>
               </ChainName>
             </WalletChainLogo>
-            <ConnectButton secondary style={{ textTransform: eth.address ? "none" : undefined }} onClick={() => {
-              if (!eth.address) {
+            <ConnectButton secondary style={{ textTransform: web3React.isActive ? "none" : undefined }} onClick={() => {
+              if (!web3React.isActive) {
                 ehtModal.setState(true)
-              } else {
-                eth.disconnect();
+              } else if (connector.deactivate) {
+                connector.deactivate();
               }
             }}>
-              {(eth.address && (
+              {(web3React.isActive && (
                 <>
-                  <Image src={`/${eth.provider}.png`} width={25} height={25} draggable={false} />
-                  {eth.ens || formatAddress(eth.address, 8)}
+                  <Image src={`/${getName(web3React.connector)}.png`} width={25} height={25} draggable={false} />
+                  {ens || formatAddress(account, 8)}
                 </>
               )) || "Verify identity"}
             </ConnectButton>
           </WalletContainer>
           <Spacer y={2.5} />
-          <Button secondary fullWidth disabled={!(address && eth.address)} onClick={() => link()}>
+          <Button secondary fullWidth disabled={!(address && account)} onClick={() => link()}>
             {linkStatus && <Loading />}
             {linkStatus || "Submit"}
           </Button>
@@ -334,17 +370,17 @@ const Home: NextPage = () => {
         </FAQCard>
       </Page>
       <Modal title="Choose a wallet" {...ehtModal.bindings}>
-        <CoinbaseButton onClick={() => connectEth(coinbaseWallet)} fullWidth>
+        <CoinbaseButton onClick={() => setActiveConnector(coinbaseWallet)} fullWidth>
           <Image src="/coinbase.png" width={25} height={25} />
           Coinbase Wallet
         </CoinbaseButton>
         <Spacer y={1} />
-        <WalletConnectButton onClick={() => connectEth(walletConnect)} fullWidth>
+        <WalletConnectButton onClick={() => setActiveConnector(walletConnect)} fullWidth>
           <Image src="/walletconnect.png" width={25} height={25} />
           Wallet Connect
         </WalletConnectButton>
         <Spacer y={1} />
-        <MetamaskButton onClick={() => connectEth(metaMask)} fullWidth>
+        <MetamaskButton onClick={() => setActiveConnector(metaMask)} fullWidth>
           <Image src="/metamask.png" width={25} height={25} />
           Metamask
         </MetamaskButton>
