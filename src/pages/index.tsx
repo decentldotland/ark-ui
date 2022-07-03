@@ -145,17 +145,33 @@ const Home: NextPage = () => {
   useEffect(() => {
     (async () => {
       if (!address) return;
-      const inProgressQuery = await run(linkQuery, { owner: address, arkContract: ARWEAVE_CONTRACT });
 
-      // filter mining transactions
-      // these suggest that a linking is in progress
-      const mining = inProgressQuery.data.transactions.edges.filter(({ node }) => !node.block);
+      // check if linked
+      try {
+        const res = await fetch("https://thawing-lowlands-08726.herokuapp.com/ark/oracle/state");
+        const { res: cachedState } = await res.clone().json();
 
-      if (mining.length > 0) {
-        setLinkingOverlay("in-progress");
-      }
+        if (cachedState.find((identity: Record<string, any>) => (identity.arweave_address === address || identity.evm_address === eth.address) && identity.ver_req_network === NETWORKS[activeNetwork].networkKey)) {
+          return setLinkingOverlay("linked");
+        }
+      } catch {}
+
+      // check if linking is in progress
+      try {
+        const inProgressQuery = await run(linkQuery, { owner: address, arkContract: ARWEAVE_CONTRACT });
+
+        // filter mining transactions
+        // these suggest that a linking is in progress
+        const mining = inProgressQuery.data.transactions.edges.filter(({ node }) => !node.block);
+
+        if (mining.length > 0) {
+          setLinkingOverlay("in-progress");
+        } else {
+          setLinkingOverlay(undefined);
+        }
+      } catch {}
     })();
-  }, [address]);
+  }, [address, activeNetwork]);
 
   return (
     <>
