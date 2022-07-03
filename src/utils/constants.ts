@@ -10,8 +10,8 @@ export const NETWORKS: Record<number, { name: string; urls: string[], theme: str
     urls: ["https://rpc.goerli.mudit.blog/"],
     theme: "48, 153, 242"
   },
-  1313161555: {
-    name: "Aurora-Testnet",
+  1666700000: {
+    name: "Aurora Testnet",
     urls: ["https://testnet.aurora.dev/"],
     theme: "120, 214, 75"
   }
@@ -31,3 +31,5 @@ export const URLS: { [chainId: number]: string[] } = Object.keys(NETWORKS).reduc
   },
   {}
 );
+
+export const ACTIVE_NETWORK_STORE = "ark_active_network";

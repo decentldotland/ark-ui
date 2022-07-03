@@ -6,11 +6,11 @@ import { Modal, useModal } from "../components/Modal";
 import { coinbaseWallet } from "../utils/connectors/coinbase";
 import { walletConnect } from "../utils/connectors/walletconnect";
 import { metaMask } from "../utils/connectors/metamask";
-import { ETHConnector, useETH } from "../utils/eth";
+import { addHarmony, ETHConnector, useETH } from "../utils/eth";
 import { formatAddress } from "../utils/format";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { interactWrite } from "smartweave";
-import { ARWEAVE_CONTRACT } from "../utils/constants";
+import { ACTIVE_NETWORK_STORE, ARWEAVE_CONTRACT } from "../utils/constants";
 import { AnimatePresence, motion } from "framer-motion";
 import { opacityAnimation } from "../utils/animations";
 import Head from "next/head";
@@ -31,10 +31,13 @@ const Home: NextPage = () => {
   const eth = useETH();
 
   const [status, setStatus] = useState<{ type: StatusType, message: string }>();
+  const [activeConnector, setActiveConnector] = useState<ETHConnector>();
 
+  // connect to wallet
   async function connectEth(connector: ETHConnector) {
     try {
-      await eth.connect(connector);
+      await eth.connect(connector, activeNetwork);
+      setActiveConnector(connector);
       ehtModal.setState(false);
       setStatus(undefined);
     } catch (e) {
@@ -43,6 +46,7 @@ const Home: NextPage = () => {
     }
   }
 
+  // linking functionality
   const [linkStatus, setLinkStatus] = useState<string>();
   const [linkingOverlay, setLinkingOverlay] = useState<"in-progress" | "linked">();
 
@@ -95,6 +99,42 @@ const Home: NextPage = () => {
 
     setLinkStatus(undefined);
   }
+
+  // active network
+  const [activeNetwork, setActiveNetwork] = useState<number>(5);
+  const [previousNetwork, setPreviousNetwork] = useState<number>(5);
+  const [networkLoaded, setNetworkLoaded] = useState<boolean>(false);
+
+  useEffect(() => {
+    (async () => {
+      const stored = localStorage.getItem(ACTIVE_NETWORK_STORE);
+
+      // load saved network
+      if (stored && !networkLoaded) {
+        setActiveNetwork(Number(stored));
+        setNetworkLoaded(true);
+      } else {
+        // save current network
+        localStorage.setItem(ACTIVE_NETWORK_STORE, activeNetwork.toString());
+
+        // reconnect with the new network
+        if (eth.address && activeConnector) {
+          try {
+            await eth.connect(activeConnector, activeNetwork);
+          } catch (e: any) {
+            if (e.code === 4902) {
+              try {
+                await addHarmony(activeConnector);
+                await eth.connect(activeConnector, activeNetwork);
+              } catch {
+                setActiveNetwork(previousNetwork);
+              }
+            } else setActiveNetwork(previousNetwork);
+          }
+        }
+      }
+    })();
+  }, [activeNetwork]);
 
   return (
     <>
@@ -261,7 +301,10 @@ const Home: NextPage = () => {
           Metamask
         </MetamaskButton>
       </Modal>
-      <Network defaultValue={5} onChange={() => {}} />
+      <Network value={activeNetwork} onChange={(e) => setActiveNetwork((val) => {
+        setPreviousNetwork(val);
+        return Number(e.target.value);
+      })} />
     </>
   );
 }

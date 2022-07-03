@@ -1,9 +1,13 @@
-import { ChangeEventHandler, PropsWithChildren, useState } from "react";
+import { ChangeEventHandler, useEffect, useState } from "react";
 import { NETWORKS } from "../utils/constants";
 import styled from "styled-components";
 
-const Network = ({ onChange, defaultValue }: NetworkProps) => {
-  const [theme, setTheme] = useState(NETWORKS[defaultValue].theme);
+const Network = ({ onChange, value }: NetworkProps) => {
+  const [theme, setTheme] = useState(NETWORKS[value]?.theme);
+
+  useEffect(() => {
+    setTheme(NETWORKS[value]?.theme);
+  }, [value]);
 
   const handleChange: ChangeEventHandler<HTMLSelectElement> = (e) => {
     setTheme(NETWORKS[Number(e.target.value)].theme);
@@ -13,7 +17,7 @@ const Network = ({ onChange, defaultValue }: NetworkProps) => {
   return (
     <NetworkWrapper color={theme} >
       <NetworkColor color={theme} />
-      <NetworkSelect onChange={handleChange} defaultValue={defaultValue}>
+      <NetworkSelect onChange={handleChange} value={value}>
         {Object.keys(NETWORKS).map((key, i) => (
           <option key={i} value={key}>{NETWORKS[Number(key)].name}</option>
         ))}
@@ -23,7 +27,7 @@ const Network = ({ onChange, defaultValue }: NetworkProps) => {
 };
 
 interface NetworkProps {
-  defaultValue: number;
+  value: number;
   onChange: ChangeEventHandler<HTMLSelectElement>;
 }
 

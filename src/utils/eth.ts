@@ -82,15 +82,17 @@ export const useETH = () => {
 
       setContract(ArkContract);
 
-      // lookup ENS name
-      const ensName = await provider.lookupAddress(state.address);
+      try {
+        // lookup ENS name
+        const ensName = await provider.lookupAddress(state.address);
 
-      if (ensName && state) {
-        setState((val) => ({
-          ...val as State,
-          ens: ensName
-        }));
-      }
+        if (ensName && state) {
+          setState((val) => ({
+            ...val as State,
+            ens: ensName
+          }));
+        }
+      } catch {}
     })();
   }, [state]);
 
@@ -110,3 +112,20 @@ export const useETH = () => {
 }
 
 export type ETHConnector = MetaMask | CoinbaseWallet | WalletConnect;
+
+export async function addHarmony(connector: ETHConnector) {
+  if (!connector.provider) throw new Error("No provider");
+  const shardId = 0;
+  await connector.provider.request({
+    method: "wallet_addEthereumChain",
+    params: [
+      {
+        chainId: "0x" + Number(1666700000 + shardId).toString(16),
+        chainName: "Harmony Testnet Shard " + shardId,
+        nativeCurrency: { name: "ONE", symbol: "ONE", decimals: 18 },
+        rpcUrls: [`https://api.s${shardId}.b.hmny.io`],
+        blockExplorerUrls: ["https://explorer.pops.one/"],
+      }
+    ],
+  });
+}
