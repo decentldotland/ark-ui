@@ -158,7 +158,13 @@ const Home: NextPage = () => {
         const res = await fetch("https://thawing-lowlands-08726.herokuapp.com/ark/oracle/state");
         const { res: cachedState } = await res.clone().json();
 
-        if (cachedState.find((identity: Record<string, any>) => (identity.arweave_address === address || identity.evm_address === eth.address) && identity.ver_req_network === NETWORKS[activeNetwork].networkKey)) {
+        if (
+          cachedState.find((identity: Record<string, any>) =>
+            (identity.arweave_address === address || identity.evm_address === eth.address) && 
+            identity.ver_req_network === NETWORKS[activeNetwork].networkKey && 
+            identity.is_verified
+          )
+        ) {
           return setLinkingOverlay("linked");
         }
       } catch {}
