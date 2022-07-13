@@ -26,13 +26,20 @@ export const useETH = () => {
     ens?: string;
   };
 
+  // might be used later
+  type walletConnectionState = {
+    isConnected: boolean;
+    isDisconnected: boolean;
+  }
+  const [connectionState, setConnectionState] = useState<walletConnectionState>({isConnected: false, isDisconnected: true});
   const [state, setState] = useState<State>();
   const [chain, setChain] = useState<number>();
 
-  useEffect(() => {
-    if (chain !== undefined) return;
-    tryConnection(coinbaseWallet, walletConnect, metaMask);
-  }, [coinbaseProvider, walletConnectProvider, metamaskProvider]);
+  // might need extra testing
+  // useEffect(() => {
+  //   if (chain !== undefined) return;
+  //   tryConnection(coinbaseWallet, walletConnect, metaMask);
+  // }, [coinbaseProvider, walletConnectProvider, metamaskProvider]);
 
   async function tryConnection(...connectors: ETHConnector[]) {
     for (const connector of connectors) {
