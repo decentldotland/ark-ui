@@ -35,11 +35,11 @@ export const useETH = () => {
   const [state, setState] = useState<State>();
   const [chain, setChain] = useState<number>();
 
-  // might need extra testing
-  // useEffect(() => {
-  //   if (chain !== undefined) return;
-  //   tryConnection(coinbaseWallet, walletConnect, metaMask);
-  // }, [coinbaseProvider, walletConnectProvider, metamaskProvider]);
+  // Commenting this out will not show the linking in progress modal
+  useEffect(() => {
+    if (chain !== undefined) return;
+    tryConnection(coinbaseWallet, walletConnect, metaMask);
+  }, [coinbaseProvider, walletConnectProvider, metamaskProvider]);
 
   async function tryConnection(...connectors: ETHConnector[]) {
     for (const connector of connectors) {

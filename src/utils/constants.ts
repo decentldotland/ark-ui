@@ -17,7 +17,7 @@ export const NETWORKS: Record<number, {
     urls: ["https://rpc.goerli.mudit.blog/"],
     theme: "48, 153, 242"
   },
-  1666700000: {
+  1313161555: {
     name: "Aurora Testnet",
     networkKey: "AURORA-TESTNET",
     urls: ["https://testnet.aurora.dev/"],
@@ -28,7 +28,7 @@ export const ARWEAVE_CONTRACT = "i9Q9Y14HnJUmnSOVdxlPQkHHsT0W6kTv9PXCblZ_kAA";
 export const EVM_ORACLES: Record<number, string> = {
   1: "0xdE44d3fB118E0f007f2C0D8fFFE98b994383949A",
   5: "0xdE44d3fB118E0f007f2C0D8fFFE98b994383949A",
-  1666700000: "0xfb0200C27185185D7DEe0403D5f102ADb59B7c34"
+  1313161555: "0xfb0200C27185185D7DEe0403D5f102ADb59B7c34"
 };
 
 export const URLS: { [chainId: number]: string[] } = Object.keys(NETWORKS).reduce<{ [chainId: number]: string[] }>(
