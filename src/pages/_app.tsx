@@ -6,7 +6,7 @@ import "../styles/globals.css";
 function App({ Component, pageProps }: AppProps) {
   return (
     <ThemeProvider theme={{
-      primary: "94, 69, 250",
+      primary: "17, 157, 121",
       secondaryText: "#d3d3d3",
       tertiaryText: "#a3a3a3"
     }}>
