@@ -193,6 +193,9 @@ const Home: NextPage = () => {
         <link rel="icon" href="/icon.png" />
       </Head>
       <TopSection>
+        <ARKLogo>
+          <Image style={{borderRadius: '18px'}} src="/arkArt.jpg" width={300} height={300} draggable={false} />
+        </ARKLogo>
         <TopContent>
           <Title>
             <ProtocolName>
@@ -363,6 +366,14 @@ const Home: NextPage = () => {
   );
 }
 
+const ARKLogo = styled.div`
+  margin-right: 40px;
+  @media screen and (max-width: 768px) {
+    margin-bottom: 10px;
+    margin-right: 0px;
+  }
+`;
+
 const TopSection = styled.div`
   position: relative;
   display: flex;
@@ -371,14 +382,20 @@ const TopSection = styled.div`
   padding: 4.5rem 0;
   overflow: hidden;
   z-index: 0;
+  @media screen and (max-width: 768px) {
+    flex-direction: column;
+  }
 `;
 
 const TopContent = styled.div`
   display: flex;
   text-align: center;
-  align-items: center;
+  align-items: start;
   flex-direction: column;
   width: max-content;
+  @media screen and (max-width: 768px) {
+    align-items: center;
+  }
 `;
 
 const Title = styled.h1`
