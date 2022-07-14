@@ -42,6 +42,7 @@ const Home: NextPage = () => {
       setActiveConnector(connector);
       ehtModal.setState(false);
       setStatus(undefined);
+      localStorage.setItem('isConnected', 'true');
     } catch (e) {
       console.log("Failed to connect", e);
       setStatus({ type: "error", message: "Failed to connect" });
@@ -74,7 +75,7 @@ const Home: NextPage = () => {
       const interaction = await eth.contract.linkIdentity(address);
       await interaction.wait();
 
-      setLinkStatus("Writting to Arweave...");
+      setLinkStatus("Writing to Arweave...");
 
       await interactWrite(arweave, "use_wallet", ARWEAVE_CONTRACT, {
         function: "linkIdentity",
@@ -134,7 +135,7 @@ const Home: NextPage = () => {
           } catch (e: any) {
             if (e.code === 4902) {
               try {
-                await addHarmony(activeConnector);
+                // await addHarmony(activeConnector);
                 await eth.connect(activeConnector, activeNetwork);
               } catch {
                 setActiveNetwork(previousNetwork);
