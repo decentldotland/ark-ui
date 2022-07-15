@@ -269,12 +269,12 @@ const Home: NextPage = () => {
               {activeNetwork === 1 || activeNetwork === 5 ? (
                 <Image src="/eth.png" width={30} height={30} draggable={false} />
               ): activeNetwork === 1313161555 && (
-                <Image style={{marginTop: '3px'}} src="/aurora.svg" width={45} height={45} draggable={false} />
+                <Image style={{margin: '3px 0 0 0'}} src="/aurora.svg" width={45} height={45} draggable={false} />
               )}
               <ChainName>
                 {activeNetwork === 1 || activeNetwork === 5 ? "Ethereum" : activeNetwork === 1313161555 ? "Aurora" : "Unknown"}
                 <ChainTicker>
-                  {activeNetwork === 1 || activeNetwork === 5 ? "Eth" : activeNetwork === 1313161555 ? "AOA" : "???"}
+                  {activeNetwork === 1 || activeNetwork === 5 ? "Eth" : activeNetwork === 1313161555 ? "" : "???"}
                 </ChainTicker>
               </ChainName>
             </WalletChainLogo>
