@@ -34,6 +34,8 @@ const Home: NextPage = () => {
 
   const [status, setStatus] = useState<{ type: StatusType, message: string }>();
   const [activeConnector, setActiveConnector] = useState<ETHConnector>();
+  const [currentTab, setCurrentTab] = useState<number>(1);
+  const [input, setInput] = useState<string>("");
 
   // connect to wallet
   async function connectEth(connector: ETHConnector) {
@@ -312,6 +314,33 @@ const Home: NextPage = () => {
             )}
           </AnimatePresence>
         </IdentityCard>
+        <Spacer y={2} />
+        <IdentityCard>
+          <Tabs>
+            <TabWrapper>
+              <Tab active={currentTab === 1} onClick={() => setCurrentTab(1)}>
+                Create Group
+              </Tab>
+            </TabWrapper>
+            <TabWrapper>
+              <Tab active={currentTab === 2} onClick={() => setCurrentTab(2)}>
+                Join Group
+              </Tab>
+            </TabWrapper>
+          </Tabs>
+          <ContentWrapper>
+            <ContentTitle>
+              {currentTab === 1 && 'Create a new token-gated group'}
+              {currentTab === 2 && 'Join a token-gated group'}
+            </ContentTitle>
+            <FormWrapper>
+              <TGGroupInput disabled placeholder='Group id' />
+              <Button secondary disabled>
+                {currentTab === 1 ? 'Create' : 'Join'}
+              </Button>
+            </FormWrapper>
+          </ContentWrapper>
+        </IdentityCard>
         <Spacer y={4} />
         <Permanent href="https://arweave.org" target="_blank" rel="noopener noreferer">
           <Image src="/permanent.svg" width={150} height={75} />
@@ -407,7 +436,7 @@ const Title = styled.h1`
   margin: 0;
   margin-bottom: .2em;
 
-  @media screen and (max-width: 720px) {
+  @media screen and (max-width: 768px) {
     font-size: 2rem;
   }
 `;
@@ -419,7 +448,7 @@ const Subtitle = styled.h2`
   margin: 0;
   margin-bottom: 2em;
 
-  @media screen and (max-width: 720px) {
+  @media screen and (max-width: 768px) {
     font-size: 1rem;
   }
 `;
@@ -433,10 +462,89 @@ const IdentityCard = styled(Card)`
   width: 33vw;
   margin: 0 auto;
 
-  @media screen and (max-width: 720px) {
+  @media screen and (max-width: 768px) {
     width: calc(100% - 2rem);
   }
 `;
+
+const Tabs = styled.div`
+  display: flex;
+  justify-content: center;
+`;
+
+const TabWrapper = styled.div`
+  margin: 0px 4px;
+  cursor: pointer;
+  height: 80px;
+`;
+
+interface TabProps {
+  active: boolean;
+}
+
+const Tab = styled.div<TabProps>`
+  display: flex;
+  items-align: center;
+  justify-content: center;
+  user-select: none;
+  width: 125px;
+  font-size: 1.2rem;
+  padding: 16px;
+  border-radius: 3px;
+  color: rgb(${props => props.theme.primary + ", .45)"};
+  transition: all .23s ease-in-out;
+  ${props => props.active && `
+    color: rgb(${props.theme.primary + ", .95)"};
+    border-bottom: 8px solid rgb(${props.theme.primary + ", .95)"};
+  `}
+  &:hover{
+    color: rgb(${props => props.theme.primary + ", .75)"};
+    border-color: rgb(${props => props.theme.primary + ", .75)"};
+  }
+`;
+
+const ContentWrapper = styled.div`
+  margin-top: 2em;
+  margin-bottom: 2em;
+`;
+
+const ContentTitle = styled.div`
+  color: white;
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 2em;
+  text-align: center;
+`;
+
+const TGGroupInput = styled.input`
+  width: 100%;
+  border: none;
+  padding: 12px 11px;
+  border-radius: 8px;
+  font-size: 1.2rem;
+  margin-right: 1em;
+  color: white;
+  cursor: not-allowed;
+  background-color: rgb(${props => props.theme.primary + ", .08)"};
+  transition: all .18s ease-in-out;
+  &:focus {
+    box-shadow: 0 0 0 2px rgba(${props => props.theme.primary}, .5);
+  }
+  @media screen and (max-width: 1024px) {
+    margin-right: 0;
+    width: 90%;
+    margin-top: 1em;
+    margin-bottom: 2em;
+  }
+`;
+
+const FormWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  @media screen and (max-width: 1024px) {
+    flex-direction: column;
+  }
+`
 
 const WalletContainer = styled.div`
   display: flex;
