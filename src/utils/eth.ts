@@ -6,10 +6,10 @@ import { MetaMask } from "@web3-react/metamask";
 import { CoinbaseWallet } from "@web3-react/coinbase-wallet";
 import { WalletConnect } from "@web3-react/walletconnect";
 import { Contract, ethers } from "ethers"
-import { EVM_ORACLES } from "./constants"
+import { EVM_ORACLES, NETWORKS } from "./constants"
 import ArkNetwork from "../assets/ArkNetwork.json";
 
-export const useETH = () => {
+export const useETH = (setActiveConnector: (arg: ETHConnector) => void, activeNetwork: number) => {
   const coinbaseAcc = coinbaseHooks.useAccount();
   const metamaskAcc = metaMaskHooks.useAccount();
   const walletConnectAcc = walletConnectHooks.useAccount();
@@ -19,25 +19,17 @@ export const useETH = () => {
   const metamaskProvider = metaMaskHooks.useProvider();
 
   const [contract, setContract] = useState<Contract>();
-
   type State = {
     provider: "coinbase" | "walletconnect" | "metamask";
     address: string;
     ens?: string;
   };
 
-  // might be used later
-  type walletConnectionState = {
-    isConnected: boolean;
-    isDisconnected: boolean;
-  }
-  const [connectionState, setConnectionState] = useState<walletConnectionState>({isConnected: false, isDisconnected: true});
   const [state, setState] = useState<State>();
   const [chain, setChain] = useState<number>();
 
-  // Commenting this out will not show the linking in progress modal
   useEffect(() => {
-    if (chain !== undefined) return;
+    if (chain !== undefined || localStorage.getItem('isDisconnected') === 'true') return;
     tryConnection(coinbaseWallet, walletConnect, metaMask);
   }, [coinbaseProvider, walletConnectProvider, metamaskProvider]);
 
@@ -46,10 +38,30 @@ export const useETH = () => {
       try {
         await connector.connectEagerly();
         const provider = getProvider()?.provider;
-
         if (provider && provider.request) {
+          if (!activeNetwork) return;
           const chainId = await provider.request({ method: "eth_chainId" });
-          setChain(parseInt(chainId, 16));
+          const name = NETWORKS[activeNetwork]?.name;
+          const rpcUrls = NETWORKS[activeNetwork]?.urls;
+          try {
+            if (activeNetwork !== 1 && activeNetwork !== 5) {
+              await provider.request({
+                method: 'wallet_addEthereumChain',
+                params: [{
+                  chainName: name,
+                  chainId: `0x${activeNetwork.toString(16)}`,
+                  rpcUrls: rpcUrls,
+                }],
+              });
+            };  
+          } catch (e) {
+            console.log(e);
+          }
+          if (chainId) {
+            setChain(parseInt(chainId, 16));
+            await connect(connector, parseInt(chainId, 16));
+            setActiveConnector(connector);
+          }
         }
       } catch {}
     }
@@ -66,10 +78,12 @@ export const useETH = () => {
     localStorage.setItem('isConnected', 'true');
     await connector.activate(chainId);
     setChain(chainId);
+    localStorage.setItem('isDisconnected', 'false');
   }
 
   async function disconnect() {
     if (!state) return;
+    localStorage.setItem('isDisconnected', 'true');
 
     if (state.provider === "coinbase") tryDisconnect(coinbaseWallet);
     else if (state.provider === "walletconnect") tryDisconnect(walletConnect);
@@ -128,11 +142,28 @@ export const useETH = () => {
     ...state,
     connect,
     disconnect,
-    contract
+    contract,
+    getProvider
   };
 }
 
 export type ETHConnector = MetaMask | CoinbaseWallet | WalletConnect;
+
+export async function addChain(connector: ETHConnector, chainId: number, network: any) {
+  if (!connector.provider) throw new Error("No provider");
+  await connector.provider.request({
+    method: "wallet_addEthereumChain",
+    params: [
+      {
+        chainId: "0x" + chainId.toString(16),
+        chainName: network?.name,
+        // nativeCurrency: { name: "ONE", symbol: "ONE", decimals: 18 },
+        rpcUrls: network?.rpcUrls,
+      }
+    ],
+  });
+
+}
 
 export async function addHarmony(connector: ETHConnector) {
   if (!connector.provider) throw new Error("No provider");
