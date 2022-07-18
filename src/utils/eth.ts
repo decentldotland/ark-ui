@@ -64,12 +64,14 @@ export const useETH = (setActiveConnector: (arg: ETHConnector) => void, activeNe
   }
 
   useEffect(() => {
+    if (localStorage.getItem('isConnected') === 'false') return;
     if (coinbaseAcc) setState({ provider: "coinbase", address: coinbaseAcc });
     else if (walletConnectAcc) setState({ provider: "walletconnect", address: walletConnectAcc });
     else if (metamaskAcc) setState({ provider: "metamask", address: metamaskAcc });
   }, [coinbaseAcc, metamaskAcc, walletConnectAcc]);
 
   const connect = async (connector: ETHConnector, chainId = 5) => {
+    localStorage.setItem('isConnected', 'true');
     await connector.activate(chainId);
     setChain(chainId);
     localStorage.setItem('isDisconnected', 'false');
@@ -85,6 +87,7 @@ export const useETH = (setActiveConnector: (arg: ETHConnector) => void, activeNe
   }
 
   async function tryDisconnect(connector: ETHConnector) {
+    localStorage.setItem('isConnected', 'false');
     if (connector?.deactivate) {
       await connector.deactivate()
     } else {

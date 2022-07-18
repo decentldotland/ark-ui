@@ -45,6 +45,7 @@ const Home: NextPage = () => {
       setActiveConnector(connector);
       ehtModal.setState(false);
       setStatus(undefined);
+      localStorage.setItem('isConnected', 'true');
     } catch (e) {
       console.log("Failed to connect", e);
       setStatus({ type: "error", message: "Failed to connect" });
