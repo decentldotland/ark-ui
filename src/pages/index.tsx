@@ -123,21 +123,25 @@ const Home: NextPage = () => {
         setActiveNetwork(Number(stored));
         setNetworkLoaded(true);
       } else {
-        // save current network
-        localStorage.setItem(ACTIVE_NETWORK_STORE, activeNetwork.toString());
-        if (activeNetwork !== 1 && activeNetwork !== 5) {
-          const provider = eth.getProvider()?.provider;
-          if (!provider) return;
-          // @ts-ignore
-          await provider.request({
-            method: 'wallet_addEthereumChain',
-            params: [{
-              chainName: String(NETWORKS[Number(activeNetwork)]?.name),
-              chainId: `0x${activeNetwork.toString(16)}`,
-              rpcUrls: NETWORKS[Number(activeNetwork)].urls,
-            }],
-          });
-        };
+        // save current network and add it to the addressbook
+        try {
+          localStorage.setItem(ACTIVE_NETWORK_STORE, activeNetwork.toString());
+          if (activeNetwork !== 1 && activeNetwork !== 5) {
+            const provider = eth.getProvider()?.provider;
+            if (!provider) return;
+            // @ts-ignore
+            await provider.request({
+              method: 'wallet_addEthereumChain',
+              params: [{
+                chainName: String(NETWORKS[Number(activeNetwork)]?.name),
+                chainId: `0x${activeNetwork.toString(16)}`,
+                rpcUrls: NETWORKS[Number(activeNetwork)].urls,
+              }],
+            });
+          };
+        } catch {
+          setActiveNetwork(previousNetwork);
+        }
 
         // reconnect with the new network
         if (eth.address && activeConnector) {
