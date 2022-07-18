@@ -328,18 +328,16 @@ const Home: NextPage = () => {
               </Tab>
             </TabWrapper>
           </Tabs>
-          <ContentWrapper>
-            <ContentTitle>
-              {currentTab === 1 && 'Create a new token-gated group'}
-              {currentTab === 2 && 'Join a token-gated group'}
-            </ContentTitle>
-            <FormWrapper>
-              <TGGroupInput disabled placeholder='Group id' />
-              <Button secondary disabled>
-                {currentTab === 1 ? 'Create' : 'Join'}
-              </Button>
-            </FormWrapper>
-          </ContentWrapper>
+          <ContentTitle>
+            {currentTab === 1 && 'Create a new token-gated group'}
+            {currentTab === 2 && 'Join a token-gated group'}
+          </ContentTitle>
+          <FormWrapper>
+            <TGGroupInput disabled placeholder='Group id' />
+            <Button secondary disabled>
+              {currentTab === 1 ? 'Create' : 'Join'}
+            </Button>
+          </FormWrapper>
         </IdentityCard>
         <Spacer y={4} />
         <Permanent href="https://arweave.org" target="_blank" rel="noopener noreferer">
@@ -488,7 +486,7 @@ const Tab = styled.div<TabProps>`
   justify-content: center;
   user-select: none;
   width: 125px;
-  font-size: 1.2rem;
+  font-size: 0.9rem;
   padding: 16px;
   border-radius: 3px;
   color: rgb(${props => props.theme.primary + ", .45)"};
@@ -503,27 +501,23 @@ const Tab = styled.div<TabProps>`
   }
 `;
 
-const ContentWrapper = styled.div`
-  margin-top: 2em;
-  margin-bottom: 2em;
-`;
-
 const ContentTitle = styled.div`
   color: white;
-  font-size: 1.4rem;
+  font-size: 1rem;
   font-weight: 600;
-  margin-bottom: 2em;
+  margin-bottom: 1em;
   text-align: center;
 `;
 
 const TGGroupInput = styled.input`
   width: 100%;
   border: none;
-  padding: 12px 11px;
+  padding: 16px 11px;
   border-radius: 8px;
-  font-size: 1.2rem;
+  font-size: .9rem;
   margin-right: 1em;
   color: white;
+  font-family: monospace;
   cursor: not-allowed;
   background-color: rgb(${props => props.theme.primary + ", .08)"};
   transition: all .18s ease-in-out;
