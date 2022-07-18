@@ -6,7 +6,7 @@ import { Modal, useModal } from "../components/Modal";
 import { coinbaseWallet } from "../utils/connectors/coinbase";
 import { walletConnect } from "../utils/connectors/walletconnect";
 import { metaMask } from "../utils/connectors/metamask";
-import { addHarmony, ETHConnector, useETH } from "../utils/eth";
+import { addChain, ETHConnector, useETH } from "../utils/eth";
 import { formatAddress } from "../utils/format";
 import { useEffect, useState } from "react";
 import { interactWrite } from "smartweave";
@@ -30,12 +30,15 @@ const Home: NextPage = () => {
   const [address, connect, disconnect] = useArconnect();
   const ehtModal = useModal();
 
-  const eth = useETH();
+  const [activeNetwork, setActiveNetwork] = useState<number>(5);
+  const [previousNetwork, setPreviousNetwork] = useState<number>(5);
+  const [networkLoaded, setNetworkLoaded] = useState<boolean>(false);
 
   const [status, setStatus] = useState<{ type: StatusType, message: string }>();
   const [activeConnector, setActiveConnector] = useState<ETHConnector>();
+  const eth = useETH(setActiveConnector, activeNetwork);
+
   const [currentTab, setCurrentTab] = useState<number>(1);
-  const [input, setInput] = useState<string>("");
 
   // connect to wallet
   async function connectEth(connector: ETHConnector) {
@@ -113,11 +116,6 @@ const Home: NextPage = () => {
     setLinkStatus(undefined);
   }
 
-  // active network
-  const [activeNetwork, setActiveNetwork] = useState<number>(5);
-  const [previousNetwork, setPreviousNetwork] = useState<number>(5);
-  const [networkLoaded, setNetworkLoaded] = useState<boolean>(false);
-
   useEffect(() => {
     (async () => {
       const stored = localStorage.getItem(ACTIVE_NETWORK_STORE);
@@ -127,8 +125,27 @@ const Home: NextPage = () => {
         setActiveNetwork(Number(stored));
         setNetworkLoaded(true);
       } else {
-        // save current network
-        localStorage.setItem(ACTIVE_NETWORK_STORE, activeNetwork.toString());
+        // save current network and add it to the addressbook
+        try {
+          localStorage.setItem(ACTIVE_NETWORK_STORE, activeNetwork.toString());
+          if (activeNetwork !== 1 && activeNetwork !== 5) {
+            const provider = eth.getProvider()?.provider;
+            if (!provider) return;
+            // @ts-ignore
+            if (await provider.request({ method: "eth_chainId" }) === activeNetwork) return;
+            // @ts-ignore
+            await provider.request({
+              method: 'wallet_addEthereumChain',
+              params: [{
+                chainName: String(NETWORKS[Number(activeNetwork)]?.name),
+                chainId: `0x${activeNetwork.toString(16)}`,
+                rpcUrls: NETWORKS[Number(activeNetwork)].urls,
+              }],
+            });
+          };
+        } catch {
+          setActiveNetwork(previousNetwork);
+        }
 
         // reconnect with the new network
         if (eth.address && activeConnector) {
@@ -137,7 +154,7 @@ const Home: NextPage = () => {
           } catch (e: any) {
             if (e.code === 4902) {
               try {
-                // await addHarmony(activeConnector);
+                await addChain(activeConnector, activeNetwork, NETWORKS[activeNetwork]);
                 await eth.connect(activeConnector, activeNetwork);
               } catch {
                 setActiveNetwork(previousNetwork);
@@ -268,11 +285,15 @@ const Home: NextPage = () => {
           <Spacer y={1} />
           <WalletContainer>
             <WalletChainLogo>
-              <Image src="/eth.png" width={30} height={30} draggable={false} />
+              {activeNetwork === 1 || activeNetwork === 5 ? (
+                <Image src="/eth.png" width={30} height={30} draggable={false} />
+              ): activeNetwork === 1313161555 && (
+                <Image style={{margin: '3px 0 0 0'}} src="/aurora.svg" width={45} height={45} draggable={false} />
+              )}
               <ChainName>
-                Ethereum
+                {activeNetwork === 1 || activeNetwork === 5 ? "Ethereum" : activeNetwork === 1313161555 ? "Aurora" : "Unknown"}
                 <ChainTicker>
-                  Eth
+                  {activeNetwork === 1 || activeNetwork === 5 ? "Eth" : activeNetwork === 1313161555 ? "" : "???"}
                 </ChainTicker>
               </ChainName>
             </WalletChainLogo>

@@ -24,7 +24,7 @@ export const NETWORKS: Record<number, {
     theme: "120, 214, 75"
   }
 };
-export const ARWEAVE_CONTRACT = "i9Q9Y14HnJUmnSOVdxlPQkHHsT0W6kTv9PXCblZ_kAA";
+export const ARWEAVE_CONTRACT = "jRGJtaBjfvDJgpQATUiW3mBbB_wp71xrUmeQBalrm3k";
 export const EVM_ORACLES: Record<number, string> = {
   1: "0xdE44d3fB118E0f007f2C0D8fFFE98b994383949A",
   5: "0xdE44d3fB118E0f007f2C0D8fFFE98b994383949A",
