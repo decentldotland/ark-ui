@@ -42,17 +42,21 @@ export const useETH = (setActiveConnector: (arg: ETHConnector) => void, activeNe
           if (!activeNetwork) return;
           const chainId = await provider.request({ method: "eth_chainId" });
           const name = NETWORKS[activeNetwork]?.name;
-          const rpcUrls = NETWORKS[activeNetwork]?.urls; 
-          if (activeNetwork !== 1 && activeNetwork !== 5) {
-            await provider.request({
-              method: 'wallet_addEthereumChain',
-              params: [{
-                chainName: name,
-                chainId: `0x${activeNetwork.toString(16)}`,
-                rpcUrls: rpcUrls,
-              }],
-            });
-          };
+          const rpcUrls = NETWORKS[activeNetwork]?.urls;
+          try {
+            if (activeNetwork !== 1 && activeNetwork !== 5) {
+              await provider.request({
+                method: 'wallet_addEthereumChain',
+                params: [{
+                  chainName: name,
+                  chainId: `0x${activeNetwork.toString(16)}`,
+                  rpcUrls: rpcUrls,
+                }],
+              });
+            };  
+          } catch (e) {
+            console.log(e);
+          }
           if (chainId) {
             setChain(parseInt(chainId, 16));
             await connect(connector, parseInt(chainId, 16));
