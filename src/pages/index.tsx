@@ -130,6 +130,8 @@ const Home: NextPage = () => {
             const provider = eth.getProvider()?.provider;
             if (!provider) return;
             // @ts-ignore
+            if (await provider.request({ method: "eth_chainId" }) === activeNetwork) return;
+            // @ts-ignore
             await provider.request({
               method: 'wallet_addEthereumChain',
               params: [{
