@@ -6,7 +6,7 @@ import { Modal, useModal } from "../components/Modal";
 import { coinbaseWallet } from "../utils/connectors/coinbase";
 import { walletConnect } from "../utils/connectors/walletconnect";
 import { metaMask } from "../utils/connectors/metamask";
-import { addHarmony, ETHConnector, useETH } from "../utils/eth";
+import { addChain, ETHConnector, useETH } from "../utils/eth";
 import { formatAddress } from "../utils/format";
 import { useEffect, useState } from "react";
 import { interactWrite } from "smartweave";
@@ -30,10 +30,13 @@ const Home: NextPage = () => {
   const [address, connect, disconnect] = useArconnect();
   const ehtModal = useModal();
 
-  const eth = useETH();
+  const [activeNetwork, setActiveNetwork] = useState<number>(5);
+  const [previousNetwork, setPreviousNetwork] = useState<number>(5);
+  const [networkLoaded, setNetworkLoaded] = useState<boolean>(false);
 
   const [status, setStatus] = useState<{ type: StatusType, message: string }>();
   const [activeConnector, setActiveConnector] = useState<ETHConnector>();
+  const eth = useETH(setActiveConnector, activeNetwork);
 
   // connect to wallet
   async function connectEth(connector: ETHConnector) {
@@ -110,11 +113,6 @@ const Home: NextPage = () => {
     setLinkStatus(undefined);
   }
 
-  // active network
-  const [activeNetwork, setActiveNetwork] = useState<number>(5);
-  const [previousNetwork, setPreviousNetwork] = useState<number>(5);
-  const [networkLoaded, setNetworkLoaded] = useState<boolean>(false);
-
   useEffect(() => {
     (async () => {
       const stored = localStorage.getItem(ACTIVE_NETWORK_STORE);
@@ -126,6 +124,19 @@ const Home: NextPage = () => {
       } else {
         // save current network
         localStorage.setItem(ACTIVE_NETWORK_STORE, activeNetwork.toString());
+        if (activeNetwork !== 1 && activeNetwork !== 5) {
+          const provider = eth.getProvider()?.provider;
+          if (!provider) return;
+          // @ts-ignore
+          await provider.request({
+            method: 'wallet_addEthereumChain',
+            params: [{
+              chainName: String(NETWORKS[Number(activeNetwork)]?.name),
+              chainId: `0x${activeNetwork.toString(16)}`,
+              rpcUrls: NETWORKS[Number(activeNetwork)].urls,
+            }],
+          });
+        };
 
         // reconnect with the new network
         if (eth.address && activeConnector) {
@@ -134,7 +145,7 @@ const Home: NextPage = () => {
           } catch (e: any) {
             if (e.code === 4902) {
               try {
-                // await addHarmony(activeConnector);
+                await addChain(activeConnector, activeNetwork, NETWORKS[activeNetwork]);
                 await eth.connect(activeConnector, activeNetwork);
               } catch {
                 setActiveNetwork(previousNetwork);
