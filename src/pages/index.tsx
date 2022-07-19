@@ -374,12 +374,15 @@ const Home: NextPage = () => {
             {currentTab === 1 && 'Create a new token-gated group'}
             {currentTab === 2 && 'Join a token-gated group'}
           </ContentTitle>
-          <FormWrapper>
-            <TGGroupInput disabled placeholder='Group id' />
-            <Button secondary disabled>
-              {currentTab === 1 ? 'Create' : 'Join'}
-            </Button>
-          </FormWrapper>
+          <ComingSoon>
+            <ComingSoonText>Coming soon!</ComingSoonText>
+            <FormWrapper>
+                <TGGroupInput disabled placeholder='Group id' />
+                <Button secondary disabled>
+                  {currentTab === 1 ? 'Create' : 'Join'}
+                </Button>
+            </FormWrapper>
+          </ComingSoon>
         </IdentityCard>
         <Spacer y={4} />
         <Permanent href="https://arweave.org" target="_blank" rel="noopener noreferer">
@@ -499,7 +502,7 @@ const ProtocolName = styled.span`
 
 const IdentityCard = styled(Card)`
   position: relative;
-  width: 33vw;
+  width: 420px;
   margin: 0 auto;
 
   @media screen and (max-width: 768px) {
@@ -544,11 +547,31 @@ const Tab = styled.div<TabProps>`
 `;
 
 const ContentTitle = styled.div`
-  color: white;
+  color: gray;
   font-size: 1rem;
   font-weight: 600;
   margin-bottom: 1em;
   text-align: center;
+`;
+
+const ComingSoon = styled.div`
+  position: relative;
+  z-index: 5;
+`;
+
+const ComingSoonText = styled.div`
+  position: absolute;
+  user-select: none;
+  color: white;
+  z-index: 10;
+  width: 100%;
+  height: 100%;
+  font-size: 1.5rem;
+  font-weight: 700;
+  padding-top: 8px;
+  text-align: center;
+  backdrop-filter: blur(1px);
+  background-color: rgba(0, 0, 0, 0.1);
 `;
 
 const TGGroupInput = styled.input`
@@ -566,7 +589,7 @@ const TGGroupInput = styled.input`
   &:focus {
     box-shadow: 0 0 0 2px rgba(${props => props.theme.primary}, .5);
   }
-  @media screen and (max-width: 1024px) {
+  @media screen and (max-width: 280px) {
     margin-right: 0;
     width: 90%;
     margin-top: 1em;
@@ -577,7 +600,7 @@ const TGGroupInput = styled.input`
 const FormWrapper = styled.div`
   display: flex;
   align-items: center;
-  @media screen and (max-width: 1024px) {
+  @media screen and (max-width: 280px) {
     flex-direction: column;
   }
 `
