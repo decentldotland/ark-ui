@@ -25,6 +25,9 @@ import Faq from "../components/Faq";
 import ANS from "../components/ANS";
 import Loading from "../components/Loading";
 import Network from "../components/Network";
+import Avalanche from "../assets/avalanche.svg";
+import Binance from "../assets/binance.png"
+import Neon from "../assets/neon.png"
 
 const Home: NextPage = () => {
   const [address, connect, disconnect] = useArconnect();
@@ -289,11 +292,29 @@ const Home: NextPage = () => {
                 <Image src="/eth.png" width={30} height={30} draggable={false} />
               ): activeNetwork === 1313161555 && (
                 <Image style={{margin: '3px 0 0 0'}} src="/aurora.svg" width={45} height={45} draggable={false} />
+              )
+              } { activeNetwork === 43114 && (
+                <Image style={{margin: '3px 0 0 0'}} src={Avalanche} width={45} height={45} draggable={false} />
+              )
+              }
+              { activeNetwork === 56 && (
+                <Image style={{margin: '3px 0 0 0'}} src={Binance} width={45} height={45} draggable={false} />
+              )
+              }
+              { activeNetwork === 245022926 && (
+                <Image style={{margin: '3px 0 0 0'}} src={Neon} width={45} height={45} draggable={false} />
               )}
+
               <ChainName>
-                {activeNetwork === 1 || activeNetwork === 5 ? "Ethereum" : activeNetwork === 1313161555 ? "Aurora" : "Unknown"}
+                {activeNetwork === 1 || activeNetwork === 5 && "Ethereum"}
+                {activeNetwork === 1313161555 && "Aurora"}
+                {activeNetwork === 43114 && "Avalanche"}
+                {activeNetwork === 56 && "BNB Chain"}
+                {activeNetwork === 245022926 && "NEON Testnet"}
                 <ChainTicker>
-                  {activeNetwork === 1 || activeNetwork === 5 ? "Eth" : activeNetwork === 1313161555 ? "" : "???"}
+                  {activeNetwork === 1 || activeNetwork === 5 && "ETH"}
+                  {activeNetwork === 43114 && "AVAX"}
+                  {activeNetwork === 56 || 245022926 && ""}
                 </ChainTicker>
               </ChainName>
             </WalletChainLogo>

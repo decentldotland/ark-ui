@@ -6,7 +6,7 @@ export const NETWORKS: Record<number, {
   networkKey: string; // Ark Protocol identifier for network
 }> = {
   1: {
-    name: "Mainnet",
+    name: "Ethereum Mainnet",
     networkKey: "ETH-MAINNET",
     urls: ["https://cloudflare-eth.com/"],
     theme: "73, 71, 178"
@@ -17,11 +17,29 @@ export const NETWORKS: Record<number, {
     urls: ["https://rpc.goerli.mudit.blog/"],
     theme: "48, 153, 242"
   },
+  43114: {
+    name: "Avalanche C-Chain",
+    networkKey: "AVAX-MAINNET",
+    urls: ["https://api.avax.network/ext/bc/C/rpc"],
+    theme: "255, 0, 0"
+  },
+  56: {
+    name: "BNB Chain",
+    networkKey: "BNB-MAINNET",
+    urls: ["https://bscrpc.com"],
+    theme: "243, 186, 47"
+  },
   1313161555: {
     name: "Aurora Testnet",
     networkKey: "AURORA-TESTNET",
     urls: ["https://testnet.aurora.dev/"],
     theme: "120, 214, 75"
+  },
+  245022926: {
+    name: "NEON",
+    networkKey: "NEON-TESTNET",
+    urls: ["https://proxy.devnet.neonlabs.org/solana	"],
+    theme: "245, 26, 250"
   }
 };
 export const ARWEAVE_CONTRACT = "jRGJtaBjfvDJgpQATUiW3mBbB_wp71xrUmeQBalrm3k";
