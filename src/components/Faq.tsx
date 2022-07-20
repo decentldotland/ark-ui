@@ -85,6 +85,7 @@ const Body = styled.div`
   text-align: justify;
 
   a {
+    margin-left: .1rem;
     color: rgb(${props => props.theme.primary});
     text-decoration: none;
   }

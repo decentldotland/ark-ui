@@ -417,10 +417,12 @@ const Home: NextPage = () => {
             Early Ark adopters may be eligible for future beta testing opportunities as we expand the set of protocols and use cases
           </Faq>
           <Faq title="How can I build on Ark Protocol?">
-            If your dApp deals with verifying a user’s identity across chains, or is an Arweave dApp built to work with other L1s, Ark Protocol could be a useful primitive to integrate. 
-            <a href="https://github.com/decentldotland/ark-network" target="_blank" rel="noopener noreferrer">
-              Check it on GitHub here.
-            </a>
+            <span className="pr-2">
+              If your dApp deals with verifying a user’s identity across chains, or is an Arweave dApp built to work with other L1s, Ark Protocol could be a useful primitive to integrate. 
+              <a href="https://github.com/decentldotland/ark-network" target="_blank" rel="noopener noreferrer">
+                Check it on GitHub here.
+              </a>
+            </span>
           </Faq>
           <Faq title="Why is it called Ark?">
           In the decent.land <a href="https://github.com/decentldotland/ark-network" target="_blank" rel="noopener noreferrer">lore</a>, settlers arrived on the planet on a fleet of arks - spaceships ranging in size from personal craft to floating cities. Like its spacefaring namesake, the Ark Protocol makes connections between distant environments.
@@ -624,7 +626,6 @@ const WalletContainer = styled.div`
   background-color: #1c1e23;
   border-radius: 20px;
   padding: .8rem .75rem;
-  width: calc(100% - 1.25rem * 2);
   cursor: text;
 `;
 
