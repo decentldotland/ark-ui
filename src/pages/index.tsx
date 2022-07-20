@@ -75,7 +75,7 @@ const Home: NextPage = () => {
     };
 
     try {
-      setLinkStatus("Interacting with ETH contract...");
+      setLinkStatus("Interacting with smart contract...");
 
       const interaction = await eth.contract.linkIdentity(address);
       await interaction.wait();
@@ -224,11 +224,11 @@ const Home: NextPage = () => {
             Protocol
           </Title>
           <Subtitle>
-            The crosschain identity protocol for web3 social
+            The multichain identity protocol for web3 social
           </Subtitle>
           <a href="#faq">
             <Button>
-              Read More
+              Read more
             </Button>
           </a>
         </TopContent>
@@ -256,7 +256,7 @@ const Home: NextPage = () => {
         <IdentityCard>
           <Spacer y={.25} />
           <CardSubtitle>
-            Link Identity
+            Link identity
           </CardSubtitle>
           <Spacer y={1.25} />
           <WalletContainer>
@@ -330,7 +330,9 @@ const Home: NextPage = () => {
                   <p>
                     🥳 Congratulations! You have linked your identity.
                   </p>
-                )) || <p>Linking in progress 🤔. Check back later...</p>}
+                )) || <p>Identity link sent to Arweave.</p>}
+
+                <p>Tweet a screenshot of this page and <a href="https://twitter.com/decentdotland" className="twitterLink" target="_blank" rel="noopener noreferrer">@decentdotland</a> to be whitelisted for some future rewards. ✨</p>
               </LinkingInProgress>
             )}
           </AnimatePresence>
@@ -354,7 +356,7 @@ const Home: NextPage = () => {
             {currentTab === 2 && 'Join a token-gated group'}
           </ContentTitle>
           <ComingSoon>
-            <ComingSoonText>Coming soon!</ComingSoonText>
+            <ComingSoonText>Token gated groups coming soon!</ComingSoonText>
             <FormWrapper>
                 <TGGroupInput disabled placeholder='Group id' />
                 <Button secondary disabled>
@@ -370,27 +372,37 @@ const Home: NextPage = () => {
         <Spacer id="faq" y={4} />
         <FAQCard>
           <Spacer y={1.5} />
-          <Title style={{ textAlign: "center" }}>F.A.Q.</Title>
+          <Title style={{ textAlign: "center" }}>FAQ</Title>
           <Spacer y={1.5} />
           <Faq title="What is Ark Protocol?">
-            Ark is a multichain identity linking protocol built to power decent.land, ANS, and any other application or protocol layers that relies on users linking multiple other wallets to one identity on Arweave.
+            Ark is a multichain identity linking protocol built to power decent.land, ANS, and any other applications that rely on users attesting to their identity on other chains. Example use cases include token gating and social data aggregation. With Ark, users can use their Arweave wallet as a master identity to prove activity on multiple other chains.
           </Faq>
-          <Faq title="Why did you build Ark?">
-            decent.land is a collection of social and identity primitives built on Arweave to support the creation of token-gated social networks and groups. The core contracts live on Arweave for permanent storage of any size data, but interact with other chains to build a chain-agnostic way to save your identity and control access to DAO discussions and governance.
+          <Faq title="Who built Ark?">
+            Ark was built by the <a href="https://decent.land" target="_blank" rel="noopener noreferrer">decent.land</a> team and is one of the project's core social protocols along with ANS and the Public Square.
+          </Faq>
+          <Faq title="Why did decent.land build Ark?">
+            decent.land is a collection of social and identity primitives built on Arweave to support the creation of token-gated social networks and groups. The core contracts live on Arweave but interact with other chains to build a chain-agnostic way to save your identity and control access to DAO discussions and governance.
             <Spacer y={.5} />
-            Ark is our way to verifiable associate any number of Ethereum addresses with an Arweave wallet or ANS profile, and makes it so our other protocols can read token holdings and activity from Ethereum
-          </Faq>
+            Ark is our way to verifiably associate any number of Ethereum/EVM chain addresses with an Arweave wallet or ANS profile, and makes it so our other protocols can read token holdings and activity from Ethereum, Avalanche, BNB Chain, Aurora, Polygon, and more.          </Faq>
           <Faq title="What do I need to start?">
             You need the <a href="https://arconnect.io" target="_blank" rel="noopener noreferrer">ArConnect extension</a> to get an Arweave wallet and sign Arweave transactions. It should have enough AR for the interaction, e.g. 0.01 AR.
             <Spacer y={.5} />
-            You need either <a href="https://metamask.io" target="_blank" rel="noopener noreferrer">Metamask</a>, <a href="https://www.coinbase.com/wallet" target="_blank" rel="noopener noreferrer">Coinbase Wallet</a> or a Wallet Connect compatible Ethereum wallet extension and a wallet on Ethereum mainnet, with enough ETH for gas, e.g. 0.003 ETH.
+            You need either <a href="https://metamask.io" target="_blank" rel="noopener noreferrer">Metamask</a>, <a href="https://www.coinbase.com/wallet" target="_blank" rel="noopener noreferrer">Coinbase Wallet</a> or a Wallet Connect compatible Ethereum wallet extension and a wallet on Ethereum mainnet, with enough ETH for gas, e.g. 0.0005 ETH.
             <Spacer y={.5} />
-            Connect both wallets on the UI, confirm the transactions, and wait for the data to populate on Arweave.
-          </Faq>
+            Connect both wallets on the UI, confirm the transactions, and the data will populate on Arweave.          </Faq>
           <Faq title="What can I do once my identities are linked with Ark?">
             We are building token-gating protocols for both Telegram and the upcoming decent.land web app. We are also working on aggregation of multichain data for the ANS identity layer, to show activity from any chain on your own ar.page profile.
             <Spacer y={.5} />
             Early Ark adopters may be eligible for future beta testing opportunities as we expand the set of protocols and use cases
+          </Faq>
+          <Faq title="How can I build on Ark Protocol?">
+            If your dApp deals with verifying a user’s identity across chains, or is an Arweave dApp built to work with other L1s, Ark Protocol could be a useful primitive to integrate. 
+            <a href="https://github.com/decentldotland/ark-network" target="_blank" rel="noopener noreferrer">
+              Check it on GitHub here.
+            </a>
+          </Faq>
+          <Faq title="Why is it called Ark?">
+          In the decent.land <a href="https://github.com/decentldotland/ark-network" target="_blank" rel="noopener noreferrer">lore</a>, settlers arrived on the planet on a fleet of arks - spaceships ranging in size from personal craft to floating cities. Like its spacefaring namesake, the Ark Protocol makes connections between distant environments.
           </Faq>
         </FAQCard>
       </Page>
@@ -545,7 +557,7 @@ const ComingSoonText = styled.div`
   z-index: 10;
   width: 100%;
   height: 100%;
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   font-weight: 700;
   padding-top: 8px;
   text-align: center;
@@ -744,7 +756,7 @@ const LinkingInProgress = styled(motion.div)`
   backdrop-filter: blur(3px);
 
   p {
-    margin: 0;
+    margin: 1rem;
     font-size: 1rem;
     color: ${props => props.theme.secondaryText};
     font-weight: 500;

@@ -27,3 +27,8 @@ img {
 a {
   text-decoration: none;
 }
+
+.twitterLink {
+  color:white;
+  text-decoration: underline;
+}
