@@ -277,7 +277,7 @@ const Home: NextPage = () => {
                 secondary
                 onClick={() => connect()}
               >
-                Connect ANS
+                Connect
               </ConnectButton>
             )}
           </WalletContainer>
@@ -330,13 +330,13 @@ const Home: NextPage = () => {
                   <Image src={`/${eth.provider}.png`} width={25} height={25} draggable={false} />
                   {eth.ens || formatAddress(eth.address, 8)}
                 </>
-              )) || "Verify identity"}
+              )) || "Connect"}
             </ConnectButton>
           </WalletContainer>
           <Spacer y={2.5} />
           <Button secondary fullWidth disabled={!(address && eth.address)} onClick={() => link()}>
             {linkStatus && <Loading />}
-            {linkStatus || "Submit"}
+            {linkStatus || "Link identity"}
           </Button>
           <AnimatePresence>
             {!!linkingOverlay && (
@@ -428,20 +428,20 @@ const Home: NextPage = () => {
         </FAQCard>
       </Page>
       <Modal title="Choose a wallet" {...ehtModal.bindings}>
-        <CoinbaseButton onClick={() => connectEth(coinbaseWallet)} fullWidth>
-          <Image src="/coinbase.png" width={25} height={25} />
-          Coinbase Wallet
-        </CoinbaseButton>
+      <MetamaskButton onClick={() => connectEth(metaMask)} fullWidth>
+          <Image src="/metamask.png" width={25} height={25} />
+          Metamask
+        </MetamaskButton>
         <Spacer y={1} />
         <WalletConnectButton onClick={() => connectEth(walletConnect)} fullWidth>
           <Image src="/walletconnect.png" width={25} height={25} />
           Wallet Connect
         </WalletConnectButton>
         <Spacer y={1} />
-        <MetamaskButton onClick={() => connectEth(metaMask)} fullWidth>
-          <Image src="/metamask.png" width={25} height={25} />
-          Metamask
-        </MetamaskButton>
+        <CoinbaseButton onClick={() => connectEth(coinbaseWallet)} fullWidth>
+          <Image src="/coinbase.png" width={25} height={25} />
+          Coinbase Wallet
+        </CoinbaseButton>
       </Modal>
       <Network value={activeNetwork} onChange={(e) => setActiveNetwork((val) => {
         setPreviousNetwork(val);
@@ -464,7 +464,7 @@ const TopSection = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 4.5rem 0;
+  padding: 1.5rem 0;
   overflow: hidden;
   z-index: 0;
   @media screen and (max-width: 768px) {
@@ -504,7 +504,7 @@ const Subtitle = styled.h2`
   margin-bottom: 2em;
 
   @media screen and (max-width: 768px) {
-    font-size: 1rem;
+    font-size: 0.8rem;
   }
 `;
 
@@ -623,7 +623,7 @@ const WalletContainer = styled.div`
   justify-content: space-between;
   background-color: #1c1e23;
   border-radius: 20px;
-  padding: .8rem 1.25rem;
+  padding: .8rem .75rem;
   width: calc(100% - 1.25rem * 2);
   cursor: text;
 `;
@@ -638,13 +638,14 @@ const WalletChainLogo = styled.div`
 `;
 
 const ChainName = styled.div`
+  font-size: 0.9em;
   display: flex;
   align-items: flex-end;
   gap: .25rem;
 `;
 
 const ChainTicker = styled.span`
-  font-size: .95em;
+  font-size: .9em;
   color: ${props => props.theme.secondaryText};
   text-transform: uppercase;
 `;
@@ -692,7 +693,8 @@ const FAQCard = styled(Card)`
 `;
 
 const CoinbaseButton = styled(Button)`
-  background-color: #1652f0;
+  background-color: #fff;
+  color: #1652f0;
 `;
 
 const WalletConnectButton = styled(Button)`
@@ -701,8 +703,8 @@ const WalletConnectButton = styled(Button)`
 `;
 
 const MetamaskButton = styled(Button)`
-  background-color: #fff;
-  color: #000;
+  background-color: #CD6116;
+  color: #fff;
 `;
 
 const Status = styled.div<{ type: StatusType }>`
@@ -756,8 +758,8 @@ const ConnectButton = styled(Button)`
   padding-right: 2.5rem;
 
   @media screen and (max-width: 720px) {
-    padding-left: 1.1rem;
-    padding-right: 1.1rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
   }
 `;
 
