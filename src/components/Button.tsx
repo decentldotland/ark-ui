@@ -1,7 +1,7 @@
 import styled from "styled-components";
 
 const Button = styled.button<{ secondary?: boolean; fullWidth?: boolean; }>`
-  color: rgb(${props => props.secondary ? props.theme.primary : "255, 255, 255"});
+  color: rgb(${props => props.secondary ? props.theme.primary : "0, 0, 0"});
   background-color: rgba(${props => props.secondary ? props.theme.primary + ", .15" : props.theme.primary + ", 1"});
   border-radius: 12px;
   text-align: center;
@@ -13,7 +13,7 @@ const Button = styled.button<{ secondary?: boolean; fullWidth?: boolean; }>`
   font-weight: ${props => props.secondary ? "400" : "500"};
   text-transform: capitalize;
   cursor: pointer;
-  padding: .95rem ${props => props.fullWidth ? "0" : "3.75rem"};
+  padding: .5rem ${props => props.fullWidth ? "0" : "0.5rem"};
   width: ${props => props.fullWidth ? "100%" : "auto"};
 
   ${({ secondary, theme }) => {
