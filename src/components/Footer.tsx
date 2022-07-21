@@ -36,6 +36,10 @@ const Wrapper = styled.div`
   @media screen and (max-width: 720px) {
     padding: ${top_padding} 7.4vw;
   }
+  @media screen and (max-width: 400px) {
+    padding: ${top_padding} 0;
+    flex-direction: column;
+  }
 `;
 
 const Logo = styled.h1`
