@@ -26,8 +26,9 @@ import ANS from "../components/ANS";
 import Loading from "../components/Loading";
 import Network from "../components/Network";
 import Avalanche from "../assets/avalanche.svg";
-import Binance from "../assets/binance.png"
-import Neon from "../assets/neon.png"
+import Binance from "../assets/binance.png";
+import Neon from "../assets/neon.png";
+import Aurora from "../assets/aurora.png";
 
 const Home: NextPage = () => {
   const downloadWalletModal = useModal();
@@ -267,7 +268,7 @@ const Home: NextPage = () => {
               <Image src={`/metamask.png`} width={25} height={25} draggable={false} />
               <InstallWalletURL href="https://metamask.io/download/">MetaMask</InstallWalletURL>.
             </ProviderWrapper>
-            <Spacer y={1} />            
+            <Spacer y={1} />
             <ProviderWrapper>
               <Image src={`/arweave.png`} width={25} height={25} draggable={false} />
               <InstallWalletURL href="https://chrome.google.com/webstore/detail/arconnect/einnioafmpimabjcddiinlhmijaionap">ArConnect</InstallWalletURL>.
@@ -309,18 +310,18 @@ const Home: NextPage = () => {
               {activeNetwork === 1 || activeNetwork === 5 ? (
                 <Image src="/eth.png" width={30} height={30} draggable={false} />
               ): activeNetwork === 1313161555 && (
-                <Image style={{margin: '3px 0 0 0'}} src="/aurora.svg" width={45} height={45} draggable={false} />
+                <Image style={{margin: '3px 0 0 0', borderRadius: '9999px'}} src={Aurora} width={30} height={30} draggable={false} />
               )
               } { activeNetwork === 43114 && (
-                <Image style={{margin: '3px 0 0 0'}} src={Avalanche} width={45} height={45} draggable={false} />
+                <Image style={{margin: '3px 0 0 0'}} src={Avalanche} width={30} height={30} draggable={false} />
               )
               }
               { activeNetwork === 56 && (
-                <Image style={{margin: '3px 0 0 0'}} src={Binance} width={45} height={45} draggable={false} />
+                <Image style={{margin: '3px 0 0 0'}} src={Binance} width={30} height={30} draggable={false} />
               )
               }
               { activeNetwork === 245022926 && (
-                <Image style={{margin: '3px 0 0 0'}} src={Neon} width={45} height={45} draggable={false} />
+                <Image style={{margin: '3px 0 0 0'}} src={Neon} width={30} height={30} draggable={false} />
               )}
 
               <ChainName>
