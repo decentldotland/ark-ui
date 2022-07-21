@@ -219,8 +219,16 @@ const Home: NextPage = () => {
         Connect wallet and switch network to use Ark on Avalanche, BNB, Aurora, and Goerli
       </TopBanner>
       <Head>
-        <title>Ark</title>
-        <link rel="icon" href="/icon.png" />
+        <title>Ark Protocol</title>
+        <link rel="icon" href="/favicon.ico" />
+        <meta name="description" content="Ark" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes" />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:image" content="https://ark.decent.land/arkArt.jpg" />
+        <meta name="twitter:site" content="@decentdotland" />
+        <meta name="twitter:title" content="Ark Protocol" />
+        <meta name="twitter:description" content="The multichain identity protocol for web3 social" />
+        <meta name="twitter:url" content="https://ark.decent.land/"></meta>
       </Head>
       <TopSection>
         <ARKLogo>

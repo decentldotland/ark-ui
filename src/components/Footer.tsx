@@ -30,11 +30,11 @@ const Wrapper = styled.div`
 
   @media screen and (max-width: 1650px) {
     padding: ${top_padding} 12vw;
+    padding-bottom: 5rem !important;
   }
 
   @media screen and (max-width: 1300px) {
     padding: ${top_padding} 10vw;
-    padding-bottom: 5rem !important;
   }
 
   @media screen and (max-width: 720px) {
