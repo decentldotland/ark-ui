@@ -213,6 +213,9 @@ const Home: NextPage = () => {
 
   return (
     <>
+      <TopBanner>
+        Connect wallet and switch network to use Ark on Avalanche, BNB, Aurora, and Goerli
+      </TopBanner>
       <Head>
         <title>Ark</title>
         <link rel="icon" href="/icon.png" />
@@ -603,6 +606,15 @@ const ContentTitle = styled.div`
   text-align: center;
 `;
 
+const TopBanner = styled.div`
+  width: 100%;
+  background-color: #141316;
+  color: #f18d1f;
+  padding: 1em;
+  font-size: 0.9rem;
+  text-align: center;
+`;
+
 const ComingSoon = styled.div`
   position: relative;
   z-index: 5;
@@ -762,7 +774,7 @@ const Status = styled.div<{ type: StatusType }>`
   border: 2px solid ${props => props.type === "error" ? "#ca0000" : "#00ff00"};
   font-weight: 400;
   width: 50%;
-  font-size: 1rem;
+  font-size: 0.8rem;
   margin: 0 auto;
 
   p {
