@@ -396,7 +396,7 @@ const Home: NextPage = () => {
             {currentTab === 2 && 'Join a token-gated group'}
           </ContentTitle>
           <ComingSoon>
-            <ComingSoonText>Token gated groups coming soon!</ComingSoonText>
+            <ComingSoonText>Coming soon!</ComingSoonText>
             <FormWrapper>
               <TGGroupInput disabled placeholder='Group id' />
               <Button secondary disabled>
@@ -619,7 +619,11 @@ const ComingSoonText = styled.div`
   z-index: 10;
   width: 100%;
   height: 100%;
+<<<<<<< HEAD
   font-size: 1.2rem;
+=======
+  font-size: 1.5rem;
+>>>>>>> 92574288d5c0d60a283c41b224fbf45a0338bdfd
   font-weight: 700;
   padding-top: 8px;
   text-align: center;
