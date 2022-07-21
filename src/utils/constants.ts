@@ -17,36 +17,40 @@ export const NETWORKS: Record<number, {
     urls: ["https://rpc.goerli.mudit.blog/"],
     theme: "48, 153, 242"
   },
-  43114: {
-    name: "Avalanche C-Chain",
-    networkKey: "AVAX-MAINNET",
-    urls: ["https://api.avax.network/ext/bc/C/rpc"],
-    theme: "255, 0, 0"
-  },
   56: {
     name: "BNB Chain",
     networkKey: "BNB-MAINNET",
     urls: ["https://bscrpc.com"],
     theme: "243, 186, 47"
   },
+  43114: {
+    name: "Avalanche C-Chain",
+    networkKey: "AVAX-MAINNET",
+    urls: ["https://api.avax.network/ext/bc/C/rpc"],
+    theme: "255, 0, 0"
+  },
+  // 245022926: {
+  //   name: "NEON",
+  //   networkKey: "NEON-TESTNET",
+  //   urls: ["https://proxy.devnet.neonlabs.org/solana	"],
+  //   theme: "245, 26, 250"
+  // },
   1313161555: {
     name: "Aurora Testnet",
     networkKey: "AURORA-TESTNET",
     urls: ["https://testnet.aurora.dev/"],
     theme: "120, 214, 75"
-  },
-  245022926: {
-    name: "NEON",
-    networkKey: "NEON-TESTNET",
-    urls: ["https://proxy.devnet.neonlabs.org/solana	"],
-    theme: "245, 26, 250"
   }
 };
-export const ARWEAVE_CONTRACT = "jRGJtaBjfvDJgpQATUiW3mBbB_wp71xrUmeQBalrm3k";
+
+export const ARWEAVE_CONTRACT = "44JMzVHrHFKDAf7M0VvqBZT2lXjNbyHrdtVoagx-i28";
 export const EVM_ORACLES: Record<number, string> = {
   1: "0xdE44d3fB118E0f007f2C0D8fFFE98b994383949A",
   5: "0xdE44d3fB118E0f007f2C0D8fFFE98b994383949A",
-  1313161555: "0xfb0200C27185185D7DEe0403D5f102ADb59B7c34"
+  56: "0xdE44d3fB118E0f007f2C0D8fFFE98b994383949A",
+  43114: "0xE5E0A3380811aD9380F91a6996529da0a262EcD1",
+  // 245022926: "",
+  1313161555: "0xfb0200C27185185D7DEe0403D5f102ADb59B7c34",
 };
 
 export const URLS: { [chainId: number]: string[] } = Object.keys(NETWORKS).reduce<{ [chainId: number]: string[] }>(

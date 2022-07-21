@@ -35,8 +35,8 @@ const Home: NextPage = () => {
   const ethModal = useModal();
   const [address, connect, disconnect] = useArconnect(downloadWalletModal);
 
-  const [activeNetwork, setActiveNetwork] = useState<number>(5);
-  const [previousNetwork, setPreviousNetwork] = useState<number>(5);
+  const [activeNetwork, setActiveNetwork] = useState<number>(1);
+  const [previousNetwork, setPreviousNetwork] = useState<number>(1);
   const [networkLoaded, setNetworkLoaded] = useState<boolean>(false);
 
   const [status, setStatus] = useState<{ type: StatusType, message: string }>();
@@ -325,13 +325,13 @@ const Home: NextPage = () => {
               )}
 
               <ChainName>
-                {activeNetwork === 1 || activeNetwork === 5 && "Ethereum"}
+                {(activeNetwork === 1 || activeNetwork === 5) && "Ethereum"}
                 {activeNetwork === 1313161555 && "Aurora"}
                 {activeNetwork === 43114 && "Avalanche"}
                 {activeNetwork === 56 && "BNB Chain"}
                 {activeNetwork === 245022926 && "NEON Testnet"}
                 <ChainTicker>
-                  {activeNetwork === 1 || activeNetwork === 5 && "ETH"}
+                  {(activeNetwork === 1 || activeNetwork === 5) && "ETH"}
                   {activeNetwork === 43114 && "AVAX"}
                   {activeNetwork === 56 || 245022926 && ""}
                 </ChainTicker>
@@ -461,10 +461,14 @@ const Home: NextPage = () => {
           Coinbase Wallet
         </CoinbaseButton>
       </Modal>
-      <Network value={activeNetwork} onChange={(e) => setActiveNetwork((val) => {
-        setPreviousNetwork(val);
-        return Number(e.target.value);
-      })} />
+      {activeConnector ? (
+        <Network value={activeNetwork} onChange={(e) => setActiveNetwork((val) => {
+          setPreviousNetwork(val);
+          return Number(e.target.value);
+        })} />
+      ) : (
+        <></>
+      )}
     </>
   );
 }
