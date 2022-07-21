@@ -10,7 +10,7 @@ const permissions: PermissionType[] = [
 
 type Hook = [string | undefined, () => Promise<void>, () => Promise<void>];
 
-export const useArconnect = (): Hook => {
+export const useArconnect = (downloadWalletModal: any): Hook => {
   const [address, setAddress] = useState<string>();
 
   useEffect(() => {
@@ -51,7 +51,9 @@ export const useArconnect = (): Hook => {
     try {
       await window.arweaveWallet.connect(permissions, { name: "Ark Protocol" });
       setAddress(await window.arweaveWallet.getActiveAddress());
-    } catch {}
+    } catch {
+      downloadWalletModal.setState(true)
+    }
   }
 
   async function disconnect() {
