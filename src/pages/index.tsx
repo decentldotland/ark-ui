@@ -612,7 +612,6 @@ const ContentTitle = styled.div`
 `;
 
 const TopBanner = styled.div`
-  width: 100%;
   background-color: #141316;
   color: #f18d1f;
   padding: 1em;

@@ -13,6 +13,9 @@ const Footer = () => (
       <FooterLink href="https://t.me/decentland" target="_blank" rel="noopener noreferer">
         Telegram
       </FooterLink>
+      <FooterLink href="https://github.com/decentldotland/ark-network" target="_blank" rel="noopener noreferer">
+        GitHub
+      </FooterLink>
     </Links>
   </Wrapper>
 );
@@ -31,14 +34,17 @@ const Wrapper = styled.div`
 
   @media screen and (max-width: 1300px) {
     padding: ${top_padding} 10vw;
+    padding-bottom: 5rem !important;
   }
 
   @media screen and (max-width: 720px) {
     padding: ${top_padding} 7.4vw;
   }
-  @media screen and (max-width: 400px) {
+  @media screen and (max-width: 450px) {
     padding: ${top_padding} 0;
+    align-items: center;
     flex-direction: column;
+    padding-bottom: 1rem !important;
   }
 `;
 
@@ -58,6 +64,11 @@ const Links = styled.div`
   display: flex;
   align-items: center;
   gap: 2rem;
+  @media screen and (max-width: 450px) {
+    margin-top: 1rem;
+    flex-direction: column;
+    padding-bottom: 20vw;
+  }
 `;
 
 const FooterLink = styled.a`
