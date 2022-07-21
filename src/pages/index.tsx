@@ -232,9 +232,9 @@ const Home: NextPage = () => {
             The multichain identity protocol for web3 social
           </Subtitle>
           <a href="#faq">
-            <Button>
+            <ReadMoreButton>
               Read more
-            </Button>
+            </ReadMoreButton>
           </a>
         </TopContent>
       </TopSection>
@@ -730,6 +730,11 @@ const FAQCard = styled(Card)`
   @media screen and (max-width: 720px) {
     width: 100%;
   }
+`;
+
+const ReadMoreButton = styled(Button)`
+  font-size: 0.95rem;
+  padding: 0.6rem;
 `;
 
 const CoinbaseButton = styled(Button)`
