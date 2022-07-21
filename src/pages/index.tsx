@@ -461,14 +461,10 @@ const Home: NextPage = () => {
           Coinbase Wallet
         </CoinbaseButton>
       </Modal>
-      {activeConnector ? (
-        <Network value={activeNetwork} onChange={(e) => setActiveNetwork((val) => {
-          setPreviousNetwork(val);
-          return Number(e.target.value);
-        })} />
-      ) : (
-        <></>
-      )}
+      <Network isDisabled={eth.address ? false: true} value={activeNetwork} onChange={(e) => setActiveNetwork((val) => {
+        setPreviousNetwork(val);
+        return Number(e.target.value);
+      })} />
     </>
   );
 }

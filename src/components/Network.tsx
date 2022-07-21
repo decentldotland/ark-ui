@@ -2,7 +2,7 @@ import { ChangeEventHandler, useEffect, useState } from "react";
 import { NETWORKS } from "../utils/constants";
 import styled from "styled-components";
 
-const Network = ({ onChange, value }: NetworkProps) => {
+const Network = ({ onChange, value, isDisabled }: NetworkProps) => {
   const [theme, setTheme] = useState(NETWORKS[value]?.theme);
 
   useEffect(() => {
@@ -19,7 +19,7 @@ const Network = ({ onChange, value }: NetworkProps) => {
       <NetworkColor color={theme} />
       <NetworkSelect onChange={handleChange} value={value}>
         {Object.keys(NETWORKS).map((key, i) => (
-          <option key={i} value={key}>{NETWORKS[Number(key)].name}</option>
+          <option disabled={isDisabled} key={i} value={key}>{NETWORKS[Number(key)].name}</option>
         ))}
       </NetworkSelect>
     </NetworkWrapper>
@@ -28,6 +28,7 @@ const Network = ({ onChange, value }: NetworkProps) => {
 
 interface NetworkProps {
   value: number;
+  isDisabled: boolean;
   onChange: ChangeEventHandler<HTMLSelectElement>;
 }
 
