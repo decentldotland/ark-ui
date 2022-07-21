@@ -27,8 +27,9 @@ import Loading from "../components/Loading";
 import Network from "../components/Network";
 
 const Home: NextPage = () => {
-  const [address, connect, disconnect] = useArconnect();
-  const ehtModal = useModal();
+  const downloadWalletModal = useModal();
+  const ethModal = useModal();
+  const [address, connect, disconnect] = useArconnect(downloadWalletModal);
 
   const [activeNetwork, setActiveNetwork] = useState<number>(5);
   const [previousNetwork, setPreviousNetwork] = useState<number>(5);
@@ -45,12 +46,12 @@ const Home: NextPage = () => {
     try {
       await eth.connect(connector, activeNetwork);
       setActiveConnector(connector);
-      ehtModal.setState(false);
+      ethModal.setState(false);
       setStatus(undefined);
       localStorage.setItem('isConnected', 'true');
     } catch (e) {
-      console.log("Failed to connect", e);
-      setStatus({ type: "error", message: "Failed to connect" });
+      ethModal.setState(false);
+      downloadWalletModal.setState(true);
     }
   }
 
@@ -253,6 +254,23 @@ const Home: NextPage = () => {
             </motion.div>
           )}
         </AnimatePresence>
+        <Modal title="No wallet detected" {...downloadWalletModal.bindings}>
+          <DownloadWalletModals>
+            You need an Ethereum wallet and ArConnect to use this website.
+            <Spacer y={1} />
+            If you haven't, you can install wallets here:
+            <Spacer y={1} />
+            <ProviderWrapper>
+              <Image src={`/metamask.png`} width={25} height={25} draggable={false} />
+              <InstallWalletURL href="https://metamask.io/download/">MetaMask</InstallWalletURL>.
+            </ProviderWrapper>
+            <Spacer y={1} />            
+            <ProviderWrapper>
+              <Image src={`/arweave.png`} width={25} height={25} draggable={false} />
+              <InstallWalletURL href="https://chrome.google.com/webstore/detail/arconnect/einnioafmpimabjcddiinlhmijaionap">ArConnect</InstallWalletURL>.
+            </ProviderWrapper>
+          </DownloadWalletModals>
+        </Modal>
         <IdentityCard>
           <Spacer y={.25} />
           <CardSubtitle>
@@ -299,7 +317,7 @@ const Home: NextPage = () => {
             </WalletChainLogo>
             <ConnectButton secondary style={{ textTransform: eth.address ? "none" : undefined }} onClick={() => {
               if (!eth.address) {
-                ehtModal.setState(true)
+                ethModal.setState(true)
               } else {
                 eth.disconnect();
               }
@@ -358,10 +376,10 @@ const Home: NextPage = () => {
           <ComingSoon>
             <ComingSoonText>Token gated groups coming soon!</ComingSoonText>
             <FormWrapper>
-                <TGGroupInput disabled placeholder='Group id' />
-                <Button secondary disabled>
-                  {currentTab === 1 ? 'Create' : 'Join'}
-                </Button>
+              <TGGroupInput disabled placeholder='Group id' />
+              <Button secondary disabled>
+                {currentTab === 1 ? 'Create' : 'Join'}
+              </Button>
             </FormWrapper>
           </ComingSoon>
         </IdentityCard>
@@ -395,21 +413,18 @@ const Home: NextPage = () => {
             <Spacer y={.5} />
             Early Ark adopters may be eligible for future beta testing opportunities as we expand the set of protocols and use cases
           </Faq>
-          <Faq title="How can I build on Ark Protocol?">
-            <span className="pr-2">
-              If your dApp deals with verifying a user’s identity across chains, or is an Arweave dApp built to work with other L1s, Ark Protocol could be a useful primitive to integrate. 
-              <a href="https://github.com/decentldotland/ark-network" target="_blank" rel="noopener noreferrer">
-                Check it on GitHub here.
-              </a>
-            </span>
+          <Faq title="How can I build on Ark Protocol?">If your dApp deals with verifying a user’s identity across chains, or is an Arweave dApp built to work with other L1s, Ark Protocol could be a useful primitive to integrate. 
+            <a href="https://github.com/decentldotland/ark-network" target="_blank" rel="noopener noreferrer">
+              Check it on GitHub here.
+            </a>
           </Faq>
           <Faq title="Why is it called Ark?">
           In the decent.land <a href="https://github.com/decentldotland/ark-network" target="_blank" rel="noopener noreferrer">lore</a>, settlers arrived on the planet on a fleet of arks - spaceships ranging in size from personal craft to floating cities. Like its spacefaring namesake, the Ark Protocol makes connections between distant environments.
           </Faq>
         </FAQCard>
       </Page>
-      <Modal title="Choose a wallet" {...ehtModal.bindings}>
-      <MetamaskButton onClick={() => connectEth(metaMask)} fullWidth>
+      <Modal title="Choose a wallet" {...ethModal.bindings}>
+        <MetamaskButton onClick={() => connectEth(metaMask)} fullWidth>
           <Image src="/metamask.png" width={25} height={25} />
           Metamask
         </MetamaskButton>
@@ -462,6 +477,25 @@ const TopContent = styled.div`
   @media screen and (max-width: 768px) {
     align-items: center;
   }
+`;
+
+const DownloadWalletModals = styled.div`
+  text-align: center;
+  margin-top: 1rem;
+  color: white;
+  font-size: 1.2rem;
+`;
+
+const ProviderWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const InstallWalletURL = styled.a`
+  margin-left: 0.3rem;
+  color: rgb(${props => props.theme.primary});
+  text-decoration: none;
 `;
 
 const Title = styled.h1`
