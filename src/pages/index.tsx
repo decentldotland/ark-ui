@@ -2,7 +2,7 @@ import { CloseIcon, LinkIcon } from "@iconicicons/react"
 import { arweave, useArconnect } from "../utils/arconnect"
 import type { NextPage } from "next";
 import Card, { CardSubtitle } from "../components/Card";
-import { Modal, useModal } from "../components/Modal";
+import { Modal, useModal, Close } from "../components/Modal";
 import { coinbaseWallet } from "../utils/connectors/coinbase";
 import { walletConnect } from "../utils/connectors/walletconnect";
 import { metaMask } from "../utils/connectors/metamask";
@@ -61,9 +61,11 @@ const Home: NextPage = () => {
 
   // linking functionality
   const [linkStatus, setLinkStatus] = useState<string>();
+  const [linkModal, setLinkModal] = useState<boolean>(true);
 
   async function link() {
     setStatus(undefined);
+    setLinkModal(true);
 
     if (!!linkingOverlay) {
       return setStatus({
@@ -353,12 +355,12 @@ const Home: NextPage = () => {
             </ConnectButton>
           </WalletContainer>
           <Spacer y={2.5} />
-          <Button secondary fullWidth disabled={!(address && eth.address)} onClick={() => link()}>
+          <Button secondary fullWidth disabled={!(address && eth.address && linkingOverlay !== "linked")} onClick={() => link()}>
             {linkStatus && <Loading />}
             {linkStatus || "Link identity"}
           </Button>
           <AnimatePresence>
-            {!!linkingOverlay && (
+            {!!linkingOverlay && linkModal && (
               <LinkingInProgress
                 initial="transparent"
                 animate="visible"
@@ -366,6 +368,9 @@ const Home: NextPage = () => {
                 variants={opacityAnimation}
                 transition={{ duration: 0.23, ease: "easeInOut" }}
               >
+                <CloseButton>
+                  <Close onClick={() => setLinkModal(false)} />
+                </CloseButton>
                 {(linkingOverlay === "linked" && (
                   <p>
                     🥳 Congratulations! You have linked your identity.
@@ -615,11 +620,7 @@ const ComingSoonText = styled.div`
   z-index: 10;
   width: 100%;
   height: 100%;
-<<<<<<< HEAD
-  font-size: 1.2rem;
-=======
   font-size: 1.5rem;
->>>>>>> 92574288d5c0d60a283c41b224fbf45a0338bdfd
   font-weight: 700;
   padding-top: 8px;
   text-align: center;
@@ -642,20 +643,11 @@ const TGGroupInput = styled.input`
   &:focus {
     box-shadow: 0 0 0 2px rgba(${props => props.theme.primary}, .5);
   }
-  @media screen and (max-width: 280px) {
-    margin-right: 0;
-    width: 90%;
-    margin-top: 1em;
-    margin-bottom: 2em;
-  }
 `;
 
 const FormWrapper = styled.div`
   display: flex;
   align-items: center;
-  @media screen and (max-width: 280px) {
-    flex-direction: column;
-  }
 `
 
 const WalletContainer = styled.div`
@@ -826,6 +818,12 @@ const LinkingInProgress = styled(motion.div)`
     text-align: center;
     max-width: 80%;
   }
+`;
+
+const CloseButton = styled.div`
+  position: absolute;
+  top: 1.5rem;
+  right: 0.5rem;
 `;
 
 export default Home;

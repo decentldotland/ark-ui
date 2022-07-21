@@ -129,7 +129,7 @@ const ModalTitle = styled.h1`
   text-transform: uppercase;
 `;
 
-const Close = styled(CloseIcon)`
+export const Close = styled(CloseIcon)`
   position: absolute;
   right: 0;
   top: 50%;
