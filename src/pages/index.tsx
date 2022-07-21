@@ -25,13 +25,18 @@ import Faq from "../components/Faq";
 import ANS from "../components/ANS";
 import Loading from "../components/Loading";
 import Network from "../components/Network";
+import Avalanche from "../assets/avalanche.svg";
+import Binance from "../assets/binance.png";
+import Neon from "../assets/neon.png";
+import Aurora from "../assets/aurora.png";
 
 const Home: NextPage = () => {
-  const [address, connect, disconnect] = useArconnect();
-  const ehtModal = useModal();
+  const downloadWalletModal = useModal();
+  const ethModal = useModal();
+  const [address, connect, disconnect] = useArconnect(downloadWalletModal);
 
-  const [activeNetwork, setActiveNetwork] = useState<number>(5);
-  const [previousNetwork, setPreviousNetwork] = useState<number>(5);
+  const [activeNetwork, setActiveNetwork] = useState<number>(1);
+  const [previousNetwork, setPreviousNetwork] = useState<number>(1);
   const [networkLoaded, setNetworkLoaded] = useState<boolean>(false);
 
   const [status, setStatus] = useState<{ type: StatusType, message: string }>();
@@ -45,12 +50,12 @@ const Home: NextPage = () => {
     try {
       await eth.connect(connector, activeNetwork);
       setActiveConnector(connector);
-      ehtModal.setState(false);
+      ethModal.setState(false);
       setStatus(undefined);
       localStorage.setItem('isConnected', 'true');
     } catch (e) {
-      console.log("Failed to connect", e);
-      setStatus({ type: "error", message: "Failed to connect" });
+      ethModal.setState(false);
+      downloadWalletModal.setState(true);
     }
   }
 
@@ -75,7 +80,7 @@ const Home: NextPage = () => {
     };
 
     try {
-      setLinkStatus("Interacting with ETH contract...");
+      setLinkStatus("Interacting with smart contract...");
 
       const interaction = await eth.contract.linkIdentity(address);
       await interaction.wait();
@@ -224,11 +229,11 @@ const Home: NextPage = () => {
             Protocol
           </Title>
           <Subtitle>
-            The crosschain identity protocol for web3 social
+            The multichain identity protocol for web3 social
           </Subtitle>
           <a href="#faq">
             <Button>
-              Read More
+              Read more
             </Button>
           </a>
         </TopContent>
@@ -253,10 +258,27 @@ const Home: NextPage = () => {
             </motion.div>
           )}
         </AnimatePresence>
+        <Modal title="No wallet detected" {...downloadWalletModal.bindings}>
+          <DownloadWalletModals>
+            You need an Ethereum wallet and ArConnect to use this website.
+            <Spacer y={1} />
+            If you haven't, you can install wallets here:
+            <Spacer y={1} />
+            <ProviderWrapper>
+              <Image src={`/metamask.png`} width={25} height={25} draggable={false} />
+              <InstallWalletURL href="https://metamask.io/download/">MetaMask</InstallWalletURL>.
+            </ProviderWrapper>
+            <Spacer y={1} />
+            <ProviderWrapper>
+              <Image src={`/arweave.png`} width={25} height={25} draggable={false} />
+              <InstallWalletURL href="https://chrome.google.com/webstore/detail/arconnect/einnioafmpimabjcddiinlhmijaionap">ArConnect</InstallWalletURL>.
+            </ProviderWrapper>
+          </DownloadWalletModals>
+        </Modal>
         <IdentityCard>
           <Spacer y={.25} />
           <CardSubtitle>
-            Link Identity
+            Link identity
           </CardSubtitle>
           <Spacer y={1.25} />
           <WalletContainer>
@@ -274,7 +296,7 @@ const Home: NextPage = () => {
                 secondary
                 onClick={() => connect()}
               >
-                Connect ANS
+                Connect
               </ConnectButton>
             )}
           </WalletContainer>
@@ -288,18 +310,36 @@ const Home: NextPage = () => {
               {activeNetwork === 1 || activeNetwork === 5 ? (
                 <Image src="/eth.png" width={30} height={30} draggable={false} />
               ): activeNetwork === 1313161555 && (
-                <Image style={{margin: '3px 0 0 0'}} src="/aurora.svg" width={45} height={45} draggable={false} />
+                <Image style={{margin: '3px 0 0 0', borderRadius: '9999px'}} src={Aurora} width={30} height={30} draggable={false} />
+              )
+              } { activeNetwork === 43114 && (
+                <Image style={{margin: '3px 0 0 0'}} src={Avalanche} width={30} height={30} draggable={false} />
+              )
+              }
+              { activeNetwork === 56 && (
+                <Image style={{margin: '3px 0 0 0'}} src={Binance} width={30} height={30} draggable={false} />
+              )
+              }
+              { activeNetwork === 245022926 && (
+                <Image style={{margin: '3px 0 0 0'}} src={Neon} width={30} height={30} draggable={false} />
               )}
+
               <ChainName>
-                {activeNetwork === 1 || activeNetwork === 5 ? "Ethereum" : activeNetwork === 1313161555 ? "Aurora" : "Unknown"}
+                {(activeNetwork === 1 || activeNetwork === 5) && "Ethereum"}
+                {activeNetwork === 1313161555 && "Aurora"}
+                {activeNetwork === 43114 && "Avalanche"}
+                {activeNetwork === 56 && "BNB Chain"}
+                {activeNetwork === 245022926 && "NEON Testnet"}
                 <ChainTicker>
-                  {activeNetwork === 1 || activeNetwork === 5 ? "Eth" : activeNetwork === 1313161555 ? "" : "???"}
+                  {(activeNetwork === 1 || activeNetwork === 5) && "ETH"}
+                  {activeNetwork === 43114 && "AVAX"}
+                  {activeNetwork === 56 || 245022926 && ""}
                 </ChainTicker>
               </ChainName>
             </WalletChainLogo>
             <ConnectButton secondary style={{ textTransform: eth.address ? "none" : undefined }} onClick={() => {
               if (!eth.address) {
-                ehtModal.setState(true)
+                ethModal.setState(true)
               } else {
                 eth.disconnect();
               }
@@ -309,13 +349,13 @@ const Home: NextPage = () => {
                   <Image src={`/${eth.provider}.png`} width={25} height={25} draggable={false} />
                   {eth.ens || formatAddress(eth.address, 8)}
                 </>
-              )) || "Verify identity"}
+              )) || "Connect"}
             </ConnectButton>
           </WalletContainer>
           <Spacer y={2.5} />
           <Button secondary fullWidth disabled={!(address && eth.address)} onClick={() => link()}>
             {linkStatus && <Loading />}
-            {linkStatus || "Submit"}
+            {linkStatus || "Link identity"}
           </Button>
           <AnimatePresence>
             {!!linkingOverlay && (
@@ -330,7 +370,9 @@ const Home: NextPage = () => {
                   <p>
                     🥳 Congratulations! You have linked your identity.
                   </p>
-                )) || <p>Linking in progress 🤔. Check back later...</p>}
+                )) || <p>Identity link sent to Arweave.</p>}
+
+                <p>Tweet a screenshot of this page and <a href="https://twitter.com/decentdotland" className="twitterLink" target="_blank" rel="noopener noreferrer">@decentdotland</a> to be whitelisted for some future rewards. ✨</p>
               </LinkingInProgress>
             )}
           </AnimatePresence>
@@ -356,10 +398,10 @@ const Home: NextPage = () => {
           <ComingSoon>
             <ComingSoonText>Coming soon!</ComingSoonText>
             <FormWrapper>
-                <TGGroupInput disabled placeholder='Group id' />
-                <Button secondary disabled>
-                  {currentTab === 1 ? 'Create' : 'Join'}
-                </Button>
+              <TGGroupInput disabled placeholder='Group id' />
+              <Button secondary disabled>
+                {currentTab === 1 ? 'Create' : 'Join'}
+              </Button>
             </FormWrapper>
           </ComingSoon>
         </IdentityCard>
@@ -370,47 +412,56 @@ const Home: NextPage = () => {
         <Spacer id="faq" y={4} />
         <FAQCard>
           <Spacer y={1.5} />
-          <Title style={{ textAlign: "center" }}>F.A.Q.</Title>
+          <Title style={{ textAlign: "center" }}>FAQ</Title>
           <Spacer y={1.5} />
           <Faq title="What is Ark Protocol?">
-            Ark is a multichain identity linking protocol built to power decent.land, ANS, and any other application or protocol layers that relies on users linking multiple other wallets to one identity on Arweave.
+            Ark is a multichain identity linking protocol built to power decent.land, ANS, and any other applications that rely on users attesting to their identity on other chains. Example use cases include token gating and social data aggregation. With Ark, users can use their Arweave wallet as a master identity to prove activity on multiple other chains.
           </Faq>
-          <Faq title="Why did you build Ark?">
-            decent.land is a collection of social and identity primitives built on Arweave to support the creation of token-gated social networks and groups. The core contracts live on Arweave for permanent storage of any size data, but interact with other chains to build a chain-agnostic way to save your identity and control access to DAO discussions and governance.
+          <Faq title="Who built Ark?">
+            Ark was built by the <a href="https://decent.land" target="_blank" rel="noopener noreferrer">decent.land</a> team and is one of the project's core social protocols along with ANS and the Public Square.
+          </Faq>
+          <Faq title="Why did decent.land build Ark?">
+            decent.land is a collection of social and identity primitives built on Arweave to support the creation of token-gated social networks and groups. The core contracts live on Arweave but interact with other chains to build a chain-agnostic way to save your identity and control access to DAO discussions and governance.
             <Spacer y={.5} />
-            Ark is our way to verifiable associate any number of Ethereum addresses with an Arweave wallet or ANS profile, and makes it so our other protocols can read token holdings and activity from Ethereum
-          </Faq>
+            Ark is our way to verifiably associate any number of Ethereum/EVM chain addresses with an Arweave wallet or ANS profile, and makes it so our other protocols can read token holdings and activity from Ethereum, Avalanche, BNB Chain, Aurora, Polygon, and more.          </Faq>
           <Faq title="What do I need to start?">
             You need the <a href="https://arconnect.io" target="_blank" rel="noopener noreferrer">ArConnect extension</a> to get an Arweave wallet and sign Arweave transactions. It should have enough AR for the interaction, e.g. 0.01 AR.
             <Spacer y={.5} />
-            You need either <a href="https://metamask.io" target="_blank" rel="noopener noreferrer">Metamask</a>, <a href="https://www.coinbase.com/wallet" target="_blank" rel="noopener noreferrer">Coinbase Wallet</a> or a Wallet Connect compatible Ethereum wallet extension and a wallet on Ethereum mainnet, with enough ETH for gas, e.g. 0.003 ETH.
+            You need either <a href="https://metamask.io" target="_blank" rel="noopener noreferrer">Metamask</a>, <a href="https://www.coinbase.com/wallet" target="_blank" rel="noopener noreferrer">Coinbase Wallet</a> or a Wallet Connect compatible Ethereum wallet extension and a wallet on Ethereum mainnet, with enough ETH for gas, e.g. 0.0005 ETH.
             <Spacer y={.5} />
-            Connect both wallets on the UI, confirm the transactions, and wait for the data to populate on Arweave.
-          </Faq>
+            Connect both wallets on the UI, confirm the transactions, and the data will populate on Arweave.          </Faq>
           <Faq title="What can I do once my identities are linked with Ark?">
             We are building token-gating protocols for both Telegram and the upcoming decent.land web app. We are also working on aggregation of multichain data for the ANS identity layer, to show activity from any chain on your own ar.page profile.
             <Spacer y={.5} />
             Early Ark adopters may be eligible for future beta testing opportunities as we expand the set of protocols and use cases
           </Faq>
+          <Faq title="How can I build on Ark Protocol?">If your dApp deals with verifying a user’s identity across chains, or is an Arweave dApp built to work with other L1s, Ark Protocol could be a useful primitive to integrate. 
+            <a href="https://github.com/decentldotland/ark-network" target="_blank" rel="noopener noreferrer">
+              Check it on GitHub here.
+            </a>
+          </Faq>
+          <Faq title="Why is it called Ark?">
+          In the decent.land <a href="https://github.com/decentldotland/ark-network" target="_blank" rel="noopener noreferrer">lore</a>, settlers arrived on the planet on a fleet of arks - spaceships ranging in size from personal craft to floating cities. Like its spacefaring namesake, the Ark Protocol makes connections between distant environments.
+          </Faq>
         </FAQCard>
       </Page>
-      <Modal title="Choose a wallet" {...ehtModal.bindings}>
-        <CoinbaseButton onClick={() => connectEth(coinbaseWallet)} fullWidth>
-          <Image src="/coinbase.png" width={25} height={25} />
-          Coinbase Wallet
-        </CoinbaseButton>
+      <Modal title="Choose a wallet" {...ethModal.bindings}>
+        <MetamaskButton onClick={() => connectEth(metaMask)} fullWidth>
+          <Image src="/metamask.png" width={25} height={25} />
+          Metamask
+        </MetamaskButton>
         <Spacer y={1} />
         <WalletConnectButton onClick={() => connectEth(walletConnect)} fullWidth>
           <Image src="/walletconnect.png" width={25} height={25} />
           Wallet Connect
         </WalletConnectButton>
         <Spacer y={1} />
-        <MetamaskButton onClick={() => connectEth(metaMask)} fullWidth>
-          <Image src="/metamask.png" width={25} height={25} />
-          Metamask
-        </MetamaskButton>
+        <CoinbaseButton onClick={() => connectEth(coinbaseWallet)} fullWidth>
+          <Image src="/coinbase.png" width={25} height={25} />
+          Coinbase Wallet
+        </CoinbaseButton>
       </Modal>
-      <Network value={activeNetwork} onChange={(e) => setActiveNetwork((val) => {
+      <Network isDisabled={eth.address ? false: true} value={activeNetwork} onChange={(e) => setActiveNetwork((val) => {
         setPreviousNetwork(val);
         return Number(e.target.value);
       })} />
@@ -431,7 +482,7 @@ const TopSection = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 4.5rem 0;
+  padding: 1.5rem 0;
   overflow: hidden;
   z-index: 0;
   @media screen and (max-width: 768px) {
@@ -448,6 +499,25 @@ const TopContent = styled.div`
   @media screen and (max-width: 768px) {
     align-items: center;
   }
+`;
+
+const DownloadWalletModals = styled.div`
+  text-align: center;
+  margin-top: 1rem;
+  color: white;
+  font-size: 1.2rem;
+`;
+
+const ProviderWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const InstallWalletURL = styled.a`
+  margin-left: 0.3rem;
+  color: rgb(${props => props.theme.primary});
+  text-decoration: none;
 `;
 
 const Title = styled.h1`
@@ -471,7 +541,7 @@ const Subtitle = styled.h2`
   margin-bottom: 2em;
 
   @media screen and (max-width: 768px) {
-    font-size: 1rem;
+    font-size: 0.8rem;
   }
 `;
 
@@ -545,7 +615,11 @@ const ComingSoonText = styled.div`
   z-index: 10;
   width: 100%;
   height: 100%;
+<<<<<<< HEAD
+  font-size: 1.2rem;
+=======
   font-size: 1.5rem;
+>>>>>>> 92574288d5c0d60a283c41b224fbf45a0338bdfd
   font-weight: 700;
   padding-top: 8px;
   text-align: center;
@@ -590,8 +664,7 @@ const WalletContainer = styled.div`
   justify-content: space-between;
   background-color: #1c1e23;
   border-radius: 20px;
-  padding: .8rem 1.25rem;
-  width: calc(100% - 1.25rem * 2);
+  padding: .8rem .75rem;
   cursor: text;
 `;
 
@@ -605,13 +678,14 @@ const WalletChainLogo = styled.div`
 `;
 
 const ChainName = styled.div`
+  font-size: 0.9em;
   display: flex;
   align-items: flex-end;
   gap: .25rem;
 `;
 
 const ChainTicker = styled.span`
-  font-size: .95em;
+  font-size: .9em;
   color: ${props => props.theme.secondaryText};
   text-transform: uppercase;
 `;
@@ -659,7 +733,8 @@ const FAQCard = styled(Card)`
 `;
 
 const CoinbaseButton = styled(Button)`
-  background-color: #1652f0;
+  background-color: #fff;
+  color: #1652f0;
 `;
 
 const WalletConnectButton = styled(Button)`
@@ -668,8 +743,8 @@ const WalletConnectButton = styled(Button)`
 `;
 
 const MetamaskButton = styled(Button)`
-  background-color: #fff;
-  color: #000;
+  background-color: #CD6116;
+  color: #fff;
 `;
 
 const Status = styled.div<{ type: StatusType }>`
@@ -723,8 +798,8 @@ const ConnectButton = styled(Button)`
   padding-right: 2.5rem;
 
   @media screen and (max-width: 720px) {
-    padding-left: 1.1rem;
-    padding-right: 1.1rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
   }
 `;
 
@@ -744,7 +819,7 @@ const LinkingInProgress = styled(motion.div)`
   backdrop-filter: blur(3px);
 
   p {
-    margin: 0;
+    margin: 1rem;
     font-size: 1rem;
     color: ${props => props.theme.secondaryText};
     font-weight: 500;

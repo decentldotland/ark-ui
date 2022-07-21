@@ -74,7 +74,7 @@ export const useETH = (setActiveConnector: (arg: ETHConnector) => void, activeNe
     else if (metamaskAcc) setState({ provider: "metamask", address: metamaskAcc });
   }, [coinbaseAcc, metamaskAcc, walletConnectAcc]);
 
-  const connect = async (connector: ETHConnector, chainId = 5) => {
+  const connect = async (connector: ETHConnector, chainId = 1) => {
     localStorage.setItem('isConnected', 'true');
     await connector.activate(chainId);
     setChain(chainId);

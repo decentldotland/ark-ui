@@ -2,7 +2,7 @@ import { PropsWithChildren } from "react"
 import { motion, Variants } from "framer-motion";
 import styled from "styled-components";
 
-const top_padding = "4rem";
+const top_padding = "1.5rem";
 
 const Page = ({ children }: PropsWithChildren<{}>) => (
   <PageBase variants={fadeUp} initial="hidden" animate="shown">
