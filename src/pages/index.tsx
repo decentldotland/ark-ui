@@ -226,7 +226,7 @@ const Home: NextPage = () => {
         <meta name="twitter:card" content="summary" />
         <meta name="twitter:image" content="https://ark.decent.land/arkArt.jpg" />
         <meta name="twitter:site" content="@decentdotland" />
-        <meta name="twitter:title" content="Ark Protocol" />
+        <meta name="twitter:title" content="Ark Protocol | decent.land" />
         <meta name="twitter:description" content="The multichain identity protocol for web3 social" />
         <meta name="twitter:url" content="https://ark.decent.land/"></meta>
       </Head>
