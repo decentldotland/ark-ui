@@ -19,13 +19,13 @@ export const NETWORKS: Record<number, {
   },
   56: {
     name: "BNB Chain",
-    networkKey: "BNB-MAINNET",
+    networkKey: "BSC-MAINNET",
     urls: ["https://bscrpc.com"],
     theme: "243, 186, 47"
   },
   43114: {
     name: "Avalanche C-Chain",
-    networkKey: "AVAX-MAINNET",
+    networkKey: "AVALANCHE-MAINNET",
     urls: ["https://api.avax.network/ext/bc/C/rpc"],
     theme: "255, 0, 0"
   },
