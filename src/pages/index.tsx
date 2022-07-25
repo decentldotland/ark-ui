@@ -29,6 +29,7 @@ import Avalanche from "../assets/avalanche.svg";
 import Binance from "../assets/binance.png";
 import Neon from "../assets/neon.png";
 import Aurora from "../assets/aurora.png";
+import Fantom from "../assets/fantom.png"
 
 const Home: NextPage = () => {
   const downloadWalletModal = useModal();
@@ -323,6 +324,10 @@ const Home: NextPage = () => {
                 <Image style={{margin: '3px 0 0 0'}} src={Binance} width={30} height={30} draggable={false} />
               )
               }
+              { activeNetwork === 250 && (
+                <Image style={{margin: '3px 0 0 0'}} src={Fantom} width={30} height={30} draggable={false} />
+              )
+              }
               { activeNetwork === 245022926 && (
                 <Image style={{margin: '3px 0 0 0'}} src={Neon} width={30} height={30} draggable={false} />
               )}
@@ -332,9 +337,11 @@ const Home: NextPage = () => {
                 {activeNetwork === 1313161555 && "Aurora"}
                 {activeNetwork === 43114 && "Avalanche"}
                 {activeNetwork === 56 && "BNB Chain"}
+                {activeNetwork === 250 && "Fantom"}
                 {activeNetwork === 245022926 && "NEON Testnet"}
                 <ChainTicker>
                   {(activeNetwork === 1 || activeNetwork === 5) && "ETH"}
+                  {activeNetwork === 250 && "FTM"}
                   {activeNetwork === 43114 && "AVAX"}
                   {activeNetwork === 56 || 245022926 && ""}
                 </ChainTicker>

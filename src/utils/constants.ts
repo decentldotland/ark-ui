@@ -29,6 +29,12 @@ export const NETWORKS: Record<number, {
     urls: ["https://api.avax.network/ext/bc/C/rpc"],
     theme: "255, 0, 0"
   },
+  250: {
+    name: "Fantom",
+    networkKey: "FTM-MAINNET",
+    urls: ["https://rpc.ftm.tools"],
+    theme: "9, 39, 255"
+  },
   // 245022926: {
   //   name: "NEON",
   //   networkKey: "NEON-TESTNET",
@@ -48,6 +54,7 @@ export const EVM_ORACLES: Record<number, string> = {
   1: "0xdE44d3fB118E0f007f2C0D8fFFE98b994383949A",
   5: "0xdE44d3fB118E0f007f2C0D8fFFE98b994383949A",
   56: "0xdE44d3fB118E0f007f2C0D8fFFE98b994383949A",
+  250: "0xdE44d3fB118E0f007f2C0D8fFFE98b994383949A",
   43114: "0xE5E0A3380811aD9380F91a6996529da0a262EcD1",
   // 245022926: "",
   1313161555: "0xfb0200C27185185D7DEe0403D5f102ADb59B7c34",
