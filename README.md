@@ -27,6 +27,7 @@ npm run dev
 | Avalanche      | C-chain mainnet     |
 | BSC | mainnet |
 | Ethereum      | Mainnet & Goerli     |
+| Fantom | Mainnet |
 
 
 
