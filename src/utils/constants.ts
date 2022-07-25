@@ -19,13 +19,13 @@ export const NETWORKS: Record<number, {
   },
   56: {
     name: "BNB Chain",
-    networkKey: "BNB-MAINNET",
+    networkKey: "BSC-MAINNET",
     urls: ["https://bscrpc.com"],
     theme: "243, 186, 47"
   },
   43114: {
     name: "Avalanche C-Chain",
-    networkKey: "AVAX-MAINNET",
+    networkKey: "AVALANCHE-MAINNET",
     urls: ["https://api.avax.network/ext/bc/C/rpc"],
     theme: "255, 0, 0"
   },
@@ -49,7 +49,7 @@ export const NETWORKS: Record<number, {
   }
 };
 
-export const ARWEAVE_CONTRACT = "44JMzVHrHFKDAf7M0VvqBZT2lXjNbyHrdtVoagx-i28";
+export const ARWEAVE_CONTRACT = "VWWz1k2u6LnfNLJVCQxVVE3b2ivTVBbgLkMrPe3naoY";
 export const EVM_ORACLES: Record<number, string> = {
   1: "0xdE44d3fB118E0f007f2C0D8fFFE98b994383949A",
   5: "0xdE44d3fB118E0f007f2C0D8fFFE98b994383949A",

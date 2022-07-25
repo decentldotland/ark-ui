@@ -24,8 +24,8 @@ npm run dev
 | Network Name  | Network(s) |
 | ------------- |:-------------:|
 | Aurora      | testnet     |
-| Avalanche      | Fuji C-chain testnet     |
-| BSC | testnet |
+| Avalanche      | C-chain mainnet     |
+| BSC | mainnet |
 | Ethereum      | Mainnet & Goerli     |
 
 
