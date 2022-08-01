@@ -31,7 +31,7 @@ export const NETWORKS: Record<number, {
   },
   10: {
     name: "Optimism",
-    networkKey: "OP-MAINNET",
+    networkKey: "OPTIMISM-MAINNET",
     urls: ["https://optimism-mainnet.public.blastapi.io"],
     theme: "255, 0, 0"
   },
