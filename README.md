@@ -3,7 +3,7 @@
     <img src="./img/logo25.png" height="124">
   </a>
   <h3 align="center"><code>@decentdotland/ark-ui</code></h3>
-  <p align="center">multi-chain identities linking protocol</p>
+  <p align="center">multi-chain identity linking protocol</p>
 </p>
 
 # Synopsis
@@ -25,11 +25,11 @@ npm run dev
 | ------------- |:-------------:|
 | Aurora      | testnet     |
 | Avalanche      | C-chain mainnet     |
-| BSC | mainnet |
+| BNB Chain | mainnet |
 | Ethereum      | Mainnet & Goerli     |
 | Fantom | Mainnet |
-
-
+| Polygon | Mainnet |
+| Optimism | Mainnet |
 
 ## License
 This project is licensed under the [MIT license](./LICENSE)
