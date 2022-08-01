@@ -31,6 +31,7 @@ import Neon from "../assets/neon.png";
 import Aurora from "../assets/aurora.png";
 import Fantom from "../assets/fantom.png"
 import Optimism from "../assets/optimism.svg"
+import Polygon from "../assets/polygon.webp"
 
 const Home: NextPage = () => {
   const downloadWalletModal = useModal();
@@ -345,6 +346,9 @@ const Home: NextPage = () => {
               { activeNetwork === 10 && (
                 <Image style={{margin: '3px 0 0 0'}} src={Optimism} width={30} height={30} draggable={false} />
               )}
+              { activeNetwork === 137 && (
+                <Image style={{margin: '3px 0 0 0'}} src={Polygon} width={30} height={30} draggable={false} />
+              )}
 
               <ChainName>
                 {(activeNetwork === 1 || activeNetwork === 5) && "Ethereum"}
@@ -354,8 +358,10 @@ const Home: NextPage = () => {
                 {activeNetwork === 250 && "Fantom"}
                 {activeNetwork === 245022926 && "NEON Testnet"}
                 {activeNetwork === 10 && "Optimism"}
+                {activeNetwork === 137 && "Polygon"}
                 <ChainTicker>
                   {(activeNetwork === 1 || activeNetwork === 10 || activeNetwork === 5) && "ETH"}
+                  {activeNetwork === 137 && "MATIC"}
                   {activeNetwork === 250 && "FTM"}
                   {activeNetwork === 43114 && "AVAX"}
                   {activeNetwork === 56 || 245022926 && ""}
