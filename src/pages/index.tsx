@@ -93,7 +93,7 @@ const Home: NextPage = () => {
       setLinkStatus("Writing to Arweave...");
 
       await interactWrite(arweave, "use_wallet", ARWEAVE_CONTRACT, {
-        function: "linkIdentity",
+        function: "linkEvmIdentity",
         address: eth.address,
         verificationReq: interaction.hash,
         network: NETWORKS[activeNetwork].networkKey
