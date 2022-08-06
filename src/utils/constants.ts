@@ -61,7 +61,9 @@ export const NETWORKS: Record<number, {
   }
 };
 
-export const ARWEAVE_CONTRACT = "VWWz1k2u6LnfNLJVCQxVVE3b2ivTVBbgLkMrPe3naoY";
+export const ARWEAVE_CONTRACT = "5H5Hj81G5j5P2raDhe5VFU-zkf08KDc588GJ8dtlHTw";
+export const GUILDS_REGISTRY_CONTRACT = "sWR6h_DrFHBS2P2-l1zYFo0R7ufJy32YINM1UVP7f5w";
+
 export const EVM_ORACLES: Record<number, string> = {
   1: "0xdE44d3fB118E0f007f2C0D8fFFE98b994383949A",
   5: "0xdE44d3fB118E0f007f2C0D8fFFE98b994383949A",
