@@ -1,5 +1,6 @@
 import { CloseIcon, LinkIcon } from "@iconicicons/react"
 import { arweave, useArconnect } from "../utils/arconnect"
+import CryptoJS from "crypto-js"; 
 import type { NextPage } from "next";
 import Card, { CardSubtitle } from "../components/Card";
 import { Modal, useModal, Close } from "../components/Modal";
@@ -10,7 +11,7 @@ import { addChain, ETHConnector, useETH } from "../utils/eth";
 import { formatAddress } from "../utils/format";
 import { useEffect, useState } from "react";
 import { interactWrite } from "smartweave";
-import { ACTIVE_NETWORK_STORE, ARWEAVE_CONTRACT, NETWORKS } from "../utils/constants";
+import { ACTIVE_NETWORK_STORE, ARWEAVE_CONTRACT, GUILDS_REGISTRY_CONTRACT, NETWORKS } from "../utils/constants";
 import { AnimatePresence, motion } from "framer-motion";
 import { opacityAnimation } from "../utils/animations";
 import { run } from "ar-gql";
@@ -43,10 +44,106 @@ const Home: NextPage = () => {
   const [networkLoaded, setNetworkLoaded] = useState<boolean>(false);
 
   const [status, setStatus] = useState<{ type: StatusType, message: string }>();
+  const [telegramStatus, setTelegramStatus] = useState<{ type: TelegramStatusType, message: string}>();
   const [activeConnector, setActiveConnector] = useState<ETHConnector>();
   const eth = useETH(setActiveConnector, activeNetwork);
 
+  // linking functionality
+  const [linkStatus, setLinkStatus] = useState<string>();
+  const [linkModal, setLinkModal] = useState<boolean>(true);
+
+  // 1 = Create group, 2 = Join group
   const [currentTab, setCurrentTab] = useState<number>(1);
+  const [telegramUsernameInput, setTelegramUsernameInput] = useState<string>();
+  const [verifiedIdentities, setVerifiedIdentities] = useState<any[]>([]);
+  const [user, setUser] = useState<any>();
+  const [groupCreationModal, setGroupCreationModalOpen] = useState<boolean>();
+
+  const ArkTags = [
+    {
+      name: "Protocol-Name",
+      value: "Ark-Network"
+    },
+    {
+      name: "Protocol-Action",
+      value: "Link-Identity"
+    }
+  ]
+
+  useEffect(() => {
+    fetch('https://thawing-lowlands-08726.herokuapp.com/ark/oracle/state').then(res => res.json()).then(res => {
+      const verifiedIdentities = res.res;
+      const foundUser = verifiedIdentities.find((user:any, idx:number) => user.arweave_address === address || user.evm_address === eth.address);
+      if (!foundUser) return 
+      setUser(foundUser);
+
+    })
+  }, [address, eth.address]);
+
+  async function handleTelegramUsernameUpload() {
+  if (!address || !telegramUsernameInput) return;
+  const re = /^[a-z0-9]{5,32}$/i;
+
+   if (telegramUsernameInput.length < 5) {
+      setTelegramStatus({type: "error", message: "Username too short."});
+      return
+    } else if (!re.test(telegramUsernameInput)) {
+      setTelegramStatus({type: "error", message: "Telegram username is invalid."});
+      return
+    }
+
+    const cipheredUsername = CryptoJS.AES.encrypt(telegramUsernameInput, (address)).toString();
+
+    if (currentTab === 1) {
+      if (user) {
+        setTelegramStatus({type: "info", message: "Coming soon!"});
+        setGroupCreationModalOpen(true);
+      } else {
+        setTelegramStatus({type: "error", message: "You cannot create a group until you verify your identity."});
+      }
+    }
+
+    if (currentTab === 2) {
+      try {
+        const query:any = {
+          function: "linkIdentity",
+          telegram_enc: cipheredUsername,
+        };
+
+        if (!eth || !eth.address) {
+          setTelegramStatus({type: "error", message: "Connect an Ethereum wallet"})
+          return;
+        };
+        if (!address) {
+          setTelegramStatus({type: "error", message: "Connect an Arweave wallet"});
+          return;
+        };
+        if (user && !(user.evm_address === eth.address) && !(user.arweave_address === address)) {
+          setTelegramStatus({type: "error", message: "Address mismatch"});
+          return;
+        }
+        if (!user) {
+          setLinkStatus("Linking requried");
+          // @ts-ignore
+          const interaction = await eth.contract.linkIdentity(address);
+          await interaction.wait();
+          setLinkStatus("Writing to Arweave...");
+          query['address'] = eth.address
+          query['verificationReq'] = interaction.hash
+          query['network'] = NETWORKS[activeNetwork].networkKey
+        };
+        setTelegramStatus({type: "info", message: "Linking Telegram..."});
+        await interactWrite(arweave, "use_wallet", ARWEAVE_CONTRACT, query, ArkTags);
+        setTelegramStatus({type: "success", message: "Telegram Successfully Linked!"});
+      } catch {
+        setTelegramStatus({type: "error", message: "Something went wrong. Please try again."});
+      } 
+    }
+  };
+
+  function handleTelegramInput(e: React.ChangeEvent<HTMLInputElement>) {
+    setTelegramUsernameInput(e.target.value)
+  }
 
   // connect to wallet
   async function connectEth(connector: ETHConnector) {
@@ -61,10 +158,6 @@ const Home: NextPage = () => {
       downloadWalletModal.setState(true);
     }
   }
-
-  // linking functionality
-  const [linkStatus, setLinkStatus] = useState<string>();
-  const [linkModal, setLinkModal] = useState<boolean>(true);
 
   async function link() {
     setStatus(undefined);
@@ -97,16 +190,7 @@ const Home: NextPage = () => {
         address: eth.address,
         verificationReq: interaction.hash,
         network: NETWORKS[activeNetwork].networkKey
-      }, [
-        {
-          name: "Protocol-Name",
-          value: "Ark-Network"
-        },
-        {
-          name: "Protocol-Action",
-          value: "Link-Identity"
-        }
-      ]);
+      }, ArkTags);
 
       setLinkStatus("Linked");
       setStatus({
@@ -429,15 +513,16 @@ const Home: NextPage = () => {
             {currentTab === 1 && 'Create a new token-gated group'}
             {currentTab === 2 && 'Join a token-gated group'}
           </ContentTitle>
-          <ComingSoon>
-            <ComingSoonText>Coming soon!</ComingSoonText>
-            <FormWrapper>
-              <TGGroupInput disabled placeholder='Group id' />
-              <Button secondary disabled>
-                {currentTab === 1 ? 'Create' : 'Join'}
-              </Button>
-            </FormWrapper>
-          </ComingSoon>
+          <div style={{color: 'red', fontSize: '1.25rem', fontWeight: '600'}}>{telegramStatus?.type === 'error' ? telegramStatus.message: ''}</div>
+          <div style={{color: 'green', fontSize: '1.25rem', fontWeight: '600'}}>{telegramStatus?.type === 'success' ? telegramStatus.message: ''}</div>
+          <div style={{color: 'white', fontSize: '1.25rem', fontWeight: '600'}}>{telegramStatus?.type === 'info' ? telegramStatus.message: ''}</div>
+          <FormWrapper style={{marginTop: '1rem'}}>
+            <div style={{position: 'absolute', left: '6px', top: '0.7rem', color: 'white', fontSize: '1.25rem'}}>@</div>
+            <TGGroupInput placeholder='Username' value={telegramUsernameInput || ""} onChange={(e) => handleTelegramInput(e)} />
+            <Button secondary onClick={handleTelegramUsernameUpload}>
+              {currentTab === 1 ? 'Create' : 'Join'}
+            </Button>
+          </FormWrapper>
         </IdentityCard>
         <Spacer y={4} />
         <Permanent href="https://arweave.org" target="_blank" rel="noopener noreferer">
@@ -668,13 +753,12 @@ const ComingSoonText = styled.div`
 const TGGroupInput = styled.input`
   width: 100%;
   border: none;
-  padding: 16px 11px;
+  padding: 16px 30px;
   border-radius: 8px;
   font-size: .9rem;
   margin-right: 1em;
   color: white;
   font-family: monospace;
-  cursor: not-allowed;
   background-color: rgb(${props => props.theme.primary + ", .08)"};
   transition: all .18s ease-in-out;
   &:focus {
@@ -683,6 +767,7 @@ const TGGroupInput = styled.input`
 `;
 
 const FormWrapper = styled.div`
+  position: relative;
   display: flex;
   align-items: center;
 `
@@ -838,6 +923,7 @@ const ConnectButton = styled(Button)`
 `;
 
 type StatusType = "error" | "success";
+type TelegramStatusType = "error" | "info" | "success";
 
 const LinkingInProgress = styled(motion.div)`
   position: absolute;
