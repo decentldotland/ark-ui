@@ -106,7 +106,7 @@ const Home: NextPage = () => {
     if (currentTab === 2) {
       try {
         const query:any = {
-          function: "linkIdentity",
+          function: "linkEvmIdentity",
           telegram_enc: cipheredUsername,
         };
 
@@ -186,7 +186,7 @@ const Home: NextPage = () => {
       setLinkStatus("Writing to Arweave...");
 
       await interactWrite(arweave, "use_wallet", ARWEAVE_CONTRACT, {
-        function: "linkIdentity",
+        function: "linkEvmIdentity",
         address: eth.address,
         verificationReq: interaction.hash,
         network: NETWORKS[activeNetwork].networkKey
