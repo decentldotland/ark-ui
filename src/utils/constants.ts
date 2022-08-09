@@ -76,6 +76,17 @@ export const EVM_ORACLES: Record<number, string> = {
   1313161555: "0xfb0200C27185185D7DEe0403D5f102ADb59B7c34",
 };
 
+export const ArkTags = [
+  {
+    name: "Protocol-Name",
+    value: "Ark-Network"
+  },
+  {
+    name: "Protocol-Action",
+    value: "Link-Identity"
+  }
+];
+
 export const URLS: { [chainId: number]: string[] } = Object.keys(NETWORKS).reduce<{ [chainId: number]: string[] }>(
   (accumulator, chainId) => {
     const validURLs: string[] = NETWORKS[Number(chainId)].urls;
