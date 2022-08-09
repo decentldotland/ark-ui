@@ -269,7 +269,7 @@ const Home: NextPage = () => {
 
       // check if linked
       try {
-        const res = await fetch("https://thawing-lowlands-08726.herokuapp.com/ark/oracle/state");
+        const res = await fetch("https://ark-api.decent.land/v1/oracle/state");
         const { res: cachedState } = await res.clone().json();
 
         if (
