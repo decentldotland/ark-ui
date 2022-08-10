@@ -11,7 +11,7 @@ import { addChain, ETHConnector, useETH } from "../utils/eth";
 import { formatAddress } from "../utils/format";
 import { useEffect, useState } from "react";
 import { interactWrite } from "smartweave";
-import { ACTIVE_NETWORK_STORE, ARWEAVE_CONTRACT, GUILDS_REGISTRY_CONTRACT, NETWORKS, ArkTags } from "../utils/constants";
+import { ACTIVE_NETWORK_STORE, TELEGRAM_USERNAME, ARWEAVE_CONTRACT, GUILDS_REGISTRY_CONTRACT, NETWORKS, ArkTags } from "../utils/constants";
 import { AnimatePresence, motion } from "framer-motion";
 import { opacityAnimation } from "../utils/animations";
 import { run } from "ar-gql";
@@ -61,6 +61,8 @@ const Home: NextPage = () => {
   const [telegramGroupInput, setTelegramGroupInput] = useState<string>();
   const [verifiedIdentities, setVerifiedIdentities] = useState<any[]>([]);
   const [user, setUser] = useState<any>();
+  const [oldTGUsername, setOldTGUsername] = useState<any>();
+
   const groupCreationModal = useModal();
 
   useEffect(() => {
@@ -69,6 +71,7 @@ const Home: NextPage = () => {
       const foundUser = verifiedIdentities.find((user:any, idx:number) => user.arweave_address === address || user.evm_address === eth.address);
       if (!foundUser) return 
       setUser(foundUser);
+      setOldTGUsername(localStorage.getItem(TELEGRAM_USERNAME));
     })
   }, [address, eth.address]);
 
@@ -114,6 +117,8 @@ const Home: NextPage = () => {
       };
       setTelegramStatus({type: "info", message: "Linking Telegram..."});
       await interactWrite(arweave, "use_wallet", ARWEAVE_CONTRACT, query, ArkTags);
+      localStorage.setItem(TELEGRAM_USERNAME, telegramUsernameInput);
+
       setTelegramStatus({type: "success", message: "Telegram Successfully Linked!"});
     } catch {
       setTelegramStatus({type: "error", message: "Something went wrong. Please try again."});
@@ -513,7 +518,7 @@ const Home: NextPage = () => {
           <styled.FormWrapper style={{marginTop: '1rem'}}>
             <div style={{position: 'absolute', left: '6px', top: '0.7rem', color: 'white', fontSize: '1.25rem'}}>@</div>
             <styled.TGGroupInput spellCheck={false} placeholder='Username' value={telegramUsernameInput || ""} onChange={(e) => handleTelegramInput(e)} />
-            <Button secondary onClick={handleTelegramUsernameUpload}>
+            <Button secondary onClick={handleTelegramUsernameUpload} disabled={oldTGUsername == telegramUsernameInput}>
               {user?.telegram?.username? "Re-link": "Link"}
             </Button>
           </styled.FormWrapper>
