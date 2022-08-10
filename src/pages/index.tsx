@@ -61,8 +61,7 @@ const Home: NextPage = () => {
   const [telegramGroupInput, setTelegramGroupInput] = useState<string>();
   const [verifiedIdentities, setVerifiedIdentities] = useState<any[]>([]);
   const [user, setUser] = useState<any>();
-  const [oldTGUsername, setOldTGUsername] = useState<any>();
-
+  const [copied, setCopied] = useState<boolean>(false);
   const groupCreationModal = useModal();
 
   useEffect(() => {
@@ -71,21 +70,23 @@ const Home: NextPage = () => {
       const foundUser = verifiedIdentities.find((user:any, idx:number) => user.arweave_address === address || user.evm_address === eth.address);
       if (!foundUser) return 
       setUser(foundUser);
-      setOldTGUsername(localStorage.getItem(TELEGRAM_USERNAME));
     })
   }, [address, eth.address]);
 
   async function handleTelegramUsernameUpload() {
     if (!address || !telegramUsernameInput) return;
     const re = /^[a-z0-9]{5,32}$/i;
-  
-    if (telegramUsernameInput.length < 5) {
-      setTelegramStatus({type: "error", message: "Username too short."});
+    let error = null;
+    if (telegramUsernameInput.length < 5) error = {type: "error", message: "Username too short."};
+    else if (!re.test(telegramUsernameInput)) error = {type: "error", message: "Telegram username is invalid."};
+    else if (!eth || !eth.address) error = {type: "error", message: "Connect an Ethereum wallet"}  
+    else if (!address) error = {type: "error", message: "Connect an Arweave wallet"};
+    else if (user && (!(user.evm_address === eth.address) || !(user.arweave_address === address))) error = {type: "error", message: "Address mismatch"};
+    if (error) {
+      // @ts-ignore
+      setTelegramStatus(error);
       return
-    } else if (!re.test(telegramUsernameInput)) {
-      setTelegramStatus({type: "error", message: "Telegram username is invalid."});
-      return
-    }
+    };
 
     const cipheredUsername = CryptoJS.AES.encrypt(telegramUsernameInput, (address)).toString();
     try {
@@ -93,20 +94,8 @@ const Home: NextPage = () => {
         function: "linkEvmIdentity",
         telegram_enc: cipheredUsername,
       };
-      if (!eth || !eth.address) {
-        setTelegramStatus({type: "error", message: "Connect an Ethereum wallet"})
-        return;
-      };
-      if (!address) {
-        setTelegramStatus({type: "error", message: "Connect an Arweave wallet"});
-        return;
-      };
-      if (user && !(user.evm_address === eth.address) && !(user.arweave_address === address)) {
-        setTelegramStatus({type: "error", message: "Address mismatch"});
-        return;
-      };
       if (!user) {
-        setLinkStatus("Linking requried");
+        setLinkStatus("Interacting with smart contract...");
         // @ts-ignore
         const interaction = await eth.contract.linkIdentity(address);
         await interaction.wait();
@@ -115,14 +104,20 @@ const Home: NextPage = () => {
         query['verificationReq'] = interaction.hash;
         query['network'] = NETWORKS[activeNetwork].networkKey;
       };
-      setTelegramStatus({type: "info", message: "Linking Telegram..."});
+      setTelegramStatus({type: "info", message: "Linking Telegram"});
       await interactWrite(arweave, "use_wallet", ARWEAVE_CONTRACT, query, ArkTags);
-      localStorage.setItem(TELEGRAM_USERNAME, telegramUsernameInput);
 
       setTelegramStatus({type: "success", message: "Telegram Successfully Linked!"});
+      setLinkStatus("Linked");
+      setStatus({
+        type: "success",
+        message: "Linked identity"
+      });
+      setLinkingOverlay("in-progress");
     } catch {
       setTelegramStatus({type: "error", message: "Something went wrong. Please try again."});
     }
+    setLinkStatus(undefined);
   };
   
   function handleTelegramInput(e: React.ChangeEvent<HTMLInputElement>) {
@@ -497,6 +492,26 @@ const Home: NextPage = () => {
           </AnimatePresence>
         </styled.IdentityCard>
         <Spacer y={2} />
+        <AnimatePresence>
+          {status && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.185, ease: "easeInOut" }}
+            >
+              <styled.Status type={status.type}>
+                <p>
+                  <span>{status.type}:</span>
+                  {status.message}
+                </p>
+                <styled.CloseStatusIcon onClick={() => setStatus(undefined)} />
+              </styled.Status>
+              <Spacer y={1} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+        <Spacer y={2} />
         <styled.IdentityCard> 
           <styled.Tabs>
             <styled.TabWrapper>
@@ -514,11 +529,11 @@ const Home: NextPage = () => {
             {currentTab === 1 && 'Create a new token-gated group'}
             {currentTab === 2 && 'Join a token-gated group'}
           </styled.ContentTitle>
-          <div style={{color: 'white'}}><span style={{fontSize: '1.25rem', fontWeight: '600'}}>Step one:</span> link your Telegram account</div>
+          <div style={{color: 'white'}}><span style={{fontSize: '1.25rem', fontWeight: '600'}}>Step one:</span> link your Telegram account {user?.telegram?.username || linkStatus == 'linked' ? <span style={{color: 'green'}}>(Complete!)</span> :''}</div>
           <styled.FormWrapper style={{marginTop: '1rem'}}>
             <div style={{position: 'absolute', left: '6px', top: '0.7rem', color: 'white', fontSize: '1.25rem'}}>@</div>
             <styled.TGGroupInput spellCheck={false} placeholder='Username' value={telegramUsernameInput || ""} onChange={(e) => handleTelegramInput(e)} />
-            <Button secondary onClick={handleTelegramUsernameUpload} disabled={oldTGUsername == telegramUsernameInput}>
+            <Button secondary onClick={handleTelegramUsernameUpload} disabled={linkingOverlay == 'in-progress'}>
               {user?.telegram?.username? "Re-link": "Link"}
             </Button>
           </styled.FormWrapper>
@@ -526,7 +541,20 @@ const Home: NextPage = () => {
           <div style={{color: 'green', fontSize: '1.25rem', fontWeight: '600'}}>{telegramStatus?.type === 'success' ? telegramStatus.message: ''}</div>
           <div style={{color: 'white', fontSize: '1.25rem', fontWeight: '600'}}>{telegramStatus?.type === 'info' ? telegramStatus.message: ''}</div>
           <Spacer y={2} />
-          <div style={{color: 'white', fontSize: '16px'}}><span style={{fontSize: '1.25rem', fontWeight: '600'}}>Step two:</span> go to the Telegram bot and verify your identity.</div>
+          <div style={{color: 'white', fontSize: '16px'}}><span style={{fontSize: '1.25rem', fontWeight: '600'}}>Step two:</span> go to the Telegram bot and verify your identity {user?.telegram?.is_verified && user?.telegram?.is_evaluated ? <span style={{color: 'green'}}>(Complete!)</span> :''}</div>
+          {user?.identity_id && (
+            <styled.ARKIdContainer>
+              <div>Your Identity id:</div>
+              <div style={{fontSize: '12px', marginTop: '1rem', cursor: 'pointer'}} onClick={() => {navigator.clipboard.writeText(user.identity_id); setCopied(true); setTimeout(() => setCopied(false), 1000)}}>
+                {user.identity_id}
+                {copied ? 
+                  <span style={{borderRadius: '4px', padding: '0.2rem 0.1rem', marginLeft: '8px', backgroundColor: 'rgb(20, 230, 0, 0.5)'}}>
+                    Copied!
+                  </span>
+                : ''}
+              </div>
+            </styled.ARKIdContainer>
+          )}
           <Spacer y={2} />
           <a href={`/`}><Button>Go to Telegram bot</Button></a>
           <Spacer y={2} />
@@ -554,10 +582,8 @@ const Home: NextPage = () => {
                   <div style={{position: 'absolute', left: '6px', top: '0.7rem', color: 'white', fontSize: '1.25rem'}}>@</div>
                   <styled.TGGroupInput spellCheck={false} placeholder='Group Id' value={telegramGroupInput || ""} onChange={(e) => setTelegramGroupInput(e.target.value)} />
                   <Button secondary onClick={handleTelegramUsernameUpload}>
-                    Join
+                    Join  
                   </Button>
-                  {/* {!!linkingOverlay && linkModal && (
-                  )} */}
                 </styled.FormWrapper>
                 ) : <div style={{color: 'white', marginTop: '1rem'}}>In order to join the group, link your Telegram.</div>
               }

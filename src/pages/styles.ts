@@ -37,6 +37,15 @@ export const TopContent = styled.div`
   }
 `;
 
+export const ARKIdContainer = styled.div`
+  margin-top: 1rem;
+  color: white;
+  border-radius: 5px;
+  background-color: rgb(${props => props.theme.primary + ", .09)"};
+  padding: 0.8rem 0.5rem;
+  align-items: center;
+`;
+
 export const DownloadWalletModals = styled.div`
   text-align: center;
   margin-top: 1rem;
