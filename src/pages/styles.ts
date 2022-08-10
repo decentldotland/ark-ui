@@ -167,6 +167,17 @@ export const ComingSoonText = styled.div`
   background-color: rgba(0, 0, 0, 0.1);
 `;
 
+interface AnimatedProgressProps {
+  scale: number;
+}
+
+export const TGAnimatedProgress = styled.div<AnimatedProgressProps>`
+  padding: 5px;
+  margin: 0 10px;
+  transform: scale(${props => props.scale});
+  transition: 0.15s all ease;
+`
+
 export const TGGroupInput = styled.input`
   width: 100%;
   border: none;
@@ -187,6 +198,7 @@ export const FormWrapper = styled.div`
   position: relative;
   display: flex;
   align-items: center;
+  justify-content: center;
 `
 
 export const WalletContainer = styled.div`

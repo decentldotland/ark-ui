@@ -1,5 +1,6 @@
-import { CloseIcon, LinkIcon } from "@iconicicons/react"
-import { arweave, useArconnect } from "../utils/arconnect"
+import { CloseIcon, LinkIcon } from "@iconicicons/react";
+import { arweave, useArconnect } from "../utils/arconnect";
+import CryptoJS from "crypto-js";
 import type { NextPage } from "next";
 import Card, { CardSubtitle } from "../components/Card";
 import { Modal, useModal, Close } from "../components/Modal";
@@ -19,7 +20,7 @@ import Head from "next/head";
 import Image from "next/image";
 import * as styled from "./styles";
 import { StatusType, TelegramStatusType } from "./interfaces";
-import TokenGatingForm from "../components/tokenGating";
+
 import Button from "../components/Button";
 import Page from "../components/Page";
 import Spacer from "../components/Spacer";
@@ -53,6 +54,79 @@ const Home: NextPage = () => {
   // linking functionality
   const [linkStatus, setLinkStatus] = useState<string>();
   const [linkModal, setLinkModal] = useState<boolean>(true);
+
+  // 1 = Create group, 2 = Join group
+  const [currentTab, setCurrentTab] = useState<number>(1);
+  const [telegramUsernameInput, setTelegramUsernameInput] = useState<string>();
+  const [telegramGroupInput, setTelegramGroupInput] = useState<string>();
+  const [verifiedIdentities, setVerifiedIdentities] = useState<any[]>([]);
+  const [user, setUser] = useState<any>();
+  const groupCreationModal = useModal();
+
+  useEffect(() => {
+    fetch('https://ark-api.decent.land/v1/oracle/state').then(res => res.json()).then(res => {
+      const verifiedIdentities = res.res;
+      const foundUser = verifiedIdentities.find((user:any, idx:number) => user.arweave_address === address || user.evm_address === eth.address);
+      if (!foundUser) return 
+      setUser(foundUser);
+    })
+  }, [address, eth.address]);
+
+  async function handleTelegramUsernameUpload() {
+    if (!address || !telegramUsernameInput) return;
+    const re = /^[a-z0-9]{5,32}$/i;
+  
+    if (telegramUsernameInput.length < 5) {
+      setTelegramStatus({type: "error", message: "Username too short."});
+      return
+    } else if (!re.test(telegramUsernameInput)) {
+      setTelegramStatus({type: "error", message: "Telegram username is invalid."});
+      return
+    }
+
+    const cipheredUsername = CryptoJS.AES.encrypt(telegramUsernameInput, (address)).toString();
+    try {
+      const query:any = {
+        function: "linkEvmIdentity",
+        telegram_enc: cipheredUsername,
+      };
+      if (!eth || !eth.address) {
+        setTelegramStatus({type: "error", message: "Connect an Ethereum wallet"})
+        return;
+      };
+      if (!address) {
+        setTelegramStatus({type: "error", message: "Connect an Arweave wallet"});
+        return;
+      };
+      if (user && !(user.evm_address === eth.address) && !(user.arweave_address === address)) {
+        setTelegramStatus({type: "error", message: "Address mismatch"});
+        return;
+      };
+      if (!user) {
+        setLinkStatus("Linking requried");
+        // @ts-ignore
+        const interaction = await eth.contract.linkIdentity(address);
+        await interaction.wait();
+        setLinkStatus("Writing to Arweave...");
+        query['address'] = eth.address;
+        query['verificationReq'] = interaction.hash;
+        query['network'] = NETWORKS[activeNetwork].networkKey;
+      };
+      setTelegramStatus({type: "info", message: "Linking Telegram..."});
+      await interactWrite(arweave, "use_wallet", ARWEAVE_CONTRACT, query, ArkTags);
+      setTelegramStatus({type: "success", message: "Telegram Successfully Linked!"});
+    } catch {
+      setTelegramStatus({type: "error", message: "Something went wrong. Please try again."});
+    }
+  };
+  
+  function handleTelegramInput(e: React.ChangeEvent<HTMLInputElement>) {
+    setTelegramUsernameInput(e.target.value)
+  }
+
+  function handleTelegramGroupCreation() {
+    groupCreationModal.setState(true)
+  }
 
   // connect to wallet
   async function connectEth(connector: ETHConnector) {
@@ -284,6 +358,20 @@ const Home: NextPage = () => {
             </styled.ProviderWrapper>
           </styled.DownloadWalletModals>
         </Modal>
+        <Modal title="Create a Group" {...groupCreationModal.bindings}>
+          <styled.DownloadWalletModals>
+          <styled.FormWrapper style={{marginTop: '1rem'}}>
+            <div style={{position: 'absolute', left: '6px', top: '0.7rem', color: 'white', fontSize: '1.25rem'}}>@</div>
+            <styled.TGGroupInput spellCheck={false} placeholder='Group Id' value={telegramGroupInput || ""} onChange={(e) => setTelegramGroupInput(e.target.value)} />
+            <br />
+            <Button secondary onClick={handleTelegramGroupCreation}>
+              Create
+            </Button>
+          </styled.FormWrapper>
+
+          </styled.DownloadWalletModals>
+        </Modal>
+
         <styled.IdentityCard>
           <Spacer y={.25} />
           <CardSubtitle>
@@ -404,7 +492,74 @@ const Home: NextPage = () => {
           </AnimatePresence>
         </styled.IdentityCard>
         <Spacer y={2} />
-        <TokenGatingForm eth={eth} address={address} setLinkStatus={setLinkStatus} activeNetwork={activeNetwork} />
+        <styled.IdentityCard> 
+          <styled.Tabs>
+            <styled.TabWrapper>
+              <styled.Tab active={currentTab === 1} onClick={() => setCurrentTab(1)}>
+                Create Group
+              </styled.Tab>
+            </styled.TabWrapper>
+            <styled.TabWrapper>
+              <styled.Tab active={currentTab === 2} onClick={() => setCurrentTab(2)}>
+                Join Group
+              </styled.Tab>
+            </styled.TabWrapper>
+          </styled.Tabs>
+          <styled.ContentTitle>
+            {currentTab === 1 && 'Create a new token-gated group'}
+            {currentTab === 2 && 'Join a token-gated group'}
+          </styled.ContentTitle>
+          <div style={{color: 'white'}}><span style={{fontSize: '1.25rem', fontWeight: '600'}}>Step one:</span> link your Telegram account</div>
+          <styled.FormWrapper style={{marginTop: '1rem'}}>
+            <div style={{position: 'absolute', left: '6px', top: '0.7rem', color: 'white', fontSize: '1.25rem'}}>@</div>
+            <styled.TGGroupInput spellCheck={false} placeholder='Username' value={telegramUsernameInput || ""} onChange={(e) => handleTelegramInput(e)} />
+            <Button secondary onClick={handleTelegramUsernameUpload}>
+              {user?.telegram?.username? "Re-link": "Link"}
+            </Button>
+          </styled.FormWrapper>
+          <div style={{color: 'red', fontSize: '1.25rem', fontWeight: '600'}}>{telegramStatus?.type === 'error' ? telegramStatus.message: ''}</div>
+          <div style={{color: 'green', fontSize: '1.25rem', fontWeight: '600'}}>{telegramStatus?.type === 'success' ? telegramStatus.message: ''}</div>
+          <div style={{color: 'white', fontSize: '1.25rem', fontWeight: '600'}}>{telegramStatus?.type === 'info' ? telegramStatus.message: ''}</div>
+          <Spacer y={2} />
+          <div style={{color: 'white', fontSize: '16px'}}><span style={{fontSize: '1.25rem', fontWeight: '600'}}>Step two:</span> go to the Telegram bot and verify your identity.</div>
+          <Spacer y={2} />
+          <a href={`/`}><Button>Go to Telegram bot</Button></a>
+          <Spacer y={2} />
+          {currentTab === 1 && (
+            <>
+              <div style={{color: 'white'}}><span style={{fontSize: '1.25rem', fontWeight: '600'}}>Step three:</span> create a group!</div>
+              {user?.telegram?.username ? (
+                <styled.FormWrapper style={{marginTop: '1rem'}}>
+                  <div style={{position: 'absolute', left: '6px', top: '0.7rem', color: 'white', fontSize: '1.25rem'}}>@</div>
+                  <styled.TGGroupInput spellCheck={false} placeholder='Group Id' value={telegramGroupInput || ""} onChange={(e) => setTelegramGroupInput(e.target.value)} />
+                  <Button secondary onClick={handleTelegramGroupCreation}>
+                    Create
+                  </Button>
+                </styled.FormWrapper>
+              ) : (
+                <div style={{color: 'white', marginTop: '1rem'}}>In order to create the group, link your Telegram.</div>
+              )}
+            </>
+          )}
+          {currentTab === 2 && (
+            <>
+              <div style={{color: 'white'}}><span style={{fontSize: '1.25rem', fontWeight: '600'}}>Step three:</span> join a group!</div>
+              {user?.telegram?.username ? (
+                <styled.FormWrapper style={{marginTop: '1rem'}}>
+                  <div style={{position: 'absolute', left: '6px', top: '0.7rem', color: 'white', fontSize: '1.25rem'}}>@</div>
+                  <styled.TGGroupInput spellCheck={false} placeholder='Group Id' value={telegramGroupInput || ""} onChange={(e) => setTelegramGroupInput(e.target.value)} />
+                  <Button secondary onClick={handleTelegramUsernameUpload}>
+                    Join
+                  </Button>
+                  {/* {!!linkingOverlay && linkModal && (
+                  )} */}
+                </styled.FormWrapper>
+                ) : <div style={{color: 'white', marginTop: '1rem'}}>In order to join the group, link your Telegram.</div>
+              }
+            </>
+          )}
+        </styled.IdentityCard>
+
         <Spacer y={4} />
         <styled.Permanent href="https://arweave.org" target="_blank" rel="noopener noreferer">
           <Image src="/permanent.svg" width={150} height={75} />
