@@ -61,6 +61,15 @@ export const NETWORKS: Record<number, {
   }
 };
 
+export const BEP_TOKENS = [
+  {key: "BEP20", name: "BEP20", theme: "243, 186, 47"},
+  {key: "ERC-ETH", name: "ERC 20 ETH", theme: "73, 71, 178"},
+  {key: "ERC-AVAX", name: "ERC20 AVAX", theme: "255, 0, 0"},
+  {key: "ERC-FTM", name: "ERC20 FTM", theme: "9, 39, 255"},
+  {key: "ERC-POLYGON", name: "ERC20 MATIC", theme: "130, 71, 229"},
+  {key: "PST-ANFT", name: "PSTs & aNFTS", theme: "125, 58, 255"}
+];
+
 export const ARWEAVE_CONTRACT = "5H5Hj81G5j5P2raDhe5VFU-zkf08KDc588GJ8dtlHTw";
 export const GUILDS_REGISTRY_CONTRACT = "sWR6h_DrFHBS2P2-l1zYFo0R7ufJy32YINM1UVP7f5w";
 

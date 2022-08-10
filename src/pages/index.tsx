@@ -11,7 +11,7 @@ import { addChain, ETHConnector, useETH } from "../utils/eth";
 import { formatAddress } from "../utils/format";
 import { useEffect, useState } from "react";
 import { interactWrite } from "smartweave";
-import { ACTIVE_NETWORK_STORE, TELEGRAM_USERNAME, ARWEAVE_CONTRACT, GUILDS_REGISTRY_CONTRACT, NETWORKS, ArkTags } from "../utils/constants";
+import { ACTIVE_NETWORK_STORE, TELEGRAM_USERNAME, ARWEAVE_CONTRACT, GUILDS_REGISTRY_CONTRACT, NETWORKS, BEP_TOKENS, ArkTags } from "../utils/constants";
 import { AnimatePresence, motion } from "framer-motion";
 import { opacityAnimation } from "../utils/animations";
 import { run } from "ar-gql";
@@ -27,7 +27,7 @@ import Spacer from "../components/Spacer";
 import Faq from "../components/Faq";
 import ANS from "../components/ANS";
 import Loading from "../components/Loading";
-import Network from "../components/Network";
+import Network, { Select } from "../components/Network";
 import Avalanche from "../assets/avalanche.svg";
 import Binance from "../assets/binance.png";
 import Neon from "../assets/neon.png";
@@ -42,6 +42,7 @@ const Home: NextPage = () => {
   const [address, connect, disconnect] = useArconnect(downloadWalletModal);
   
   const [activeNetwork, setActiveNetwork] = useState<number>(1);
+  const [BEPTOKENselected, setBEPTOKENselected] = useState<number>(0);
   const [previousNetwork, setPreviousNetwork] = useState<number>(1);
 
   const [networkLoaded, setNetworkLoaded] = useState<boolean>(false);
@@ -62,7 +63,7 @@ const Home: NextPage = () => {
   const [verifiedIdentities, setVerifiedIdentities] = useState<any[]>([]);
   const [user, setUser] = useState<any>();
   const [copied, setCopied] = useState<boolean>(false);
-  const groupCreationModal = useModal();
+  const groupCreationModal = useModal();  
 
   useEffect(() => {
     fetch('https://ark-api.decent.land/v1/oracle/state').then(res => res.json()).then(res => {
@@ -360,14 +361,17 @@ const Home: NextPage = () => {
         </Modal>
         <Modal title="Create a Group" {...groupCreationModal.bindings}>
           <styled.DownloadWalletModals>
-          <styled.FormWrapper style={{marginTop: '1rem'}}>
-            <div style={{position: 'absolute', left: '6px', top: '0.7rem', color: 'white', fontSize: '1.25rem'}}>@</div>
-            <styled.TGGroupInput spellCheck={false} placeholder='Group Id' value={telegramGroupInput || ""} onChange={(e) => setTelegramGroupInput(e.target.value)} />
-            <br />
+          <styled.GuildCreationForm>
+            <styled.GuildAttributeInput spellCheck={false} placeholder='Name' value={telegramGroupInput || ""} onChange={(e) => setTelegramGroupInput(e.target.value)} />
+            <styled.GuildAttributeTextarea spellCheck={false} placeholder='Description' value={telegramGroupInput || ""} onChange={(e) => setTelegramGroupInput(e.target.value)} />
+            <styled.GuildAttributeInput spellCheck={false} placeholder='Token Address' value={telegramGroupInput || ""} onChange={(e) => setTelegramGroupInput(e.target.value)} />
+            <styled.GuildAttributeInput spellCheck={false} placeholder='Token Decimals' value={telegramGroupInput || ""} onChange={(e) => setTelegramGroupInput(e.target.value)} />
+            <Select onChange={()=>('e')} idx={BEPTOKENselected} values={BEP_TOKENS} isDisabled={false} />
+            <styled.GuildAttributeInput spellCheck={false} placeholder='Token Threshold' value={telegramGroupInput || ""} onChange={(e) => setTelegramGroupInput(e.target.value)} />
             <Button secondary onClick={handleTelegramGroupCreation}>
               Create
             </Button>
-          </styled.FormWrapper>
+          </styled.GuildCreationForm>
 
           </styled.DownloadWalletModals>
         </Modal>
@@ -564,30 +568,20 @@ const Home: NextPage = () => {
               {user?.telegram?.username ? (
                 <styled.FormWrapper style={{marginTop: '1rem'}}>
                   <div style={{position: 'absolute', left: '6px', top: '0.7rem', color: 'white', fontSize: '1.25rem'}}>@</div>
-                  <styled.TGGroupInput spellCheck={false} placeholder='Group Id' value={telegramGroupInput || ""} onChange={(e) => setTelegramGroupInput(e.target.value)} />
+                  <styled.TGGroupInput spellCheck={false} placeholder='Group Name' value={telegramGroupInput || ""} onChange={(e) => setTelegramGroupInput(e.target.value)} />
                   <Button secondary onClick={handleTelegramGroupCreation}>
                     Create
                   </Button>
                 </styled.FormWrapper>
               ) : (
-                <div style={{color: 'white', marginTop: '1rem'}}>In order to create the group, link your Telegram.</div>
+                <div style={{color: 'white', marginTop: '1rem'}}>In order to create a group, link your Telegram.</div>
               )}
             </>
           )}
           {currentTab === 2 && (
-            <>
-              <div style={{color: 'white'}}><span style={{fontSize: '1.25rem', fontWeight: '600'}}>Step three:</span> join a group!</div>
-              {user?.telegram?.username ? (
-                <styled.FormWrapper style={{marginTop: '1rem'}}>
-                  <div style={{position: 'absolute', left: '6px', top: '0.7rem', color: 'white', fontSize: '1.25rem'}}>@</div>
-                  <styled.TGGroupInput spellCheck={false} placeholder='Group Id' value={telegramGroupInput || ""} onChange={(e) => setTelegramGroupInput(e.target.value)} />
-                  <Button secondary onClick={handleTelegramUsernameUpload}>
-                    Join  
-                  </Button>
-                </styled.FormWrapper>
-                ) : <div style={{color: 'white', marginTop: '1rem'}}>In order to join the group, link your Telegram.</div>
-              }
-            </>
+            <div style={{color: 'white'}}>
+              <span style={{fontSize: '1.25rem', fontWeight: '600'}}>Step three: profit!!</span>
+            </div>
           )}
         </styled.IdentityCard>
 

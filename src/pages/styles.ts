@@ -203,6 +203,48 @@ export const TGGroupInput = styled.input`
   }
 `;
 
+export const GuildAttributeInput = styled.input`
+  width: 90%;
+  border: none;
+  margin-bottom: 1em;
+  padding: 16px 24px;
+  border-radius: 8px;
+  font-size: .9rem;
+  color: white;
+  font-family: monospace;
+  background-color: rgb(${props => props.theme.primary + ", .08)"};
+  transition: all .18s ease-in-out;
+  &:focus {
+    box-shadow: 0 0 0 2px rgba(${props => props.theme.primary}, .5);
+  }
+`;
+
+export const GuildAttributeTextarea = styled.textarea`
+  width: 90%;
+  height: 100px;
+  border: none;
+  margin-bottom: 1em;
+  padding: 16px 24px;
+  border-radius: 8px;
+  font-size: .9rem;
+  color: white;
+  font-family: monospace;
+  background-color: rgb(${props => props.theme.primary + ", .08)"};
+  transition: all .18s ease-in-out;
+  resize: none;
+  &:focus {
+    box-shadow: 0 0 0 2px rgba(${props => props.theme.primary}, .5);
+  }
+`;
+
+export const GuildCreationForm = styled.form`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1em;
+`;
+
 export const FormWrapper = styled.div`
   position: relative;
   display: flex;
