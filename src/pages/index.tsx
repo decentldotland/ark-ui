@@ -18,8 +18,7 @@ import { run } from "ar-gql";
 import linkQuery from "../utils/link_query";
 import Head from "next/head";
 import Image from "next/image";
-import * as styled from "./styles";
-import { StatusType, TelegramStatusType } from "./interfaces";
+import styled from "styled-components";
 
 import Button from "../components/Button";
 import Page from "../components/Page";
@@ -286,9 +285,9 @@ const Home: NextPage = () => {
 
   return (
     <>
-      <styled.TopBanner>
+      <TopBanner>
         Connect wallet and switch network to use Ark on Avalanche, BNB, Aurora, and Goerli
-      </styled.TopBanner>
+      </TopBanner>
       <Head>
         <title>Ark Protocol</title>
         <link rel="icon" href="/favicon.ico" />
@@ -301,27 +300,27 @@ const Home: NextPage = () => {
         <meta name="twitter:description" content="The multichain identity protocol for web3 social" />
         <meta name="twitter:url" content="https://ark.decent.land/"></meta>
       </Head>
-      <styled.TopSection>
-        <styled.ARKLogo>
+      <TopSection>
+        <ARKLogo>
           <Image style={{borderRadius: '18px'}} src="/arkArt.jpg" width={300} height={300} draggable={false} />
-        </styled.ARKLogo>
-        <styled.TopContent>
-          <styled.Title>
-            <styled.ProtocolName>
+        </ARKLogo>
+        <TopContent>
+          <Title>
+            <ProtocolName>
               Ark
-            </styled.ProtocolName>
+            </ProtocolName>
             Protocol
-          </styled.Title>
-          <styled.Subtitle>
+          </Title>
+          <Subtitle>
             The multichain identity protocol for web3 social
-          </styled.Subtitle>
+          </Subtitle>
           <a href="#faq">
-            <styled.ReadMoreButton>
+            <ReadMoreButton>
               Read more
-            </styled.ReadMoreButton>
+            </ReadMoreButton>
           </a>
-        </styled.TopContent>
-      </styled.TopSection>
+        </TopContent>
+      </TopSection>
       <Page>
         <AnimatePresence>
           {status && (
@@ -331,83 +330,83 @@ const Home: NextPage = () => {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.185, ease: "easeInOut" }}
             >
-              <styled.Status type={status.type}>
+              <Status type={status.type}>
                 <p>
                   <span>{status.type}:</span>
                   {status.message}
                 </p>
-                <styled.CloseStatusIcon onClick={() => setStatus(undefined)} />
-              </styled.Status>
+                <CloseStatusIcon onClick={() => setStatus(undefined)} />
+              </Status>
               <Spacer y={1} />
             </motion.div>
           )}
         </AnimatePresence>
         <Modal title="No wallet detected" {...downloadWalletModal.bindings}>
-          <styled.DownloadWalletModals>
+          <DownloadWalletModals>
             You need an Ethereum wallet and ArConnect to use this website.
             <Spacer y={1} />
             If you haven't, you can install wallets here:
             <Spacer y={1} />
-            <styled.ProviderWrapper>
+            <ProviderWrapper>
               <Image src={`/metamask.png`} width={25} height={25} draggable={false} />
-              <styled.InstallWalletURL href="https://metamask.io/download/">MetaMask</styled.InstallWalletURL>.
-            </styled.ProviderWrapper>
+              <InstallWalletURL href="https://metamask.io/download/">MetaMask</InstallWalletURL>.
+            </ProviderWrapper>
             <Spacer y={1} />
-            <styled.ProviderWrapper>
+            <ProviderWrapper>
               <Image src={`/arweave.png`} width={25} height={25} draggable={false} />
-              <styled.InstallWalletURL href="https://chrome.google.com/webstore/detail/arconnect/einnioafmpimabjcddiinlhmijaionap">ArConnect</styled.InstallWalletURL>.
-            </styled.ProviderWrapper>
-          </styled.DownloadWalletModals>
+              <InstallWalletURL href="https://chrome.google.com/webstore/detail/arconnect/einnioafmpimabjcddiinlhmijaionap">ArConnect</InstallWalletURL>.
+            </ProviderWrapper>
+          </DownloadWalletModals>
         </Modal>
         <Modal title="Create a Group" {...groupCreationModal.bindings}>
-          <styled.DownloadWalletModals>
-          <styled.GuildCreationForm>
-            <styled.GuildAttributeInput spellCheck={false} placeholder='Name' value={telegramGroupInput || ""} onChange={(e) => setTelegramGroupInput(e.target.value)} />
-            <styled.GuildAttributeTextarea spellCheck={false} placeholder='Description' value={telegramGroupInput || ""} onChange={(e) => setTelegramGroupInput(e.target.value)} />
-            <styled.GuildAttributeInput spellCheck={false} placeholder='Token Address' value={telegramGroupInput || ""} onChange={(e) => setTelegramGroupInput(e.target.value)} />
-            <styled.GuildAttributeInput spellCheck={false} placeholder='Token Decimals' value={telegramGroupInput || ""} onChange={(e) => setTelegramGroupInput(e.target.value)} />
+          <DownloadWalletModals>
+          <GuildCreationForm>
+            <GuildAttributeInput spellCheck={false} placeholder='Name' value={telegramGroupInput || ""} onChange={(e) => setTelegramGroupInput(e.target.value)} />
+            <GuildAttributeTextarea spellCheck={false} placeholder='Description' value={telegramGroupInput || ""} onChange={(e) => setTelegramGroupInput(e.target.value)} />
+            <GuildAttributeInput spellCheck={false} placeholder='Token Address' value={telegramGroupInput || ""} onChange={(e) => setTelegramGroupInput(e.target.value)} />
+            <GuildAttributeInput spellCheck={false} placeholder='Token Decimals' value={telegramGroupInput || ""} onChange={(e) => setTelegramGroupInput(e.target.value)} />
             <Select onChange={()=>('e')} idx={BEPTOKENselected} values={BEP_TOKENS} isDisabled={false} />
-            <styled.GuildAttributeInput spellCheck={false} placeholder='Token Threshold' value={telegramGroupInput || ""} onChange={(e) => setTelegramGroupInput(e.target.value)} />
+            <GuildAttributeInput spellCheck={false} placeholder='Token Threshold' value={telegramGroupInput || ""} onChange={(e) => setTelegramGroupInput(e.target.value)} />
             <Button secondary onClick={handleTelegramGroupCreation}>
               Create
             </Button>
-          </styled.GuildCreationForm>
+          </GuildCreationForm>
 
-          </styled.DownloadWalletModals>
+          </DownloadWalletModals>
         </Modal>
 
-        <styled.IdentityCard>
+        <IdentityCard>
           <Spacer y={.25} />
           <CardSubtitle>
             Link identity
           </CardSubtitle>
           <Spacer y={1.25} />
-          <styled.WalletContainer>
-            <styled.WalletChainLogo>
+          <WalletContainer>
+            <WalletChainLogo>
               <Image src="/arweave.png" width={30} height={30} draggable={false} />
-              <styled.ChainName>
+              <ChainName>
                 Arweave
-                <styled.ChainTicker>
+                <ChainTicker>
                   Ar
-                </styled.ChainTicker>
-              </styled.ChainName>
-            </styled.WalletChainLogo>
+                </ChainTicker>
+              </ChainName>
+            </WalletChainLogo>
             {(address && <ANS address={address} onClick={() => disconnect()} />) || (
-              <styled.ConnectButton
+              <ConnectButton
                 secondary
                 onClick={() => connect()}
               >
                 Connect
-              </styled.ConnectButton>
+              </ConnectButton>
             )}
-          </styled.WalletContainer>
+          </WalletContainer>
           <Spacer y={1} />
-          <styled.LinkSymbol>
+          <LinkSymbol>
             <LinkIcon />
-          </styled.LinkSymbol>
+          </LinkSymbol>
           <Spacer y={1} />
-          <styled.WalletContainer>
-            <styled.WalletChainLogo>
+          <WalletContainer>
+            <WalletChainLogo>
               {activeNetwork === 1 || activeNetwork === 5 ? (
                 <Image src="/eth.png" width={30} height={30} draggable={false} />
               ): activeNetwork === 1313161555 && (
@@ -435,7 +434,7 @@ const Home: NextPage = () => {
                 <Image style={{margin: '3px 0 0 0'}} src={Polygon} width={30} height={30} draggable={false} />
               )}
 
-              <styled.ChainName>
+              <ChainName>
                 {(activeNetwork === 1 || activeNetwork === 5) && "Ethereum"}
                 {activeNetwork === 1313161555 && "Aurora"}
                 {activeNetwork === 43114 && "Avalanche"}
@@ -444,16 +443,16 @@ const Home: NextPage = () => {
                 {activeNetwork === 245022926 && "NEON Testnet"}
                 {activeNetwork === 10 && "Optimism"}
                 {activeNetwork === 137 && "Polygon"}
-                <styled.ChainTicker>
+                <ChainTicker>
                   {(activeNetwork === 1 || activeNetwork === 10 || activeNetwork === 5) && "ETH"}
                   {activeNetwork === 137 && "MATIC"}
                   {activeNetwork === 250 && "FTM"}
                   {activeNetwork === 43114 && "AVAX"}
                   {activeNetwork === 56 || 245022926 && ""}
-                </styled.ChainTicker>
-              </styled.ChainName>
-            </styled.WalletChainLogo>
-            <styled.ConnectButton secondary style={{ textTransform: eth.address ? "none" : undefined }} onClick={() => {
+                </ChainTicker>
+              </ChainName>
+            </WalletChainLogo>
+            <ConnectButton secondary style={{ textTransform: eth.address ? "none" : undefined }} onClick={() => {
               if (!eth.address) {
                 ethModal.setState(true)
               } else {
@@ -466,8 +465,8 @@ const Home: NextPage = () => {
                   {eth.ens || formatAddress(eth.address, 8)}
                 </>
               )) || "Connect"}
-            </styled.ConnectButton>
-          </styled.WalletContainer>
+            </ConnectButton>
+          </WalletContainer>
           <Spacer y={2.5} />
           <Button secondary fullWidth disabled={!(address && eth.address && linkingOverlay !== "linked")} onClick={() => link()}>
             {linkStatus && <Loading />}
@@ -475,26 +474,26 @@ const Home: NextPage = () => {
           </Button>
           <AnimatePresence>
             {!!linkingOverlay && linkModal && (
-              <styled.LinkingInProgress
+              <LinkingInProgress
                 initial="transparent"
                 animate="visible"
                 exit="transparent"
                 variants={opacityAnimation}
                 transition={{ duration: 0.23, ease: "easeInOut" }}
               >
-                <styled.CloseButton>
+                <CloseButton>
                   <Close onClick={() => setLinkModal(false)} />
-                </styled.CloseButton>
+                </CloseButton>
                 {(linkingOverlay === "linked" && (
                   <p>
                     🥳 Congratulations! You have linked your identity.
                   </p>
                 )) || <p>Identity link sent to Arweave.</p>}
                 <p>Tweet a screenshot of this page and <a href="https://twitter.com/decentdotland" className="twitterLink" target="_blank" rel="noopener noreferrer">@decentdotland</a> to be whitelisted for some future rewards. ✨</p>
-              </styled.LinkingInProgress>
+              </LinkingInProgress>
             )}
           </AnimatePresence>
-        </styled.IdentityCard>
+        </IdentityCard>
         <Spacer y={2} />
         <AnimatePresence>
           {status && (
@@ -504,50 +503,50 @@ const Home: NextPage = () => {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.185, ease: "easeInOut" }}
             >
-              <styled.Status type={status.type}>
+              <Status type={status.type}>
                 <p>
                   <span>{status.type}:</span>
                   {status.message}
                 </p>
-                <styled.CloseStatusIcon onClick={() => setStatus(undefined)} />
-              </styled.Status>
+                <CloseStatusIcon onClick={() => setStatus(undefined)} />
+              </Status>
               <Spacer y={1} />
             </motion.div>
           )}
         </AnimatePresence>
         <Spacer y={2} />
-        <styled.IdentityCard> 
-          <styled.Tabs>
-            <styled.TabWrapper>
-              <styled.Tab active={currentTab === 1} onClick={() => setCurrentTab(1)}>
+        <IdentityCard> 
+          <Tabs>
+            <TabWrapper>
+              <Tab active={currentTab === 1} onClick={() => setCurrentTab(1)}>
                 Create Group
-              </styled.Tab>
-            </styled.TabWrapper>
-            <styled.TabWrapper>
-              <styled.Tab active={currentTab === 2} onClick={() => setCurrentTab(2)}>
+              </Tab>
+            </TabWrapper>
+            <TabWrapper>
+              <Tab active={currentTab === 2} onClick={() => setCurrentTab(2)}>
                 Join Group
-              </styled.Tab>
-            </styled.TabWrapper>
-          </styled.Tabs>
-          <styled.ContentTitle>
+              </Tab>
+            </TabWrapper>
+          </Tabs>
+          <ContentTitle>
             {currentTab === 1 && 'Create a new token-gated group'}
             {currentTab === 2 && 'Join a token-gated group'}
-          </styled.ContentTitle>
+          </ContentTitle>
           <div style={{color: 'white'}}><span style={{fontSize: '1.25rem', fontWeight: '600'}}>Step one:</span> link your Telegram account {user?.telegram?.username || linkStatus == 'linked' ? <span style={{color: 'green'}}>(Complete!)</span> :''}</div>
-          <styled.FormWrapper style={{marginTop: '1rem'}}>
+          <FormWrapper style={{marginTop: '1rem'}}>
             <div style={{position: 'absolute', left: '6px', top: '0.7rem', color: 'white', fontSize: '1.25rem'}}>@</div>
-            <styled.TGGroupInput spellCheck={false} placeholder='Username' value={telegramUsernameInput || ""} onChange={(e) => handleTelegramInput(e)} />
+            <TGGroupInput spellCheck={false} placeholder='Username' value={telegramUsernameInput || ""} onChange={(e) => handleTelegramInput(e)} />
             <Button secondary onClick={handleTelegramUsernameUpload} disabled={linkingOverlay == 'in-progress'}>
               {user?.telegram?.username? "Re-link": "Link"}
             </Button>
-          </styled.FormWrapper>
+          </FormWrapper>
           <div style={{color: 'red', fontSize: '1.25rem', fontWeight: '600'}}>{telegramStatus?.type === 'error' ? telegramStatus.message: ''}</div>
           <div style={{color: 'green', fontSize: '1.25rem', fontWeight: '600'}}>{telegramStatus?.type === 'success' ? telegramStatus.message: ''}</div>
           <div style={{color: 'white', fontSize: '1.25rem', fontWeight: '600'}}>{telegramStatus?.type === 'info' ? telegramStatus.message: ''}</div>
           <Spacer y={2} />
           <div style={{color: 'white', fontSize: '16px'}}><span style={{fontSize: '1.25rem', fontWeight: '600'}}>Step two:</span> go to the Telegram bot and verify your identity {user?.telegram?.is_verified && user?.telegram?.is_evaluated ? <span style={{color: 'green'}}>(Complete!)</span> :''}</div>
           {user?.identity_id && (
-            <styled.ARKIdContainer>
+            <ARKIdContainer>
               <div>Your Identity id:</div>
               <div style={{fontSize: '12px', marginTop: '1rem', cursor: 'pointer'}} onClick={() => {navigator.clipboard.writeText(user.identity_id); setCopied(true); setTimeout(() => setCopied(false), 1000)}}>
                 {user.identity_id}
@@ -557,7 +556,7 @@ const Home: NextPage = () => {
                   </span>
                 : ''}
               </div>
-            </styled.ARKIdContainer>
+            </ARKIdContainer>
           )}
           <Spacer y={2} />
           <a href={`/`}><Button>Go to Telegram bot</Button></a>
@@ -566,13 +565,13 @@ const Home: NextPage = () => {
             <>
               <div style={{color: 'white'}}><span style={{fontSize: '1.25rem', fontWeight: '600'}}>Step three:</span> create a group!</div>
               {user?.telegram?.username ? (
-                <styled.FormWrapper style={{marginTop: '1rem'}}>
+                <FormWrapper style={{marginTop: '1rem'}}>
                   <div style={{position: 'absolute', left: '6px', top: '0.7rem', color: 'white', fontSize: '1.25rem'}}>@</div>
-                  <styled.TGGroupInput spellCheck={false} placeholder='Group Name' value={telegramGroupInput || ""} onChange={(e) => setTelegramGroupInput(e.target.value)} />
+                  <TGGroupInput spellCheck={false} placeholder='Group Name' value={telegramGroupInput || ""} onChange={(e) => setTelegramGroupInput(e.target.value)} />
                   <Button secondary onClick={handleTelegramGroupCreation}>
                     Create
                   </Button>
-                </styled.FormWrapper>
+                </FormWrapper>
               ) : (
                 <div style={{color: 'white', marginTop: '1rem'}}>In order to create a group, link your Telegram.</div>
               )}
@@ -583,16 +582,16 @@ const Home: NextPage = () => {
               <span style={{fontSize: '1.25rem', fontWeight: '600'}}>Step three: profit!!</span>
             </div>
           )}
-        </styled.IdentityCard>
+        </IdentityCard>
 
         <Spacer y={4} />
-        <styled.Permanent href="https://arweave.org" target="_blank" rel="noopener noreferer">
+        <Permanent href="https://arweave.org" target="_blank" rel="noopener noreferer">
           <Image src="/permanent.svg" width={150} height={75} />
-        </styled.Permanent>
+        </Permanent>
         <Spacer id="faq" y={4} />
-        <styled.FAQCard>
+        <FAQCard>
           <Spacer y={1.5} />
-          <styled.Title style={{ textAlign: "center" }}>FAQ</styled.Title>
+          <Title style={{ textAlign: "center" }}>FAQ</Title>
           <Spacer y={1.5} />
           <Faq title="What is Ark Protocol?">
             Ark is a multichain identity linking protocol built to power decent.land, ANS, and any other applications that rely on users attesting to their identity on other chains. Example use cases include token gating and social data aggregation. With Ark, users can use their Arweave wallet as a master identity to prove activity on multiple other chains.
@@ -623,23 +622,23 @@ const Home: NextPage = () => {
           <Faq title="Why is it called Ark?">
           In the decent.land <a href="https://github.com/decentldotland/ark-network" target="_blank" rel="noopener noreferrer">lore</a>, settlers arrived on the planet on a fleet of arks - spaceships ranging in size from personal craft to floating cities. Like its spacefaring namesake, the Ark Protocol makes connections between distant environments.
           </Faq>
-        </styled.FAQCard>
+        </FAQCard>
       </Page>
       <Modal title="Choose a wallet" {...ethModal.bindings}>
-        <styled.MetamaskButton onClick={() => connectEth(metaMask)} fullWidth>
+        <MetamaskButton onClick={() => connectEth(metaMask)} fullWidth>
           <Image src="/metamask.png" width={25} height={25} />
           Metamask
-        </styled.MetamaskButton>
+        </MetamaskButton>
         <Spacer y={1} />
-        <styled.WalletConnectButton onClick={() => connectEth(walletConnect)} fullWidth>
+        <WalletConnectButton onClick={() => connectEth(walletConnect)} fullWidth>
           <Image src="/walletconnect.png" width={25} height={25} />
           Wallet Connect
-        </styled.WalletConnectButton>
+        </WalletConnectButton>
         <Spacer y={1} />
-        <styled.CoinbaseButton onClick={() => connectEth(coinbaseWallet)} fullWidth>
+        <CoinbaseButton onClick={() => connectEth(coinbaseWallet)} fullWidth>
           <Image src="/coinbase.png" width={25} height={25} />
           Coinbase Wallet
-        </styled.CoinbaseButton>
+        </CoinbaseButton>
       </Modal>
       <Network isDisabled={eth.address ? false: true} value={activeNetwork} onChange={(e) => setActiveNetwork((val) => {
         setPreviousNetwork(val);
@@ -650,3 +649,432 @@ const Home: NextPage = () => {
 }
 
 export default Home;
+
+type StatusType = "error" | "success";
+type TelegramStatusType = "error" | "info" | "success";
+
+const ARKLogo = styled.div`
+  margin-right: 40px;
+  @media screen and (max-width: 768px) {
+    margin-bottom: 10px;
+    margin-right: 0px;
+  }
+`;
+
+const TopSection = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem 0;
+  overflow: hidden;
+  z-index: 0;
+  @media screen and (max-width: 768px) {
+    flex-direction: column;
+  }
+`;
+
+const TopContent = styled.div`
+  display: flex;
+  text-align: center;
+  align-items: start;
+  flex-direction: column;
+  width: max-content;
+  @media screen and (max-width: 768px) {
+    align-items: center;
+  }
+`;
+
+const ARKIdContainer = styled.div`
+  margin-top: 1rem;
+  color: white;
+  border-radius: 5px;
+  background-color: rgb(${props => props.theme.primary + ", .09)"};
+  padding: 0.8rem 0.5rem;
+  align-items: center;
+`;
+
+const DownloadWalletModals = styled.div`
+  text-align: center;
+  margin-top: 1rem;
+  color: white;
+  font-size: 1.2rem;
+`;
+
+const ProviderWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const InstallWalletURL = styled.a`
+  margin-left: 0.3rem;
+  color: rgb(${props => props.theme.primary});
+  text-decoration: none;
+`;
+
+const Title = styled.h1`
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: ${props => props.theme.secondaryText};
+  line-height: 1.1em;
+  margin: 0;
+  margin-bottom: .2em;
+
+  @media screen and (max-width: 768px) {
+    font-size: 2rem;
+  }
+`;
+
+const Subtitle = styled.h2`
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #fff;
+  margin: 0;
+  margin-bottom: 2em;
+
+  @media screen and (max-width: 768px) {
+    font-size: 0.8rem;
+  }
+`;
+
+const ProtocolName = styled.span`
+  color: rgb(${props => props.theme.primary});
+`;
+
+const IdentityCard = styled(Card)`
+  position: relative;
+  width: 420px;
+  margin: 0 auto;
+
+  @media screen and (max-width: 768px) {
+    width: calc(100% - 2rem);
+  }
+`;
+
+const Tabs = styled.div`
+  display: flex;
+  justify-content: center;
+`;
+
+const TabWrapper = styled.div`
+  margin: 0px 4px;
+  cursor: pointer;
+  height: 80px;
+`;
+
+interface TabProps {
+  active: boolean;
+}
+
+const Tab = styled.div<TabProps>`
+  display: flex;
+  items-align: center;
+  justify-content: center;
+  user-select: none;
+  width: 125px;
+  font-size: 0.9rem;
+  padding: 16px;
+  border-radius: 3px;
+  color: rgb(${props => props.theme.primary + ", .45)"};
+  transition: all .23s ease-in-out;
+  ${props => props.active && `
+    color: rgb(${props.theme.primary + ", .95)"};
+    border-bottom: 8px solid rgb(${props.theme.primary + ", .95)"};
+  `}
+  &:hover{
+    color: rgb(${props => props.theme.primary + ", .75)"};
+    border-color: rgb(${props => props.theme.primary + ", .75)"};
+  }
+`;
+
+const ContentTitle = styled.div`
+  color: gray;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1em;
+  text-align: center;
+`;
+
+const TopBanner = styled.div`
+  background-color: #141316;
+  color: #f18d1f;
+  padding: 1em;
+  font-size: 0.9rem;
+  text-align: center;
+`;
+
+const ComingSoon = styled.div`
+  position: relative;
+  z-index: 5;
+`;
+
+const ComingSoonText = styled.div`
+  position: absolute;
+  user-select: none;
+  color: white;
+  z-index: 10;
+  width: 100%;
+  height: 100%;
+  font-size: 1.5rem;
+  font-weight: 700;
+  padding-top: 8px;
+  text-align: center;
+  backdrop-filter: blur(1px);
+  background-color: rgba(0, 0, 0, 0.1);
+`;
+
+interface AnimatedProgressProps {
+  scale: number;
+}
+
+const TGAnimatedProgress = styled.div<AnimatedProgressProps>`
+  padding: 5px;
+  margin: 0 10px;
+  transform: scale(${props => props.scale});
+  transition: 0.15s all ease;
+`
+
+const TGGroupInput = styled.input`
+  width: 100%;
+  border: none;
+  padding: 16px 30px;
+  border-radius: 8px;
+  font-size: .9rem;
+  margin-right: 1em;
+  color: white;
+  font-family: monospace;
+  background-color: rgb(${props => props.theme.primary + ", .08)"};
+  transition: all .18s ease-in-out;
+  &:focus {
+    box-shadow: 0 0 0 2px rgba(${props => props.theme.primary}, .5);
+  }
+`;
+
+const GuildAttributeInput = styled.input`
+  width: 90%;
+  border: none;
+  margin-bottom: 1em;
+  padding: 16px 24px;
+  border-radius: 8px;
+  font-size: .9rem;
+  color: white;
+  font-family: monospace;
+  background-color: rgb(${props => props.theme.primary + ", .08)"};
+  transition: all .18s ease-in-out;
+  &:focus {
+    box-shadow: 0 0 0 2px rgba(${props => props.theme.primary}, .5);
+  }
+`;
+
+const GuildAttributeTextarea = styled.textarea`
+  width: 90%;
+  height: 100px;
+  border: none;
+  margin-bottom: 1em;
+  padding: 16px 24px;
+  border-radius: 8px;
+  font-size: .9rem;
+  color: white;
+  font-family: monospace;
+  background-color: rgb(${props => props.theme.primary + ", .08)"};
+  transition: all .18s ease-in-out;
+  resize: none;
+  &:focus {
+    box-shadow: 0 0 0 2px rgba(${props => props.theme.primary}, .5);
+  }
+`;
+
+const GuildCreationForm = styled.form`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1em;
+`;
+
+const FormWrapper = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`
+
+const WalletContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #1c1e23;
+  border-radius: 20px;
+  padding: .8rem .75rem;
+  cursor: text;
+`;
+
+const WalletChainLogo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  font-size: 1.1rem;
+  color: #fff;
+  font-weight: 500;
+`;
+
+const ChainName = styled.div`
+  font-size: 0.9em;
+  display: flex;
+  align-items: flex-end;
+  gap: .25rem;
+`;
+
+const ChainTicker = styled.span`
+  font-size: .9em;
+  color: ${props => props.theme.secondaryText};
+  text-transform: uppercase;
+`;
+
+const LinkSymbol = styled.div`
+  width: 1.95rem;
+  height: 1.95rem;
+  border-radius: 10px;
+  background-color: #1c1e23;
+  color: ${props => props.theme.secondaryText};
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  margin: 0 auto;
+
+  svg {
+    font-size: 1em;
+    width: 1em;
+    height: 1em;
+  }
+`;
+
+const Permanent = styled.a`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18vw;
+  margin: 0 auto;
+
+  @media screen and (max-width: 720px) {
+    width: 40vw;
+  }
+`;
+
+const FAQCard = styled(Card)`
+  padding: 0;
+  width: 70vw;
+  margin: 0 auto;
+
+  @media screen and (max-width: 720px) {
+    width: 100%;
+  }
+`;
+
+const ReadMoreButton = styled(Button)`
+  font-size: 0.95rem;
+  padding: 0.6rem;
+`;
+
+const CoinbaseButton = styled(Button)`
+  background-color: #fff;
+  color: #1652f0;
+`;
+
+const WalletConnectButton = styled(Button)`
+  background-color: #fff;
+  color: #2b6cb0;
+`;
+
+const MetamaskButton = styled(Button)`
+  background-color: #CD6116;
+  color: #fff;
+`;
+
+const Status = styled.div<{ type: StatusType }>`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  border-radius: 12px;
+  color: ${props => props.theme.secondaryText};
+  border: 2px solid ${props => props.type === "error" ? "#ca0000" : "#00ff00"};
+  font-weight: 400;
+  width: 50%;
+  font-size: 0.8rem;
+  margin: 0 auto;
+
+  p {
+    margin: 0;
+  }
+  
+  span {
+    font-weight: 500;
+    color: ${props => props.type === "error" ? "#ca0000" : "#00ff00"};
+    text-transform: uppercase;
+    margin-right: .4rem;
+  }
+
+  @media screen and (max-width: 720px) {
+    width: unset;
+  }
+`;
+
+const CloseStatusIcon = styled(CloseIcon)`
+  font-size: 1.2em;
+  width: 1em;
+  height: 1em;
+  color: ${props => props.theme.secondaryText};
+  cursor: pointer;
+  transition: all .23s ease-in-out;
+
+  &:hover {
+    opacity: .83;
+  }
+
+  &:active {
+    transform: scale(.93);
+  }
+`;
+
+const ConnectButton = styled(Button)`
+  padding-left: 2.5rem;
+  padding-right: 2.5rem;
+
+  @media screen and (max-width: 720px) {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+`;
+
+const LinkingInProgress = styled(motion.div)`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(3px);
+
+  p {
+    margin: 1rem;
+    font-size: 1rem;
+    color: ${props => props.theme.secondaryText};
+    font-weight: 500;
+    text-align: center;
+    max-width: 80%;
+  }
+`;
+
+const CloseButton = styled.div`
+  position: absolute;
+  top: 1.5rem;
+  right: 0.5rem;
+`;
