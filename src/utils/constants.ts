@@ -61,7 +61,7 @@ export const NETWORKS: Record<number, {
   }
 };
 
-export const BEP_TOKENS = [
+export const SUPPORTED_TOKENS = [
   {key: "BEP20", name: "BEP20", theme: "243, 186, 47"},
   {key: "ERC-ETH", name: "ERC 20 ETH", theme: "73, 71, 178"},
   {key: "ERC-AVAX", name: "ERC20 AVAX", theme: "255, 0, 0"},
@@ -71,7 +71,7 @@ export const BEP_TOKENS = [
 ];
 
 export const ARWEAVE_CONTRACT = "5H5Hj81G5j5P2raDhe5VFU-zkf08KDc588GJ8dtlHTw";
-export const GUILDS_REGISTRY_CONTRACT = "sWR6h_DrFHBS2P2-l1zYFo0R7ufJy32YINM1UVP7f5w";
+export const GUILDS_REGISTRY_CONTRACT = "F1VhIZ2I4L-Lw3ueT-EMDivLtz6AjDG90jYdf-nwveY";
 
 export const EVM_ORACLES: Record<number, string> = {
   1: "0xdE44d3fB118E0f007f2C0D8fFFE98b994383949A",
@@ -85,7 +85,7 @@ export const EVM_ORACLES: Record<number, string> = {
   1313161555: "0xfb0200C27185185D7DEe0403D5f102ADb59B7c34",
 };
 
-export const ArkTags = [
+export const ArkTagsLinkEVMIdentity = [
   {
     name: "Protocol-Name",
     value: "Ark-Network"
@@ -93,6 +93,17 @@ export const ArkTags = [
   {
     name: "Protocol-Action",
     value: "Link-Identity"
+  }
+];
+
+export const ArkTagsCreateGuild = [
+  {
+    name: "Protocol-Name",
+    value: "Ark-Network"
+  },
+  {
+    name: "Protocol-Action",
+    value: "Create-Guild"
   }
 ];
 
