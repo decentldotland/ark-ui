@@ -35,6 +35,12 @@ export const NETWORKS: Record<number, {
     urls: ["https://optimism-mainnet.public.blastapi.io"],
     theme: "255, 0, 0"
   },
+  42161: {
+    name: "Arbitrum One",
+    networkKey: "ARBITRUM-MAINNET",
+    urls: ["https://arb1.arbitrum.io/rpc"],
+    theme: "40, 160, 240"
+  },
   250: {
     name: "Fantom",
     networkKey: "FTM-MAINNET",
@@ -69,6 +75,7 @@ export const EVM_ORACLES: Record<number, string> = {
   250: "0xdE44d3fB118E0f007f2C0D8fFFE98b994383949A",
   43114: "0xE5E0A3380811aD9380F91a6996529da0a262EcD1",
   10: "0xdE44d3fB118E0f007f2C0D8fFFE98b994383949A",
+  42161: "0xdE44d3fB118E0f007f2C0D8fFFE98b994383949A",
   137: "0xdE44d3fB118E0f007f2C0D8fFFE98b994383949A",
   // 245022926: "",
   1313161555: "0xfb0200C27185185D7DEe0403D5f102ADb59B7c34",

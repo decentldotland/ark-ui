@@ -32,6 +32,7 @@ import Aurora from "../assets/aurora.png";
 import Fantom from "../assets/fantom.png"
 import Optimism from "../assets/optimism.svg"
 import Polygon from "../assets/polygon.webp"
+import Arbitrum from "../assets/arbitrum.svg"
 
 const Home: NextPage = () => {
   const downloadWalletModal = useModal();
@@ -190,14 +191,14 @@ const Home: NextPage = () => {
 
         if (
           cachedState.find((identity: Record<string, any>) =>
-            (identity.arweave_address === address || identity.evm_address === eth.address) && 
-            identity.ver_req_network === NETWORKS[activeNetwork].networkKey && 
+            (identity.arweave_address === address || identity.evm_address === eth.address) &&
+            identity.ver_req_network === NETWORKS[activeNetwork].networkKey &&
             identity.is_verified
           )
         ) {
           return setLinkingOverlay("linked");
         }
-      } catch {}
+      } catch { }
 
       // check if linking is in progress
       try {
@@ -212,7 +213,7 @@ const Home: NextPage = () => {
         } else {
           setLinkingOverlay(undefined);
         }
-      } catch {}
+      } catch { }
     })();
   }, [address, activeNetwork]);
 
@@ -235,7 +236,7 @@ const Home: NextPage = () => {
       </Head>
       <TopSection>
         <ARKLogo>
-          <Image style={{borderRadius: '18px'}} src="/arkArt.jpg" width={300} height={300} draggable={false} />
+          <Image style={{ borderRadius: '18px' }} src="/arkArt.jpg" width={300} height={300} draggable={false} />
         </ARKLogo>
         <TopContent>
           <Title>
@@ -325,30 +326,35 @@ const Home: NextPage = () => {
             <WalletChainLogo>
               {activeNetwork === 1 || activeNetwork === 5 ? (
                 <Image src="/eth.png" width={30} height={30} draggable={false} />
-              ): activeNetwork === 1313161555 && (
-                <Image style={{margin: '3px 0 0 0', borderRadius: '9999px'}} src={Aurora} width={30} height={30} draggable={false} />
+              ) : activeNetwork === 1313161555 && (
+                <Image style={{ margin: '3px 0 0 0', borderRadius: '9999px' }} src={Aurora} width={30} height={30} draggable={false} />
               )
-              } { activeNetwork === 43114 && (
-                <Image style={{margin: '3px 0 0 0'}} src={Avalanche} width={30} height={30} draggable={false} />
-              )
-              }
-              { activeNetwork === 56 && (
-                <Image style={{margin: '3px 0 0 0'}} src={Binance} width={30} height={30} draggable={false} />
+              } {activeNetwork === 43114 && (
+                <Image style={{ margin: '3px 0 0 0' }} src={Avalanche} width={30} height={30} draggable={false} />
               )
               }
-              { activeNetwork === 250 && (
-                <Image style={{margin: '3px 0 0 0'}} src={Fantom} width={30} height={30} draggable={false} />
+              {activeNetwork === 56 && (
+                <Image style={{ margin: '3px 0 0 0' }} src={Binance} width={30} height={30} draggable={false} />
               )
               }
-              { activeNetwork === 245022926 && (
-                <Image style={{margin: '3px 0 0 0'}} src={Neon} width={30} height={30} draggable={false} />
+              {activeNetwork === 250 && (
+                <Image style={{ margin: '3px 0 0 0' }} src={Fantom} width={30} height={30} draggable={false} />
+              )
+              }
+              {activeNetwork === 245022926 && (
+                <Image style={{ margin: '3px 0 0 0' }} src={Neon} width={30} height={30} draggable={false} />
               )}
-              { activeNetwork === 10 && (
-                <Image style={{margin: '3px 0 0 0'}} src={Optimism} width={30} height={30} draggable={false} />
+              {activeNetwork === 10 && (
+                <Image style={{ margin: '3px 0 0 0' }} src={Optimism} width={30} height={30} draggable={false} />
               )}
-              { activeNetwork === 137 && (
-                <Image style={{margin: '3px 0 0 0'}} src={Polygon} width={30} height={30} draggable={false} />
+              {activeNetwork === 137 && (
+                <Image style={{ margin: '3px 0 0 0' }} src={Polygon} width={30} height={30} draggable={false} />
               )}
+              {activeNetwork === 42161 && (
+                <Image style={{ margin: '3px 0 0 0' }} src={Arbitrum} width={30} height={30} draggable={false} />
+              )}
+
+
 
               <ChainName>
                 {(activeNetwork === 1 || activeNetwork === 5) && "Ethereum"}
@@ -359,8 +365,9 @@ const Home: NextPage = () => {
                 {activeNetwork === 245022926 && "NEON Testnet"}
                 {activeNetwork === 10 && "Optimism"}
                 {activeNetwork === 137 && "Polygon"}
+                {activeNetwork === 42161 && "Arbitrum"}
                 <ChainTicker>
-                  {(activeNetwork === 1 || activeNetwork === 10 || activeNetwork === 5) && "ETH"}
+                  {(activeNetwork === 1 || activeNetwork === 10 || activeNetwork === 42161 || activeNetwork === 5) && "ETH"}
                   {activeNetwork === 137 && "MATIC"}
                   {activeNetwork === 250 && "FTM"}
                   {activeNetwork === 43114 && "AVAX"}
@@ -469,13 +476,13 @@ const Home: NextPage = () => {
             <Spacer y={.5} />
             Early Ark adopters may be eligible for future beta testing opportunities as we expand the set of protocols and use cases
           </Faq>
-          <Faq title="How can I build on Ark Protocol?">If your dApp deals with verifying a user’s identity across chains, or is an Arweave dApp built to work with other L1s, Ark Protocol could be a useful primitive to integrate. 
+          <Faq title="How can I build on Ark Protocol?">If your dApp deals with verifying a user’s identity across chains, or is an Arweave dApp built to work with other L1s, Ark Protocol could be a useful primitive to integrate.
             <a href="https://github.com/decentldotland/ark-network" target="_blank" rel="noopener noreferrer">
               Check it on GitHub here.
             </a>
           </Faq>
           <Faq title="Why is it called Ark?">
-          In the decent.land <a href="https://github.com/decentldotland/ark-network" target="_blank" rel="noopener noreferrer">lore</a>, settlers arrived on the planet on a fleet of arks - spaceships ranging in size from personal craft to floating cities. Like its spacefaring namesake, the Ark Protocol makes connections between distant environments.
+            In the decent.land <a href="https://github.com/decentldotland/ark-network" target="_blank" rel="noopener noreferrer">lore</a>, settlers arrived on the planet on a fleet of arks - spaceships ranging in size from personal craft to floating cities. Like its spacefaring namesake, the Ark Protocol makes connections between distant environments.
           </Faq>
         </FAQCard>
       </Page>
@@ -495,7 +502,7 @@ const Home: NextPage = () => {
           Coinbase Wallet
         </CoinbaseButton>
       </Modal>
-      <Network isDisabled={eth.address ? false: true} value={activeNetwork} onChange={(e) => setActiveNetwork((val) => {
+      <Network isDisabled={eth.address ? false : true} value={activeNetwork} onChange={(e) => setActiveNetwork((val) => {
         setPreviousNetwork(val);
         return Number(e.target.value);
       })} />
