@@ -11,7 +11,16 @@ import { addChain, ETHConnector, useETH } from "../utils/eth";
 import { formatAddress } from "../utils/format";
 import { useEffect, useState } from "react";
 import { interactWrite } from "smartweave";
-import { ACTIVE_NETWORK_STORE, TELEGRAM_USERNAME, ARWEAVE_CONTRACT, GUILDS_REGISTRY_CONTRACT, NETWORKS, BEP_TOKENS, ArkTags } from "../utils/constants";
+import { 
+  ACTIVE_NETWORK_STORE, 
+  ARWEAVE_CONTRACT,
+  GUILDS_REGISTRY_CONTRACT,
+  NETWORKS,
+  SUPPORTED_TOKENS,
+  ArkTagsLinkEVMIdentity,
+  ArkTagsCreateGuild
+} from "../utils/constants";
+
 import { AnimatePresence, motion } from "framer-motion";
 import { opacityAnimation } from "../utils/animations";
 import { run } from "ar-gql";
@@ -41,13 +50,15 @@ const Home: NextPage = () => {
   const [address, connect, disconnect] = useArconnect(downloadWalletModal);
   
   const [activeNetwork, setActiveNetwork] = useState<number>(1);
-  const [BEPTOKENselected, setBEPTOKENselected] = useState<number>(0);
+  const [Tokenselected, setTokenselected] = useState<number>(0);
   const [previousNetwork, setPreviousNetwork] = useState<number>(1);
 
   const [networkLoaded, setNetworkLoaded] = useState<boolean>(false);
 
   const [status, setStatus] = useState<{ type: StatusType, message: string }>();
   const [telegramStatus, setTelegramStatus] = useState<{ type: TelegramStatusType, message: string}>();
+  const [guildCreationStatus, setGuildCreationStatus] = useState<string>();
+  const [guildCreationInProgress, setGuildCreationInProgress] = useState<boolean>();
   const [activeConnector, setActiveConnector] = useState<ETHConnector>();
   const eth = useETH(setActiveConnector, activeNetwork);
 
@@ -58,11 +69,11 @@ const Home: NextPage = () => {
   // 1 = Create group, 2 = Join group
   const [currentTab, setCurrentTab] = useState<number>(1);
   const [telegramUsernameInput, setTelegramUsernameInput] = useState<string>();
-  const [telegramGroupInput, setTelegramGroupInput] = useState<string>();
   const [verifiedIdentities, setVerifiedIdentities] = useState<any[]>([]);
+
   const [user, setUser] = useState<any>();
   const [copied, setCopied] = useState<boolean>(false);
-  const groupCreationModal = useModal();  
+  const guildCreationModal = useModal();  
 
   useEffect(() => {
     fetch('https://ark-api.decent.land/v1/oracle/state').then(res => res.json()).then(res => {
@@ -105,7 +116,7 @@ const Home: NextPage = () => {
         query['network'] = NETWORKS[activeNetwork].networkKey;
       };
       setTelegramStatus({type: "info", message: "Linking Telegram"});
-      await interactWrite(arweave, "use_wallet", ARWEAVE_CONTRACT, query, ArkTags);
+      await interactWrite(arweave, "use_wallet", ARWEAVE_CONTRACT, query, ArkTagsLinkEVMIdentity);
 
       setTelegramStatus({type: "success", message: "Telegram Successfully Linked!"});
       setLinkStatus("Linked");
@@ -119,14 +130,49 @@ const Home: NextPage = () => {
     }
     setLinkStatus(undefined);
   };
-  
+
   function handleTelegramInput(e: React.ChangeEvent<HTMLInputElement>) {
     setTelegramUsernameInput(e.target.value)
-  }
+  };
 
-  function handleTelegramGroupCreation() {
-    groupCreationModal.setState(true)
-  }
+  async function handleGuildCreation() {
+    console.log('fuck')
+    const token_type = SUPPORTED_TOKENS[Tokenselected].key;
+    const params = {
+      function: "createGuild",
+      ...guildCreationValues,
+      token_decimals: parseInt(guildCreationValues.token_decimals),
+      token_type: token_type,
+      token_threshold: parseFloat(guildCreationValues.token_threshold),
+    };
+    if (!address) {setGuildCreationStatus('How did you do that?')}
+    setGuildCreationInProgress(true);
+    setGuildCreationStatus('Creating guild...');
+    // await interactWrite(arweave, "use_wallet", GUILDS_REGISTRY_CONTRACT, params, ArkTagsCreateGuild);
+    setGuildCreationStatus('Guild created!');
+    setGuildCreationInProgress(false);
+  };
+  
+  const initialGuildValues = {
+    name: "", // "pancakessss"
+    description: "", // "we love waffles and a lot of good things but there's a lot of good things so we collect them all"
+    token_address: "", // "0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82" 
+    token_decimals: "", // "18"
+    token_type: Tokenselected,
+    token_threshold: "", // "0.05"
+  };
+
+  const [guildCreationValues, setGuildCreationValues] = useState(initialGuildValues);
+  const handleGuildInputs = (e:any) => {
+    const { name, value } = e.target;
+    const tokenAddressRegex = /^0x[a-fA-F0-9]{1,40}$/;
+    const tokenDecimalsRegex = /^[0-9]+[0-9]*$/;
+    const tokenThresholdRegex = /(^\d*\.?\d*[0-9]+\d*$)|(^[0-9]+\d*\.\d*$)/;
+    if (name === "token_address" && value.length > 0 && value !== '0' && value !== '0x' && !tokenAddressRegex.test(value)) return;
+    if (name === "token_decimals" && value.length > 0 && !tokenDecimalsRegex.test(value)) return;
+    if (name === "token_threshold" && value.length > 0 && !tokenThresholdRegex.test(value)) return;
+    setGuildCreationValues({ ...guildCreationValues, [name]: value });
+  };
 
   // connect to wallet
   async function connectEth(connector: ETHConnector) {
@@ -173,7 +219,7 @@ const Home: NextPage = () => {
         address: eth.address,
         verificationReq: interaction.hash,
         network: NETWORKS[activeNetwork].networkKey
-      }, ArkTags);
+      }, ArkTagsLinkEVMIdentity);
 
       setLinkStatus("Linked");
       setStatus({
@@ -358,23 +404,42 @@ const Home: NextPage = () => {
             </ProviderWrapper>
           </DownloadWalletModals>
         </Modal>
-        <Modal title="Create a Group" {...groupCreationModal.bindings}>
+        <Modal title={guildCreationStatus || 'Create a Guild'} {...guildCreationModal.bindings}>
           <DownloadWalletModals>
-          <GuildCreationForm>
-            <GuildAttributeInput spellCheck={false} placeholder='Name' value={telegramGroupInput || ""} onChange={(e) => setTelegramGroupInput(e.target.value)} />
-            <GuildAttributeTextarea spellCheck={false} placeholder='Description' value={telegramGroupInput || ""} onChange={(e) => setTelegramGroupInput(e.target.value)} />
-            <GuildAttributeInput spellCheck={false} placeholder='Token Address' value={telegramGroupInput || ""} onChange={(e) => setTelegramGroupInput(e.target.value)} />
-            <GuildAttributeInput spellCheck={false} placeholder='Token Decimals' value={telegramGroupInput || ""} onChange={(e) => setTelegramGroupInput(e.target.value)} />
-            <Select onChange={()=>('e')} idx={BEPTOKENselected} values={BEP_TOKENS} isDisabled={false} />
-            <GuildAttributeInput spellCheck={false} placeholder='Token Threshold' value={telegramGroupInput || ""} onChange={(e) => setTelegramGroupInput(e.target.value)} />
-            <Button secondary onClick={handleTelegramGroupCreation}>
-              Create
-            </Button>
-          </GuildCreationForm>
-
+            {guildCreationStatus === 'Guild created!' ? (
+              <FlexContainer>
+                <p><GreenText>Name:</GreenText> {guildCreationValues?.name}</p>
+                <p><GreenText>Description:</GreenText> {guildCreationValues?.description}</p>
+                <p><GreenText>Token Address:</GreenText> {guildCreationValues?.token_address}</p>
+                <p><GreenText>Token Decimals:</GreenText> {guildCreationValues?.token_decimals}</p>
+                <p><GreenText>Token Type:</GreenText> {SUPPORTED_TOKENS[Tokenselected].key}</p>
+                <p><GreenText>Token Threshold:</GreenText> {guildCreationValues?.token_threshold}</p>
+                <Button onClick={() => {
+                  guildCreationModal.setState(false)
+                  setTokenselected(1)
+                  setGuildCreationValues({...initialGuildValues, token_type: 1})              
+                }}>
+                  Perfect!
+                </Button>
+              </FlexContainer>
+            ) : (
+              <GuildCreationForm onSubmit={(e)=> {e.preventDefault(); handleGuildCreation(); return false}} >
+                <GuildAttributeInput spellCheck={false} placeholder='Name' name='name' required pattern=".{1,100}" value={guildCreationValues?.name} onChange={(e) => handleGuildInputs(e)} />
+                <GuildAttributeTextarea spellCheck={false} placeholder='Description (optional)' name='description' value={guildCreationValues?.description} onChange={(e) => handleGuildInputs(e)} />
+                <GuildAttributeInput spellCheck={false} placeholder='Token Address' name='token_address' required pattern=".{1,}" value={guildCreationValues?.token_address} onChange={(e) => handleGuildInputs(e)} />
+                <GuildAttributeInput spellCheck={false} placeholder='Token Decimals' name='token_decimals' required pattern=".{1,100}" value={guildCreationValues?.token_decimals} onChange={(e) => handleGuildInputs(e)} />
+                <Select onChange={(e) => setTokenselected(Number(e.target.value))} idx={Tokenselected} values={SUPPORTED_TOKENS} isDisabled={false} />
+                <GuildAttributeInput spellCheck={false} placeholder='Token Threshold' name='token_threshold' required pattern=".{1,100}" value={guildCreationValues?.token_threshold} onChange={(e) => handleGuildInputs(e)} />
+                <Button secondary disabled={guildCreationInProgress}>
+                  Create
+                </Button>
+                <div>
+                  {guildCreationStatus}
+                </div>
+              </GuildCreationForm>
+            )}
           </DownloadWalletModals>
         </Modal>
-
         <IdentityCard>
           <Spacer y={.25} />
           <CardSubtitle>
@@ -566,9 +631,9 @@ const Home: NextPage = () => {
               <div style={{color: 'white'}}><span style={{fontSize: '1.25rem', fontWeight: '600'}}>Step three:</span> create a group!</div>
               {user?.telegram?.username ? (
                 <FormWrapper style={{marginTop: '1rem'}}>
-                  <div style={{position: 'absolute', left: '6px', top: '0.7rem', color: 'white', fontSize: '1.25rem'}}>@</div>
-                  <TGGroupInput spellCheck={false} placeholder='Group Name' value={telegramGroupInput || ""} onChange={(e) => setTelegramGroupInput(e.target.value)} />
-                  <Button secondary onClick={handleTelegramGroupCreation}>
+                  {/* <div style={{position: 'absolute', left: '6px', top: '0.7rem', color: 'white', fontSize: '1.25rem'}}>@</div> */}
+                  <TGGroupInput spellCheck={false} placeholder='Name' name='name' required pattern=".{1,100}" value={guildCreationValues?.name} onChange={(e) => handleGuildInputs(e)} />
+                  <Button secondary onClick={() => guildCreationModal.setState(true)}>
                     Create
                   </Button>
                 </FormWrapper>
@@ -822,6 +887,19 @@ const ComingSoonText = styled.div`
   text-align: center;
   backdrop-filter: blur(1px);
   background-color: rgba(0, 0, 0, 0.1);
+`;
+
+const GreenText = styled.span`
+  font-size: 18px;
+  color: rgb(${props => props.theme.primary});
+`;
+
+const FlexContainer = styled.div`
+  max-width: 400px;
+  word-break: break-all;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 `;
 
 interface AnimatedProgressProps {
