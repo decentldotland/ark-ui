@@ -1059,6 +1059,7 @@ const ProgressDots = styled.div`
   line-height: 60px;
   height: 45px;
   outline: none;
+  user-select: none;
 
   &:focus {
     outline: none;
