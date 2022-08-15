@@ -104,11 +104,6 @@ const Home: NextPage = () => {
     setAllowedStep(cb())
   }, []);
 
-  useEffect(() => {
-    if (currentStep > previousStep) setAnimateRight(true);
-    else if (currentStep < previousStep) setAnimateRight(false);
-  }, [currentStep])
-
   const encrypt = (string:any, key:any) => {
     return CryptoJS.AES.encrypt(string, key).toString();
   }
@@ -361,6 +356,19 @@ const Home: NextPage = () => {
     })();
   }, [address, activeNetwork]);
 
+  const Slider = (props:any) => (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0.5, y: 0, x: animateRight? -500: 500 }}
+        animate={{ opacity: 1, y: 0, x: 0 }}
+        exit={{ opacity: 0, y: 0, x: animateRight? -500: 500 }}
+        transition={{ duration: 0.4, ease: "easeInOut" }}
+      >
+        {props.children}
+      </motion.div>
+    </AnimatePresence>
+  )
+
   return (
     <>
       <TopBanner>
@@ -598,7 +606,7 @@ const Home: NextPage = () => {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.185, ease: "easeInOut" }}
+              transition={{ duration: 0.5, ease: "easeInOut" }}
             >
               <Status type={status.type}>
                 <p>
@@ -614,80 +622,59 @@ const Home: NextPage = () => {
         <Spacer y={2} />
         <IdentityCard>
           {currentStep === 1 && (
-            <AnimatePresence>
-              <motion.div
-                initial={{ opacity: 0, y: 0, x: animateRight? -100: 100 }}
-                animate={{ opacity: 1, y: 0, x: 0 }}
-                exit={{ opacity: 0, y: 0, x: animateRight? -100: 100 }}
-                transition={{ duration: 0.185, ease: "easeInOut" }}
-              >
-                <div style={{color: 'white'}}>Linking your Telegram account</div>
-                <FormWrapper style={{marginTop: '1rem'}}>
-                  <div style={{position: 'absolute', left: '8px', top: '0.7rem', color: 'white', fontSize: '1.25rem'}}>@</div>
-                  <TGGroupInput spellCheck={false} placeholder='Username' value={telegramUsernameInput || ""} onChange={(e) => handleTelegramInput(e)} />
-                  <Button secondary onClick={handleTelegramUsernameUpload} disabled={linkingOverlay == 'in-progress'}>
-                    {user?.telegram?.username? "Re-link": "Link"}
-                  </Button>
-                </FormWrapper>
-                <div style={{color: 'red', fontSize: '1.25rem', fontWeight: '600'}}>{telegramStatus?.type === 'error' ? telegramStatus.message: ''}</div>
-                <div style={{color: 'green', fontSize: '1.25rem', fontWeight: '600'}}>{telegramStatus?.type === 'success' ? telegramStatus.message: ''}</div>
-                <div style={{color: 'white', fontSize: '1.25rem', fontWeight: '600'}}>{telegramStatus?.type === 'info' ? telegramStatus.message: ''}</div>
-              </motion.div>
-            </AnimatePresence>
+            <Slider>
+              <div style={{color: 'white'}}>Linking your Telegram account</div>
+              <FormWrapper style={{marginTop: '1rem'}}>
+                <div style={{position: 'absolute', left: '8px', top: '0.7rem', color: 'white', fontSize: '1.25rem'}}>@</div>
+                <TGGroupInput spellCheck={false} placeholder='Username' value={telegramUsernameInput || ""} onChange={(e) => handleTelegramInput(e)} />
+                <Button secondary onClick={handleTelegramUsernameUpload} disabled={linkingOverlay == 'in-progress'}>
+                  {user?.telegram?.username? "Relink": "Link"}
+                </Button>
+              </FormWrapper>
+              <div style={{color: 'red', fontSize: '1.25rem', fontWeight: '600'}}>{telegramStatus?.type === 'error' ? telegramStatus.message: ''}</div>
+              <div style={{color: 'green', fontSize: '1.25rem', fontWeight: '600'}}>{telegramStatus?.type === 'success' ? telegramStatus.message: ''}</div>
+              <div style={{color: 'white', fontSize: '1.25rem', fontWeight: '600'}}>{telegramStatus?.type === 'info' ? telegramStatus.message: ''}</div>
+            </Slider>
           )}
           {currentStep === 2 && (
-            <AnimatePresence>
-              <motion.div
-                initial={{ opacity: 0, y: 0, x: !animateRight? -100: 100 }}
-                animate={{ opacity: 1, y: 0, x: 0 }}
-                exit={{ opacity: 0, y: 0, x: !animateRight? -100: 100 }}
-                transition={{ duration: 0.185, ease: "easeInOut" }}
-              >
-                <div style={{color: 'white'}}>Verifying your identity (<span onClick={() => setInstructionsVisible(!instructionsVisible)} style={{cursor: 'pointer'}}>More info</span>)</div>
-                <ARKIdContainer>
-                  <a href={`https://t.me/${TELEGRAM_BOT_NAME}?start=${user?.identity_id}`}><Button fullWidth={true}>Go to Telegram bot</Button></a>
-                  {instructionsVisible && (
-                    <>
-                      Double check your credentials:
-                      {user?.telegram?.username && address && (
-                        TELEGRAM_USERNAME_REGEX.test(decrypt(user.telegram.username, address)) && (
-                          <div>Telegram Username: {decrypt(user.telegram.username, address)}</div>
-                        )
-                      )}
-                      <div>
-                        To verify your Telegram Account, go to <a style={{color: 'lime'}} href={`https://t.me/${TELEGRAM_BOT_NAME}`}>Telegram Bot</a> and paste <span style={{color: 'pink'}}>/verify_identity {user?.identity_id}</span>
-                        <button style={{fontSize: '12px', marginTop: '1rem', cursor: 'pointer', borderRadius: '4px', padding: '0.2rem 0.1rem', marginLeft: '8px', backgroundColor: 'rgb(20, 230, 0, 0.5)'}} onClick={() => {navigator.clipboard.writeText("/verify_identity " + user?.identity_id); setCopied(true); setTimeout(() => setCopied(false), 1000)}}>
-                          {copied ? "Copied!" : "Copy"}
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </ARKIdContainer>
-              </motion.div>
-            </AnimatePresence>
+            <Slider>
+              <div style={{color: 'white'}}>Verifying your identity (<span onClick={() => setInstructionsVisible(!instructionsVisible)} style={{cursor: 'pointer'}}>Troubleshoot</span>)</div>
+              <ARKIdContainer>
+                <a href={`https://t.me/${TELEGRAM_BOT_NAME}?start=${user?.identity_id}`}><Button fullWidth={true}>Go to Telegram bot</Button></a>
+                {instructionsVisible && (
+                  <>
+                    Double check your credentials:
+                    {user?.telegram?.username && address && (
+                      TELEGRAM_USERNAME_REGEX.test(decrypt(user.telegram.username, address)) && (
+                        <div>Telegram Username: {decrypt(user.telegram.username, address)}</div>
+                      )
+                    )}
+                    <div>
+                      To verify your Telegram Account, go to <a style={{color: 'lime'}} href={`https://t.me/${TELEGRAM_BOT_NAME}`}>Telegram Bot</a> and paste <span style={{color: 'pink'}}>/verify_identity {user?.identity_id}</span>
+                      <button style={{fontSize: '12px', marginTop: '1rem', cursor: 'pointer', borderRadius: '4px', padding: '0.2rem 0.1rem', marginLeft: '8px', backgroundColor: 'rgb(20, 230, 0, 0.5)'}} onClick={() => {navigator.clipboard.writeText("/verify_identity " + user?.identity_id); setCopied(true); setTimeout(() => setCopied(false), 1000)}}>
+                        {copied ? "Copied!" : "Copy"}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </ARKIdContainer>
+            </Slider>
           )}
           {currentStep === 3 && (
-            <AnimatePresence>
-              <motion.div
-                initial={{ opacity: 0, y: 0, x: animateRight? -100: 100 }}
-                animate={{ opacity: 1, y: 0, x: 0 }}
-                exit={{ opacity: 0, y: 0, x: animateRight? -100: 100 }}
-                transition={{ duration: 0.185, ease: "easeInOut" }}
-              >          
-                <div style={{color: 'white'}}>Creating a guild</div>
-                {user?.telegram?.username ? (
-                  <FormWrapper style={{marginTop: '1rem'}}>
-                    {/* <div style={{position: 'absolute', left: '6px', top: '0.7rem', color: 'white', fontSize: '1.25rem'}}>@</div> */}
-                    <TGGroupInput spellCheck={false} placeholder='Name' name='name' required pattern=".{1,100}" value={guildCreationValues?.name} onChange={(e) => handleGuildInputs(e)} />
-                    <Button secondary onClick={() => guildCreationModal.setState(true)}>
-                      Create
-                    </Button>
-                  </FormWrapper>
-                ) : (
-                  <div style={{color: 'white', marginTop: '1rem'}}>In order to create a group, link your Telegram.</div>
-                )}
-               </motion.div>
-            </AnimatePresence>
+            <Slider>
+              <div style={{color: 'white'}}>Creating a guild</div>
+              {user?.telegram?.username ? (
+                <FormWrapper style={{marginTop: '1rem'}}>
+                  {/* <div style={{position: 'absolute', left: '6px', top: '0.7rem', color: 'white', fontSize: '1.25rem'}}>@</div> */}
+                  <TGGroupInput spellCheck={false} placeholder='Name' name='name' required pattern=".{1,100}" value={guildCreationValues?.name} onChange={(e) => handleGuildInputs(e)} />
+                  <Button secondary onClick={() => guildCreationModal.setState(true)}>
+                    Create
+                  </Button>
+                </FormWrapper>
+              ) : (
+                <div style={{color: 'white', marginTop: '1rem'}}>In order to create a group, link your Telegram.</div>
+              )}
+            </Slider>
           )}
           <ProgressDots>
             {Array(maxSteps).fill(0).map((_, i) => <span style={{
@@ -697,7 +684,8 @@ const Home: NextPage = () => {
               }}
               onClick={() => {
                 if(allowedStep >= i+1) {
-                  setPreviousStep(currentStep)
+                  if (currentStep - (i+1) < 0) setAnimateRight(false);
+                  else if (currentStep - (i+1) > 0) setAnimateRight(true);
                   setCurrentStep(i+1)
                 }
               }}>
