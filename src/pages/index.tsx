@@ -68,8 +68,11 @@ const Home: NextPage = () => {
   const [linkStatus, setLinkStatus] = useState<string>();
   const [linkModal, setLinkModal] = useState<boolean>(true);
 
-  const [currentStep, setCurrentStep] = useState<number>(2);
+  const [currentStep, setCurrentStep] = useState<number>(1);
+  const [previousStep, setPreviousStep] = useState<number>(1);
+  const [allowedStep, setAllowedStep] = useState<number>(1);
   const maxSteps = 3;
+  const [animateRight, setAnimateRight] = useState<boolean>(true)
   const [instructionsVisible, setInstructionsVisible] = useState<boolean>(false);
   const [telegramUsernameInput, setTelegramUsernameInput] = useState<string>();
   const [verifiedIdentities, setVerifiedIdentities] = useState<any[]>([]);
@@ -88,14 +91,23 @@ const Home: NextPage = () => {
   }, [address, eth.address]);
 
   useEffect(() => {
-    setCurrentStep(() => {
+    let cb = () => {
       switch (user) {
         case user?.telegram?.is_verified && user?.telegram?.is_evaluated: return 3
         case user?.telegram?.username || linkStatus == 'linked': return 2
         default: return 1
       }
-    })
+    }
+
+    setPreviousStep(cb())
+    setCurrentStep(cb())
+    setAllowedStep(cb())
   }, []);
+
+  useEffect(() => {
+    if (currentStep > previousStep) setAnimateRight(true);
+    else if (currentStep < previousStep) setAnimateRight(false);
+  }, [currentStep])
 
   const encrypt = (string:any, key:any) => {
     return CryptoJS.AES.encrypt(string, key).toString();
@@ -602,69 +614,96 @@ const Home: NextPage = () => {
         <Spacer y={2} />
         <IdentityCard>
           {currentStep === 1 && (
-            <>
-              <div style={{color: 'white'}}>Linking your Telegram account</div>
-              <FormWrapper style={{marginTop: '1rem'}}>
-                <div style={{position: 'absolute', left: '6px', top: '0.7rem', color: 'white', fontSize: '1.25rem'}}>@</div>
-                <TGGroupInput spellCheck={false} placeholder='Username' value={telegramUsernameInput || ""} onChange={(e) => handleTelegramInput(e)} />
-                <Button secondary onClick={handleTelegramUsernameUpload} disabled={linkingOverlay == 'in-progress'}>
-                  {user?.telegram?.username? "Re-link": "Link"}
-                </Button>
-              </FormWrapper>
-              <div style={{color: 'red', fontSize: '1.25rem', fontWeight: '600'}}>{telegramStatus?.type === 'error' ? telegramStatus.message: ''}</div>
-              <div style={{color: 'green', fontSize: '1.25rem', fontWeight: '600'}}>{telegramStatus?.type === 'success' ? telegramStatus.message: ''}</div>
-              <div style={{color: 'white', fontSize: '1.25rem', fontWeight: '600'}}>{telegramStatus?.type === 'info' ? telegramStatus.message: ''}</div>
-            </>
-          )}
-          {currentStep === 2 && (
-            <>
-              <div style={{color: 'white'}}>Verifying your identity</div>
-              <ARKIdContainer>
-                <a href={`https://t.me/${TELEGRAM_BOT_NAME}?start=${user?.identity_id}`}><Button>Go to Telegram bot</Button></a>
-                <div onClick={() => setInstructionsVisible(!instructionsVisible)} style={{cursor: 'pointer'}}>More info</div>
-                {instructionsVisible && (
-                  <>
-                    Double check your credentials:
-                    {user?.telegram?.username && address && (
-                      TELEGRAM_USERNAME_REGEX.test(decrypt(user.telegram.username, address)) && (
-                        <div>Telegram Username: {decrypt(user.telegram.username, address)}</div>
-                      )
-                    )}
-                    <div>
-                      To verify your Telegram Account, go to <a style={{color: 'lime'}} href={`https://t.me/${TELEGRAM_BOT_NAME}`}>Telegram Bot</a> and paste <span style={{color: 'pink'}}>/verify_identity {user?.identity_id}</span>
-                      <button style={{fontSize: '12px', marginTop: '1rem', cursor: 'pointer', borderRadius: '4px', padding: '0.2rem 0.1rem', marginLeft: '8px', backgroundColor: 'rgb(20, 230, 0, 0.5)'}} onClick={() => {navigator.clipboard.writeText("/verify_identity " + user?.identity_id); setCopied(true); setTimeout(() => setCopied(false), 1000)}}>
-                        {copied ? "Copied!" : "Copy"}
-                      </button>
-                    </div>
-                  </>
-                )}
-              </ARKIdContainer>
-            </>
-          )}
-          {currentStep === 3 && (
-            <>
-              <div style={{color: 'white'}}>Creating a guild</div>
-              {user?.telegram?.username ? (
+            <AnimatePresence>
+              <motion.div
+                initial={{ opacity: 0, y: 0, x: animateRight? -100: 100 }}
+                animate={{ opacity: 1, y: 0, x: 0 }}
+                exit={{ opacity: 0, y: 0, x: animateRight? -100: 100 }}
+                transition={{ duration: 0.185, ease: "easeInOut" }}
+              >
+                <div style={{color: 'white'}}>Linking your Telegram account</div>
                 <FormWrapper style={{marginTop: '1rem'}}>
-                  {/* <div style={{position: 'absolute', left: '6px', top: '0.7rem', color: 'white', fontSize: '1.25rem'}}>@</div> */}
-                  <TGGroupInput spellCheck={false} placeholder='Name' name='name' required pattern=".{1,100}" value={guildCreationValues?.name} onChange={(e) => handleGuildInputs(e)} />
-                  <Button secondary onClick={() => guildCreationModal.setState(true)}>
-                    Create
+                  <div style={{position: 'absolute', left: '8px', top: '0.7rem', color: 'white', fontSize: '1.25rem'}}>@</div>
+                  <TGGroupInput spellCheck={false} placeholder='Username' value={telegramUsernameInput || ""} onChange={(e) => handleTelegramInput(e)} />
+                  <Button secondary onClick={handleTelegramUsernameUpload} disabled={linkingOverlay == 'in-progress'}>
+                    {user?.telegram?.username? "Re-link": "Link"}
                   </Button>
                 </FormWrapper>
-              ) : (
-                <div style={{color: 'white', marginTop: '1rem'}}>In order to create a group, link your Telegram.</div>
-              )}
-            </>
+                <div style={{color: 'red', fontSize: '1.25rem', fontWeight: '600'}}>{telegramStatus?.type === 'error' ? telegramStatus.message: ''}</div>
+                <div style={{color: 'green', fontSize: '1.25rem', fontWeight: '600'}}>{telegramStatus?.type === 'success' ? telegramStatus.message: ''}</div>
+                <div style={{color: 'white', fontSize: '1.25rem', fontWeight: '600'}}>{telegramStatus?.type === 'info' ? telegramStatus.message: ''}</div>
+              </motion.div>
+            </AnimatePresence>
+          )}
+          {currentStep === 2 && (
+            <AnimatePresence>
+              <motion.div
+                initial={{ opacity: 0, y: 0, x: !animateRight? -100: 100 }}
+                animate={{ opacity: 1, y: 0, x: 0 }}
+                exit={{ opacity: 0, y: 0, x: !animateRight? -100: 100 }}
+                transition={{ duration: 0.185, ease: "easeInOut" }}
+              >
+                <div style={{color: 'white'}}>Verifying your identity (<span onClick={() => setInstructionsVisible(!instructionsVisible)} style={{cursor: 'pointer'}}>More info</span>)</div>
+                <ARKIdContainer>
+                  <a href={`https://t.me/${TELEGRAM_BOT_NAME}?start=${user?.identity_id}`}><Button fullWidth={true}>Go to Telegram bot</Button></a>
+                  {instructionsVisible && (
+                    <>
+                      Double check your credentials:
+                      {user?.telegram?.username && address && (
+                        TELEGRAM_USERNAME_REGEX.test(decrypt(user.telegram.username, address)) && (
+                          <div>Telegram Username: {decrypt(user.telegram.username, address)}</div>
+                        )
+                      )}
+                      <div>
+                        To verify your Telegram Account, go to <a style={{color: 'lime'}} href={`https://t.me/${TELEGRAM_BOT_NAME}`}>Telegram Bot</a> and paste <span style={{color: 'pink'}}>/verify_identity {user?.identity_id}</span>
+                        <button style={{fontSize: '12px', marginTop: '1rem', cursor: 'pointer', borderRadius: '4px', padding: '0.2rem 0.1rem', marginLeft: '8px', backgroundColor: 'rgb(20, 230, 0, 0.5)'}} onClick={() => {navigator.clipboard.writeText("/verify_identity " + user?.identity_id); setCopied(true); setTimeout(() => setCopied(false), 1000)}}>
+                          {copied ? "Copied!" : "Copy"}
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </ARKIdContainer>
+              </motion.div>
+            </AnimatePresence>
+          )}
+          {currentStep === 3 && (
+            <AnimatePresence>
+              <motion.div
+                initial={{ opacity: 0, y: 0, x: animateRight? -100: 100 }}
+                animate={{ opacity: 1, y: 0, x: 0 }}
+                exit={{ opacity: 0, y: 0, x: animateRight? -100: 100 }}
+                transition={{ duration: 0.185, ease: "easeInOut" }}
+              >          
+                <div style={{color: 'white'}}>Creating a guild</div>
+                {user?.telegram?.username ? (
+                  <FormWrapper style={{marginTop: '1rem'}}>
+                    {/* <div style={{position: 'absolute', left: '6px', top: '0.7rem', color: 'white', fontSize: '1.25rem'}}>@</div> */}
+                    <TGGroupInput spellCheck={false} placeholder='Name' name='name' required pattern=".{1,100}" value={guildCreationValues?.name} onChange={(e) => handleGuildInputs(e)} />
+                    <Button secondary onClick={() => guildCreationModal.setState(true)}>
+                      Create
+                    </Button>
+                  </FormWrapper>
+                ) : (
+                  <div style={{color: 'white', marginTop: '1rem'}}>In order to create a group, link your Telegram.</div>
+                )}
+               </motion.div>
+            </AnimatePresence>
           )}
           <ProgressDots>
             {Array(maxSteps).fill(0).map((_, i) => <span style={{
-              color: (i+1 < currentStep && 'green') || (currentStep === i+1 && 'white') || (currentStep > i+1 && 'gray') || 'gray',
+              color: (i+1 < currentStep && `rgb(38, 191, 168)`) || (currentStep === i+1 && 'white') || (currentStep > i+1 && 'gray') || 'gray',
               fontSize: '72px',
               cursor: 'pointer',
               }}
-              onClick={() => setCurrentStep(i+1)}
-              >.</span>
+              onClick={() => {
+                if(allowedStep >= i+1) {
+                  setPreviousStep(currentStep)
+                  setCurrentStep(i+1)
+                }
+              }}>
+                {/* {allowedStep >= i+1 ? '🛸': '·'} */}
+                ·
+              </span> 
             )}
           </ProgressDots>
         </IdentityCard>
@@ -771,11 +810,11 @@ const TopContent = styled.div`
 `;
 
 const ARKIdContainer = styled.div`
-  margin-top: 1rem;
+  margin-top: 0.5rem;
   color: white;
   border-radius: 5px;
   background-color: rgb(${props => props.theme.primary + ", .09)"};
-  padding: 0.8rem 0.5rem;
+  padding: 0.72rem 0.5rem;
   align-items: center;
 `;
 
@@ -934,7 +973,7 @@ const TGAnimatedProgress = styled.div<AnimatedProgressProps>`
 `
 
 const TGGroupInput = styled.input`
-  width: 100%;
+  width: 75%;
   border: none;
   padding: 16px 30px;
   border-radius: 8px;
@@ -993,6 +1032,14 @@ const GuildCreationForm = styled.form`
 
 const ProgressDots = styled.div`
   text-align: center;
+  line-height: 60px;
+  height: 45px;
+  outline: none;
+
+  &:focus {
+    outline: none;
+    box-shadow: none;
+  }
 `;
 
 
