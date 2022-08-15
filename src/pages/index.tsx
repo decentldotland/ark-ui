@@ -356,18 +356,12 @@ const Home: NextPage = () => {
     })();
   }, [address, activeNetwork]);
 
-  const Slider = (props:any) => (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0.5, y: 0, x: animateRight? -500: 500 }}
-        animate={{ opacity: 1, y: 0, x: 0 }}
-        exit={{ opacity: 0, y: 0, x: animateRight? -500: 500 }}
-        transition={{ duration: 0.4, ease: "easeInOut" }}
-      >
-        {props.children}
-      </motion.div>
-    </AnimatePresence>
-  )
+  const SliderArgs = {
+    initial: { opacity: 0.5, y: 0, x: animateRight? -500: 500 },
+    animate: { opacity: 1, y: 0, x: 0 },
+    exit: { opacity: 0, y: 0, x: animateRight? -500: 500 },
+    transition: { duration: 0.4, ease: "easeInOut" },
+  }
 
   return (
     <>
@@ -622,65 +616,85 @@ const Home: NextPage = () => {
         <Spacer y={2} />
         <IdentityCard>
           {currentStep === 1 && (
-            <Slider>
-              <div style={{color: 'white'}}>Linking your Telegram account</div>
-              <FormWrapper style={{marginTop: '1rem'}}>
-                <div style={{position: 'absolute', left: '8px', top: '0.7rem', color: 'white', fontSize: '1.25rem'}}>@</div>
-                <TGGroupInput spellCheck={false} placeholder='Username' value={telegramUsernameInput || ""} onChange={(e) => handleTelegramInput(e)} />
-                <Button secondary onClick={handleTelegramUsernameUpload} disabled={linkingOverlay == 'in-progress'}>
-                  {user?.telegram?.username? "Relink": "Link"}
-                </Button>
-              </FormWrapper>
-              <div style={{color: 'red', fontSize: '1.25rem', fontWeight: '600'}}>{telegramStatus?.type === 'error' ? telegramStatus.message: ''}</div>
-              <div style={{color: 'green', fontSize: '1.25rem', fontWeight: '600'}}>{telegramStatus?.type === 'success' ? telegramStatus.message: ''}</div>
-              <div style={{color: 'white', fontSize: '1.25rem', fontWeight: '600'}}>{telegramStatus?.type === 'info' ? telegramStatus.message: ''}</div>
-            </Slider>
-          )}
-          {currentStep === 2 && (
-            <Slider>
-              <div style={{color: 'white'}}>Verifying your identity (<span onClick={() => setInstructionsVisible(!instructionsVisible)} style={{cursor: 'pointer'}}>Troubleshoot</span>)</div>
-              <ARKIdContainer>
-                <a href={`https://t.me/${TELEGRAM_BOT_NAME}?start=${user?.identity_id}`}><Button fullWidth={true}>Go to Telegram bot</Button></a>
-                {instructionsVisible && (
-                  <>
-                    Double check your credentials:
-                    {user?.telegram?.username && address && (
-                      TELEGRAM_USERNAME_REGEX.test(decrypt(user.telegram.username, address)) && (
-                        <div>Telegram Username: {decrypt(user.telegram.username, address)}</div>
-                      )
-                    )}
-                    <div>
-                      To verify your Telegram Account, go to <a style={{color: 'lime'}} href={`https://t.me/${TELEGRAM_BOT_NAME}`}>Telegram Bot</a> and paste <span style={{color: 'pink'}}>/verify_identity {user?.identity_id}</span>
-                      <button style={{fontSize: '12px', marginTop: '1rem', cursor: 'pointer', borderRadius: '4px', padding: '0.2rem 0.1rem', marginLeft: '8px', backgroundColor: 'rgb(20, 230, 0, 0.5)'}} onClick={() => {navigator.clipboard.writeText("/verify_identity " + user?.identity_id); setCopied(true); setTimeout(() => setCopied(false), 1000)}}>
-                        {copied ? "Copied!" : "Copy"}
-                      </button>
-                    </div>
-                  </>
-                )}
-              </ARKIdContainer>
-            </Slider>
-          )}
-          {currentStep === 3 && (
-            <Slider>
-              <div style={{color: 'white'}}>Creating a guild</div>
-              {user?.telegram?.username ? (
+            <AnimatePresence>
+              <motion.div {...SliderArgs}>
+                <WhiteText>Linking Your Telegram Account</WhiteText>
                 <FormWrapper style={{marginTop: '1rem'}}>
-                  {/* <div style={{position: 'absolute', left: '6px', top: '0.7rem', color: 'white', fontSize: '1.25rem'}}>@</div> */}
-                  <TGGroupInput spellCheck={false} placeholder='Name' name='name' required pattern=".{1,100}" value={guildCreationValues?.name} onChange={(e) => handleGuildInputs(e)} />
-                  <Button secondary onClick={() => guildCreationModal.setState(true)}>
-                    Create
+                  <div style={{position: 'absolute', left: '8px', top: '0.7rem', color: 'white', fontSize: '1.25rem'}}>@</div>
+                  <TGGroupInput spellCheck={false} placeholder='Username' value={telegramUsernameInput || ""} onChange={(e) => handleTelegramInput(e)} />
+                  <Button secondary onClick={handleTelegramUsernameUpload} disabled={linkingOverlay == 'in-progress'}>
+                    {user?.telegram?.username? "Relink": "Link"}
                   </Button>
                 </FormWrapper>
-              ) : (
-                <div style={{color: 'white', marginTop: '1rem'}}>In order to create a group, link your Telegram.</div>
-              )}
-            </Slider>
+                <div style={{color: 'red', fontSize: '1.25rem', fontWeight: '600'}}>{telegramStatus?.type === 'error' ? telegramStatus.message: ''}</div>
+                <div style={{color: 'green', fontSize: '1.25rem', fontWeight: '600'}}>{telegramStatus?.type === 'success' ? telegramStatus.message: ''}</div>
+                <div style={{color: 'white', fontSize: '1.25rem', fontWeight: '600'}}>{telegramStatus?.type === 'info' ? telegramStatus.message: ''}</div>
+              </motion.div>
+            </AnimatePresence>
+          )}
+          {currentStep === 2 && (
+            <AnimatePresence>
+              <motion.div {...SliderArgs}>
+                <FlexJustifyBetween>
+                  <WhiteText>Verifying Telegram Username</WhiteText>
+                  <ThemeText onClick={() => setInstructionsVisible(!instructionsVisible)} style={{cursor: 'pointer'}}>
+                    Troubleshoot
+                  </ThemeText>
+                </FlexJustifyBetween>
+                <ARKIdContainer>
+                  <a href={`https://t.me/${TELEGRAM_BOT_NAME}?start=${user?.identity_id}`}>
+                    <Button fullWidth={true}>Verify</Button>
+                  </a>
+                  {instructionsVisible && (
+                    <>
+                      <div style={{marginTop: '2rem'}}>
+                        {user?.telegram?.username && address && (
+                          TELEGRAM_USERNAME_REGEX.test(decrypt(user.telegram.username, address)) && (
+                            <div style={{marginBottom: '1rem'}}>Linked Username: <ThemeText>{decrypt(user.telegram.username, address)}</ThemeText></div>
+                          )
+                        )}
+                        <FlexJustifyBetween>
+                          <Command style={{margin: '1rem 0', padding: '0.25rem 0', fontSize: '0.75rem'}}>
+                            /verify_identity {user?.identity_id}
+                          </Command>
+                          <Button secondary onClick={() => {
+                            navigator.clipboard.writeText("/verify_identity " + user?.identity_id); 
+                            setCopied(true);
+                            setTimeout(() => setCopied(false), 1000)}
+                          }>
+                            {copied ? "Copied!" : "Copy"}
+                          </Button>
+                        </FlexJustifyBetween>
+                        Invoke this command at the <a href={`https://t.me/${TELEGRAM_BOT_NAME}`}><ThemeText>Telegram Bot</ThemeText></a>.
+                      </div>
+                    </>
+                  )}
+                </ARKIdContainer>
+              </motion.div>
+            </AnimatePresence>
+          )}
+          {currentStep === 3 && (
+            <AnimatePresence>
+              <motion.div {...SliderArgs}>
+                <WhiteText>Creating a guild</WhiteText>
+                {user?.telegram?.username ? (
+                  <FormWrapper style={{marginTop: '1rem'}}>
+                    {/* <div style={{position: 'absolute', left: '6px', top: '0.7rem', color: 'white', fontSize: '1.25rem'}}>@</div> */}
+                    <TGGroupInput spellCheck={false} placeholder='Name' name='name' required pattern=".{1,100}" value={guildCreationValues?.name} onChange={(e) => handleGuildInputs(e)} />
+                    <Button secondary onClick={() => guildCreationModal.setState(true)}>
+                      Create
+                    </Button>
+                  </FormWrapper>
+                ) : (
+                  <div style={{color: 'white', marginTop: '1rem'}}>In order to create a group, link your Telegram.</div>
+                )}
+              </motion.div>
+            </AnimatePresence>
           )}
           <ProgressDots>
-            {Array(maxSteps).fill(0).map((_, i) => <span style={{
-              color: (i+1 < currentStep && `rgb(38, 191, 168)`) || (currentStep === i+1 && 'white') || (currentStep > i+1 && 'gray') || 'gray',
-              fontSize: '72px',
-              cursor: 'pointer',
+            {Array(maxSteps).fill(0).map((_, i) => <Dot style={{
+                // @ts-ignore
+                color: currentStep === i+1 && 'white' || (i+1 > currentStep && 'gray')
               }}
               onClick={() => {
                 if(allowedStep >= i+1) {
@@ -689,9 +703,9 @@ const Home: NextPage = () => {
                   setCurrentStep(i+1)
                 }
               }}>
-                {/* {allowedStep >= i+1 ? '🛸': '·'} */}
+                {/* {allowedStep >= i+1 ? <span style={{fontSize: '40px'}}>🛸</span>: '·'} */}
                 ·
-              </span> 
+              </Dot>
             )}
           </ProgressDots>
         </IdentityCard>
@@ -900,6 +914,14 @@ const Tab = styled.div<TabProps>`
   }
 `;
 
+const WhiteText = styled.div`
+  color: white;
+`;
+
+const ThemeText = styled.span`
+  color: rgb(${props => props.theme.primary});
+`;
+
 const ContentTitle = styled.div`
   color: gray;
   font-size: 1rem;
@@ -919,6 +941,20 @@ const TopBanner = styled.div`
 const ComingSoon = styled.div`
   position: relative;
   z-index: 5;
+`;
+
+const FlexJustifyBetween = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: top;
+`;
+
+const Command = styled.div`
+  border-radius: 2px;
+  font-family: monospace;
+  color: rgb(${props => props.theme.secondary});
+  background-color: rgb(${props => props.theme.primary}, 0.3);
+  word-break: break-all;
 `;
 
 const ComingSoonText = styled.div`
@@ -1030,6 +1066,11 @@ const ProgressDots = styled.div`
   }
 `;
 
+const Dot = styled.span`
+  color: rgb(${props => props.theme.primary});
+  font-size: 72px;
+  cursor: pointer;
+`;
 
 const FormWrapper = styled.div`
   position: relative;
