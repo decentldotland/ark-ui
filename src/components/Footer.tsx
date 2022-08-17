@@ -10,8 +10,8 @@ const Footer = () => (
       <FooterLink href="https://decent.land/" target="_blank" rel="noopener noreferer">
         DecentLand
       </FooterLink>
-      <FooterLink href="https://t.me/decentland" target="_blank" rel="noopener noreferer">
-        Telegram
+      <FooterLink href="https://discord.gg/decentland" target="_blank" rel="noopener noreferer">
+        Discord
       </FooterLink>
       <FooterLink href="https://github.com/decentldotland/ark-network" target="_blank" rel="noopener noreferer">
         GitHub
