@@ -93,13 +93,12 @@ const Home: NextPage = () => {
     })
   };
 
-  const getStep = (user:any) => {
+  const getStep = async (user:any) => {
     const localStep = localStorage.getItem(TELEGRAM_LINKING_STEP);
-    switch (user) {
-      case user?.telegram?.is_verified && user?.telegram?.is_evaluated || localStep === '3' : return 3
-      case user?.telegram?.username || localStep === '2': return 2
-      default: return 1
-    }
+    console.log((user?.telegram?.username || localStep === '2'))
+    if ((user?.telegram?.is_verified && user?.telegram?.is_evaluated) || localStep === '3') return 3;
+    else if (user?.telegram?.username || localStep === '2') return 2
+    else return 1
   }
 
   useEffect(() => {
@@ -119,10 +118,9 @@ const Home: NextPage = () => {
   useEffect(() => {
     (async () => {
       // const txs = await getLastVerificationsOf(address);
-
-      setPreviousStep(getStep(user))
-      setCurrentStep(getStep(user))
-      setAllowedStep(getStep(user))
+      const step = await getStep(user);
+      setCurrentStep(step)
+      setAllowedStep(step)
     })();
   }, []);
 
@@ -166,6 +164,7 @@ const Home: NextPage = () => {
         query['address'] = eth.address;
         query['verificationReq'] = interaction.hash;
         query['network'] = NETWORKS[activeNetwork].networkKey;
+        console.log(query);
       };
       setTelegramStatus({type: "in-progress", message: "Linking Telegram..."});
       await interactWrite(arweave, "use_wallet", ARWEAVE_CONTRACT, query, ArkTagsLinkEVMIdentity);
@@ -728,7 +727,7 @@ const Home: NextPage = () => {
                     </Button>
                   </FormWrapper>
                 ) : (
-                  <div style={{color: 'white', marginTop: '1rem'}}>In order to create a group, link your Telegram.</div>
+                  <div style={{color: 'white', marginTop: '1rem'}}>Verification in progress... <Loading /></div>
                 )}
               </motion.div>
             </AnimatePresence>
