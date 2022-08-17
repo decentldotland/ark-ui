@@ -174,9 +174,10 @@ const Home: NextPage = () => {
       setCurrentStep(2);
       setAllowedStep(2);
       localStorage.setItem(TELEGRAM_LINKING_STEP, '2');
-      setTimer(setTimeout(() => {
+      setTimer(setTimeout(async () => {
         checkOracleState();
-        if(getStep(user) === 3) {
+        const step = await getStep(user) 
+        if (step === 3) {
           setCurrentStep(3);
           setPreviousStep(2);
           setAllowedStep(3);
