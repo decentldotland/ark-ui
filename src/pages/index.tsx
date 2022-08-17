@@ -141,7 +141,7 @@ const Home: NextPage = () => {
     else if (!re.test(telegramUsernameInput)) error = {type: "error", message: "Telegram username is invalid."};
     else if (!eth || !eth.address) error = {type: "error", message: "Connect an Ethereum wallet"}  
     else if (!address) error = {type: "error", message: "Connect an Arweave wallet"};
-    else if (user && (!(user.evm_address === eth.address) || !(user.arweave_address === address))) error = {type: "error", message: "Address mismatch"};
+    else if (user && ((!(user.evm_address === eth.address) || !(user.arweave_address === address)))) error = {type: "error", message: "Address mismatch"};
     if (error) {
       // @ts-ignore
       setTelegramStatus(error);
@@ -161,6 +161,7 @@ const Home: NextPage = () => {
       if (!user) {
         // @ts-ignore
         const interaction = await eth.contract.linkIdentity(address);
+        setTelegramStatus({type: "in-progress", message: "Linking Telegram..."});
         await interaction.wait();
         query['address'] = eth.address;
         query['verificationReq'] = interaction.hash;
@@ -706,7 +707,9 @@ const Home: NextPage = () => {
                     </>
                   ) : (
                     <WhiteText>
-                      Linking in progress, please wait... <Loading />
+                      Linking in progress, please wait...
+                      <br/>
+                      <Loading />
                     </WhiteText>
                   )}
                 </ARKIdContainer>
