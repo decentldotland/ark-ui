@@ -73,7 +73,7 @@ export const SUPPORTED_TOKENS = [
 export const ARWEAVE_CONTRACT = "5H5Hj81G5j5P2raDhe5VFU-zkf08KDc588GJ8dtlHTw";
 export const GUILDS_REGISTRY_CONTRACT = "F1VhIZ2I4L-Lw3ueT-EMDivLtz6AjDG90jYdf-nwveY";
 
-export const TELEGRAM_BOT_NAME = "fake_ark_network_bot";
+export const TELEGRAM_BOT_NAME = "hisekdnc_bot";
 export const TELEGRAM_USERNAME_REGEX = /^[a-z0-9]{5,32}$/i;
 
 export const EVM_ORACLES: Record<number, string> = {
