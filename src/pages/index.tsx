@@ -88,14 +88,19 @@ const Home: NextPage = () => {
     fetch('https://ark-api.decent.land/v1/oracle/state').then(res => res.json()).then(res => {
       const verifiedIdentities = res.res;
       const foundUser = verifiedIdentities.find((user:any, idx:number) => user.arweave_address === address || user.evm_address === eth.address);
-      if (!foundUser) return 
+      (async () => {
+        // const txs = await getLastVerificationsOf(address);
+        const step = await getStep(foundUser);
+        setCurrentStep(step)
+        setAllowedStep(step)
+      })();  
+      if (!foundUser) return
       setUser(foundUser);
     })
   };
 
   const getStep = async (user:any) => {
     const localStep = localStorage.getItem(TELEGRAM_LINKING_STEP);
-    console.log((user?.telegram?.username || localStep === '2'))
     if ((user?.telegram?.is_verified && user?.telegram?.is_evaluated) || localStep === '3') return 3;
     else if (user?.telegram?.username || localStep === '2') return 2
     else return 1
@@ -114,15 +119,6 @@ const Home: NextPage = () => {
       checkOracleState();
     }
   }, [timer])
-
-  useEffect(() => {
-    (async () => {
-      // const txs = await getLastVerificationsOf(address);
-      const step = await getStep(user);
-      setCurrentStep(step)
-      setAllowedStep(step)
-    })();
-  }, []);
 
   const encrypt = (string:any, key:any) => {
     return CryptoJS.AES.encrypt(string, key).toString();
@@ -164,7 +160,6 @@ const Home: NextPage = () => {
         query['address'] = eth.address;
         query['verificationReq'] = interaction.hash;
         query['network'] = NETWORKS[activeNetwork].networkKey;
-        console.log(query);
       };
       setTelegramStatus({type: "in-progress", message: "Linking Telegram..."});
       await interactWrite(arweave, "use_wallet", ARWEAVE_CONTRACT, query, ArkTagsLinkEVMIdentity);
