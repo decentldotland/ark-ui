@@ -124,5 +124,5 @@ export const URLS: { [chainId: number]: string[] } = Object.keys(NETWORKS).reduc
 );
 
 // STORAGE NAMES
-export const TELEGRAM_USERNAME = "telegram_username";
+export const TELEGRAM_LINKING_STEP = "telegram_linking_step";
 export const ACTIVE_NETWORK_STORE = "ark_active_network";

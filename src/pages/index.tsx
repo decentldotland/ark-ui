@@ -9,6 +9,7 @@ import { walletConnect } from "../utils/connectors/walletconnect";
 import { metaMask } from "../utils/connectors/metamask";
 import { addChain, ETHConnector, useETH } from "../utils/eth";
 import { formatAddress } from "../utils/format";
+import getLastVerificationsOf from "../utils/query_telegram";
 import { useEffect, useState } from "react";
 import { interactWrite } from "smartweave";
 import { 
@@ -20,7 +21,8 @@ import {
   ArkTagsLinkEVMIdentity,
   ArkTagsCreateGuild,
   TELEGRAM_BOT_NAME,
-  TELEGRAM_USERNAME_REGEX
+  TELEGRAM_USERNAME_REGEX,
+  TELEGRAM_LINKING_STEP
 } from "../utils/constants";
 
 import { AnimatePresence, motion } from "framer-motion";
@@ -80,28 +82,48 @@ const Home: NextPage = () => {
   const [user, setUser] = useState<any>();
   const [copied, setCopied] = useState<boolean>(false);
   const guildCreationModal = useModal();  
+  const [timer, setTimer] = useState<any>();
 
-  useEffect(() => {
+  const checkOracleState = () => {
     fetch('https://ark-api.decent.land/v1/oracle/state').then(res => res.json()).then(res => {
       const verifiedIdentities = res.res;
       const foundUser = verifiedIdentities.find((user:any, idx:number) => user.arweave_address === address || user.evm_address === eth.address);
       if (!foundUser) return 
       setUser(foundUser);
     })
+  };
+
+  const getStep = (user:any) => {
+    const localStep = localStorage.getItem(TELEGRAM_LINKING_STEP);
+    switch (user) {
+      case user?.telegram?.is_verified && user?.telegram?.is_evaluated || localStep === '3' : return 3
+      case user?.telegram?.username || localStep === '2': return 2
+      default: return 1
+    }
+  }
+
+  useEffect(() => {
+    checkOracleState();
   }, [address, eth.address]);
 
   useEffect(() => {
-    let cb = () => {
-      switch (user) {
-        case user?.telegram?.is_verified && user?.telegram?.is_evaluated: return 3
-        case user?.telegram?.username || linkStatus == 'linked': return 2
-        default: return 1
+    if (localStorage.getItem(TELEGRAM_LINKING_STEP) === '3') {
+      if (timer) {
+        clearInterval(timer)
+        setTimer(null);
       }
+      checkOracleState();
     }
+  }, [timer])
 
-    setPreviousStep(cb())
-    setCurrentStep(cb())
-    setAllowedStep(cb())
+  useEffect(() => {
+    (async () => {
+      // const txs = await getLastVerificationsOf(address);
+
+      setPreviousStep(getStep(user))
+      setCurrentStep(getStep(user))
+      setAllowedStep(getStep(user))
+    })();
   }, []);
 
   const encrypt = (string:any, key:any) => {
@@ -123,6 +145,10 @@ const Home: NextPage = () => {
     if (error) {
       // @ts-ignore
       setTelegramStatus(error);
+      setTimeout(() => {
+        // @ts-ignore
+        setTelegramStatus(null);
+      }, 5000);  
       return
     };
 
@@ -133,29 +159,37 @@ const Home: NextPage = () => {
         telegram_enc: cipheredUsername,
       };
       if (!user) {
-        setLinkStatus("Interacting with smart contract...");
         // @ts-ignore
         const interaction = await eth.contract.linkIdentity(address);
         await interaction.wait();
-        setLinkStatus("Writing to Arweave...");
         query['address'] = eth.address;
         query['verificationReq'] = interaction.hash;
         query['network'] = NETWORKS[activeNetwork].networkKey;
       };
-      setTelegramStatus({type: "info", message: "Linking Telegram"});
+      setTelegramStatus({type: "in-progress", message: "Linking Telegram..."});
       await interactWrite(arweave, "use_wallet", ARWEAVE_CONTRACT, query, ArkTagsLinkEVMIdentity);
 
       setTelegramStatus({type: "success", message: "Telegram Successfully Linked!"});
-      setLinkStatus("Linked");
-      setStatus({
-        type: "success",
-        message: "Linked identity"
-      });
-      setLinkingOverlay("in-progress");
+      setPreviousStep(1);
+      setCurrentStep(2);
+      setAllowedStep(2);
+      localStorage.setItem(TELEGRAM_LINKING_STEP, '2');
+      setTimer(setTimeout(() => {
+        checkOracleState();
+        if(getStep(user) === 3) {
+          setCurrentStep(3);
+          setPreviousStep(2);
+          setAllowedStep(3);
+          localStorage.setItem(TELEGRAM_LINKING_STEP, '3');
+        }  
+      }, 1000*30));
     } catch {
       setTelegramStatus({type: "error", message: "Something went wrong. Please try again."});
     }
-    setLinkStatus(undefined);
+    setTimeout(() => {
+      // @ts-ignore
+      setTelegramStatus(null);
+    }, 5000);
   };
 
   function handleTelegramInput(e: React.ChangeEvent<HTMLInputElement>) {
@@ -163,7 +197,6 @@ const Home: NextPage = () => {
   };
 
   async function handleGuildCreation() {
-    console.log('fuck')
     const token_type = SUPPORTED_TOKENS[Tokenselected].key;
     const params = {
       function: "createGuild",
@@ -172,10 +205,10 @@ const Home: NextPage = () => {
       token_type: token_type,
       token_threshold: parseFloat(guildCreationValues.token_threshold),
     };
-    if (!address) {setGuildCreationStatus('How did you do that?')}
+    if (!address) {setGuildCreationStatus('How did you do that?'); return}
     setGuildCreationInProgress(true);
     setGuildCreationStatus('Creating guild...');
-    // await interactWrite(arweave, "use_wallet", GUILDS_REGISTRY_CONTRACT, params, ArkTagsCreateGuild);
+    await interactWrite(arweave, "use_wallet", GUILDS_REGISTRY_CONTRACT, params, ArkTagsCreateGuild);
     setGuildCreationStatus('Guild created!');
     setGuildCreationInProgress(false);
   };
@@ -595,21 +628,20 @@ const Home: NextPage = () => {
         </IdentityCard>
         <Spacer y={2} />
         <AnimatePresence>
-          {status && (
+          {telegramStatus && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.5, ease: "easeInOut" }}
             >
-              <Status type={status.type}>
+              <Status type={telegramStatus.type}>
                 <p>
-                  <span>{status.type}:</span>
-                  {status.message}
+                  <span>{telegramStatus.type}:</span>
+                  {telegramStatus.message}
                 </p>
-                <CloseStatusIcon onClick={() => setStatus(undefined)} />
+                <CloseStatusIcon onClick={() => setTelegramStatus(undefined)} />
               </Status>
-              <Spacer y={1} />
             </motion.div>
           )}
         </AnimatePresence>
@@ -622,13 +654,11 @@ const Home: NextPage = () => {
                 <FormWrapper style={{marginTop: '1rem'}}>
                   <div style={{position: 'absolute', left: '8px', top: '0.7rem', color: 'white', fontSize: '1.25rem'}}>@</div>
                   <TGGroupInput spellCheck={false} placeholder='Username' value={telegramUsernameInput || ""} onChange={(e) => handleTelegramInput(e)} />
-                  <Button secondary onClick={handleTelegramUsernameUpload} disabled={linkingOverlay == 'in-progress'}>
+                  <Button secondary onClick={handleTelegramUsernameUpload} disabled={telegramStatus?.type == 'in-progress'}>
+                    {telegramStatus?.type === 'in-progress' && <Loading />}
                     {user?.telegram?.username? "Relink": "Link"}
                   </Button>
                 </FormWrapper>
-                <div style={{color: 'red', fontSize: '1.25rem', fontWeight: '600'}}>{telegramStatus?.type === 'error' ? telegramStatus.message: ''}</div>
-                <div style={{color: 'green', fontSize: '1.25rem', fontWeight: '600'}}>{telegramStatus?.type === 'success' ? telegramStatus.message: ''}</div>
-                <div style={{color: 'white', fontSize: '1.25rem', fontWeight: '600'}}>{telegramStatus?.type === 'info' ? telegramStatus.message: ''}</div>
               </motion.div>
             </AnimatePresence>
           )}
@@ -637,37 +667,47 @@ const Home: NextPage = () => {
               <motion.div {...SliderArgs}>
                 <FlexJustifyBetween>
                   <WhiteText>Verifying Telegram Username</WhiteText>
-                  <ThemeText onClick={() => setInstructionsVisible(!instructionsVisible)} style={{cursor: 'pointer'}}>
-                    Troubleshoot
-                  </ThemeText>
+                  <button disabled={!user?.telegram?.username}>
+                    <ThemeText onClick={() => setInstructionsVisible(!instructionsVisible)} style={{cursor: 'pointer'}}>
+                      Troubleshoot
+                    </ThemeText>
+                  </button>
                 </FlexJustifyBetween>
                 <ARKIdContainer>
-                  <a href={`https://t.me/${TELEGRAM_BOT_NAME}?start=${user?.identity_id}`}>
-                    <Button fullWidth={true}>Verify</Button>
-                  </a>
-                  {instructionsVisible && (
+                  {user?.telegram?.username? (
                     <>
-                      <div style={{marginTop: '2rem'}}>
-                        {user?.telegram?.username && address && (
-                          TELEGRAM_USERNAME_REGEX.test(decrypt(user.telegram.username, address)) && (
-                            <div style={{marginBottom: '1rem'}}>Linked Username: <ThemeText>{decrypt(user.telegram.username, address)}</ThemeText></div>
-                          )
-                        )}
-                        <FlexJustifyBetween>
-                          <Command style={{margin: '1rem 0', padding: '0.25rem 0', fontSize: '0.75rem'}}>
-                            /verify_identity {user?.identity_id}
-                          </Command>
-                          <Button secondary onClick={() => {
-                            navigator.clipboard.writeText("/verify_identity " + user?.identity_id); 
-                            setCopied(true);
-                            setTimeout(() => setCopied(false), 1000)}
-                          }>
-                            {copied ? "Copied!" : "Copy"}
-                          </Button>
-                        </FlexJustifyBetween>
-                        Invoke this command at the <a href={`https://t.me/${TELEGRAM_BOT_NAME}`}><ThemeText>Telegram Bot</ThemeText></a>.
-                      </div>
+                      <a href={`https://t.me/${TELEGRAM_BOT_NAME}?start=${user?.identity_id}`}>
+                        <Button fullWidth={true}>Verify</Button>
+                      </a>
+                      {instructionsVisible && (
+                        <>
+                          <div style={{marginTop: '2rem'}}>
+                            {user?.telegram?.username && address && (
+                              TELEGRAM_USERNAME_REGEX.test(decrypt(user.telegram.username, address)) && (
+                                <div style={{marginBottom: '1rem'}}>Linked Username: <ThemeText>{decrypt(user.telegram.username, address)}</ThemeText></div>
+                              )
+                            )}
+                            <FlexJustifyBetween>
+                              <Command style={{margin: '1rem 0', padding: '0.25rem 0', fontSize: '0.75rem'}}>
+                                /verify_identity {user?.identity_id}
+                              </Command>
+                              <Button secondary onClick={() => {
+                                navigator.clipboard.writeText("/verify_identity " + user?.identity_id); 
+                                setCopied(true);
+                                setTimeout(() => setCopied(false), 1000)}
+                              }>
+                                {copied ? "Copied!" : "Copy"}
+                              </Button>
+                            </FlexJustifyBetween>
+                            Invoke this command at the <a href={`https://t.me/${TELEGRAM_BOT_NAME}`}><ThemeText>Telegram Bot</ThemeText></a>.
+                          </div>
+                        </>
+                      )}
                     </>
+                  ) : (
+                    <WhiteText>
+                      Linking in progress, please wait... <Loading />
+                    </WhiteText>
                   )}
                 </ARKIdContainer>
               </motion.div>
@@ -677,9 +717,8 @@ const Home: NextPage = () => {
             <AnimatePresence>
               <motion.div {...SliderArgs}>
                 <WhiteText>Creating a guild</WhiteText>
-                {user?.telegram?.username ? (
+                {user?.telegram?.username && user?.telegram?.is_verified && user?.telegram?.is_evaluated ? (
                   <FormWrapper style={{marginTop: '1rem'}}>
-                    {/* <div style={{position: 'absolute', left: '6px', top: '0.7rem', color: 'white', fontSize: '1.25rem'}}>@</div> */}
                     <TGGroupInput spellCheck={false} placeholder='Name' name='name' required pattern=".{1,100}" value={guildCreationValues?.name} onChange={(e) => handleGuildInputs(e)} />
                     <Button secondary onClick={() => guildCreationModal.setState(true)}>
                       Create
@@ -777,7 +816,7 @@ const Home: NextPage = () => {
 export default Home;
 
 type StatusType = "error" | "success";
-type TelegramStatusType = "error" | "info" | "success";
+type TelegramStatusType = "error" | "info" | "success" | "in-progress"| "";
 
 const ARKLogo = styled.div`
   margin-right: 40px;
@@ -1174,14 +1213,14 @@ const MetamaskButton = styled(Button)`
   color: #fff;
 `;
 
-const Status = styled.div<{ type: StatusType }>`
+const Status = styled.div<{ type: StatusType | TelegramStatusType }>`
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 1rem;
   border-radius: 12px;
   color: ${props => props.theme.secondaryText};
-  border: 2px solid ${props => props.type === "error" ? "#ca0000" : "#00ff00"};
+  border: 2px solid ${props => props.type === "error" ? "#ca0000" : props.type === "in-progress" ? "#FAF38B": "#00ff00"};
   font-weight: 400;
   width: 50%;
   font-size: 0.8rem;
@@ -1193,7 +1232,7 @@ const Status = styled.div<{ type: StatusType }>`
   
   span {
     font-weight: 500;
-    color: ${props => props.type === "error" ? "#ca0000" : "#00ff00"};
+    color: ${props => props.type === "error" ? "#ca0000" : props.type === "in-progress" ? "#FAF38B": "#00ff00"};
     text-transform: uppercase;
     margin-right: .4rem;
   }
