@@ -47,8 +47,6 @@ const Home: NextPage = () => {
   const [activeConnector, setActiveConnector] = useState<ETHConnector>();
   const eth = useETH(setActiveConnector, activeNetwork);
 
-  const [currentTab, setCurrentTab] = useState<number>(1);
-
   // connect to wallet
   async function connectEth(connector: ETHConnector) {
     try {
@@ -418,34 +416,6 @@ const Home: NextPage = () => {
             )}
           </AnimatePresence>
         </IdentityCard>
-        <Spacer y={2} />
-        <IdentityCard>
-          <Tabs>
-            <TabWrapper>
-              <Tab active={currentTab === 1} onClick={() => setCurrentTab(1)}>
-                Create Group
-              </Tab>
-            </TabWrapper>
-            <TabWrapper>
-              <Tab active={currentTab === 2} onClick={() => setCurrentTab(2)}>
-                Join Group
-              </Tab>
-            </TabWrapper>
-          </Tabs>
-          <ContentTitle>
-            {currentTab === 1 && 'Create a new token-gated group'}
-            {currentTab === 2 && 'Join a token-gated group'}
-          </ContentTitle>
-          <ComingSoon>
-            <ComingSoonText>Coming soon!</ComingSoonText>
-            <FormWrapper>
-              <TGGroupInput disabled placeholder='Group id' />
-              <Button secondary disabled>
-                {currentTab === 1 ? 'Create' : 'Join'}
-              </Button>
-            </FormWrapper>
-          </ComingSoon>
-        </IdentityCard>
         <Spacer y={4} />
         <Permanent href="https://arweave.org" target="_blank" rel="noopener noreferer">
           <Image src="/permanent.svg" width={150} height={75} />
@@ -600,50 +570,6 @@ const IdentityCard = styled(Card)`
   }
 `;
 
-const Tabs = styled.div`
-  display: flex;
-  justify-content: center;
-`;
-
-const TabWrapper = styled.div`
-  margin: 0px 4px;
-  cursor: pointer;
-  height: 80px;
-`;
-
-interface TabProps {
-  active: boolean;
-}
-
-const Tab = styled.div<TabProps>`
-  display: flex;
-  items-align: center;
-  justify-content: center;
-  user-select: none;
-  width: 125px;
-  font-size: 0.9rem;
-  padding: 16px;
-  border-radius: 3px;
-  color: rgb(${props => props.theme.primary + ", .45)"};
-  transition: all .23s ease-in-out;
-  ${props => props.active && `
-    color: rgb(${props.theme.primary + ", .95)"};
-    border-bottom: 8px solid rgb(${props.theme.primary + ", .95)"};
-  `}
-  &:hover{
-    color: rgb(${props => props.theme.primary + ", .75)"};
-    border-color: rgb(${props => props.theme.primary + ", .75)"};
-  }
-`;
-
-const ContentTitle = styled.div`
-  color: gray;
-  font-size: 1rem;
-  font-weight: 600;
-  margin-bottom: 1em;
-  text-align: center;
-`;
-
 const TopBanner = styled.div`
   background-color: #141316;
   color: #f18d1f;
@@ -651,48 +577,6 @@ const TopBanner = styled.div`
   font-size: 0.9rem;
   text-align: center;
 `;
-
-const ComingSoon = styled.div`
-  position: relative;
-  z-index: 5;
-`;
-
-const ComingSoonText = styled.div`
-  position: absolute;
-  user-select: none;
-  color: white;
-  z-index: 10;
-  width: 100%;
-  height: 100%;
-  font-size: 1.5rem;
-  font-weight: 700;
-  padding-top: 8px;
-  text-align: center;
-  backdrop-filter: blur(1px);
-  background-color: rgba(0, 0, 0, 0.1);
-`;
-
-const TGGroupInput = styled.input`
-  width: 100%;
-  border: none;
-  padding: 16px 11px;
-  border-radius: 8px;
-  font-size: .9rem;
-  margin-right: 1em;
-  color: white;
-  font-family: monospace;
-  cursor: not-allowed;
-  background-color: rgb(${props => props.theme.primary + ", .08)"};
-  transition: all .18s ease-in-out;
-  &:focus {
-    box-shadow: 0 0 0 2px rgba(${props => props.theme.primary}, .5);
-  }
-`;
-
-const FormWrapper = styled.div`
-  display: flex;
-  align-items: center;
-`
 
 const WalletContainer = styled.div`
   display: flex;
