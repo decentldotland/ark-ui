@@ -67,6 +67,28 @@ export const NETWORKS: Record<number, {
   }
 };
 
+export interface Identity {
+  arweave_address:         string;
+  primary_address:         string;
+  did:                     string;
+  is_verified:             boolean;
+  first_linkage:           number;
+  last_modification:       number;
+  unevaluated_addresses?:  string[];
+  addresses?:              Address[];
+}
+
+export interface Address {
+  address:          string;
+  network:          string;
+  ark_key:          string;
+  verification_req: string;
+  is_verified:      boolean;
+  is_evaluated:     boolean;
+}
+
+
+
 export const ARWEAVE_CONTRACT = "5H5Hj81G5j5P2raDhe5VFU-zkf08KDc588GJ8dtlHTw";
 export const EXM_ADDRESS = "PDuEWiQK7gcy8ERrZub-cIzR19Zrt0WTMl7FGsImYgM";
 export const EXM_TOKEN = "54577de866f37ac99d3f0e4442173fb6cf4d937f6f5b86d95866772940bedccae0c614976ae5d9cfadbbda5eb5cc";

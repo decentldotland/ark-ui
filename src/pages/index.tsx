@@ -10,7 +10,7 @@ import { metaMask } from "../utils/connectors/metamask";
 import { addChain, ETHConnector, useETH } from "../utils/eth";
 import { formatAddress } from "../utils/format";
 import { useEffect, useState } from "react";
-import { ACTIVE_NETWORK_STORE, NETWORKS } from "../utils/constants";
+import { ACTIVE_NETWORK_STORE, Identity, Address, NETWORKS } from "../utils/constants";
 import { AnimatePresence, motion } from "framer-motion";
 import { opacityAnimation } from "../utils/animations";
 import Head from "next/head";
@@ -46,7 +46,7 @@ const Home: NextPage = () => {
   const eth = useETH(setActiveConnector, activeNetwork);
 
   const [currentTab, setCurrentTab] = useState<number>(1);
-
+  const [EXMUsers, setEXMUsers] = useState<Identity[]>([]);
   // load if already linked or in progress
   const [linkingOverlay, setLinkingOverlay] = useState<"in-progress" | "linked">();
 
@@ -185,15 +185,16 @@ const Home: NextPage = () => {
         const { identities } = res.data;
 
         if (
-          identities.find((identity: Record<string, any>) =>
+          identities.find((identity: Identity) =>
             identity.is_verified &&
             identity.arweave_address === address &&
-            ((identity.addresses
-              ?.find((address: any) => address.address === eth.address))?.network === NETWORKS[activeNetwork].networkKey ||
-            identity.primary_address === eth.address)
+            (identity.addresses
+              ?.find((address: Address) => address.address === eth.address))?.network === NETWORKS[activeNetwork].networkKey
           )
         ) {
           return setLinkingOverlay("linked");
+        } else {
+          setLinkingOverlay(undefined);
         }
       } catch { }
     })();
