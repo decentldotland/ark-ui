@@ -42,6 +42,7 @@ const Home: NextPage = () => {
   const [activeNetwork, setActiveNetwork] = useState<number>(1);
   const [previousNetwork, setPreviousNetwork] = useState<number>(1);
   const [networkLoaded, setNetworkLoaded] = useState<boolean>(false);
+  const [isDevMode, setIsDevMode] = useState<boolean>(false);
 
   const [status, setStatus] = useState<{ type: StatusType, message: string }>();
   const [activeConnector, setActiveConnector] = useState<ETHConnector>();
@@ -215,6 +216,13 @@ const Home: NextPage = () => {
     })();
   }, [address, activeNetwork]);
 
+
+  // DEV MODE FOR EXTRA TESTNETS
+  useEffect(() => {
+    if (window.location.href.includes("localhost")) {
+      setIsDevMode(true)
+    }
+  }, []);
   return (
     <>
       <TopBanner>
@@ -472,7 +480,7 @@ const Home: NextPage = () => {
           Coinbase Wallet
         </CoinbaseButton>
       </Modal>
-      <Network isDisabled={eth.address ? false : true} value={activeNetwork} onChange={(e) => setActiveNetwork((val) => {
+      <Network isDisabled={eth.address ? false : true} isDevMode={isDevMode} value={activeNetwork} onChange={(e) => setActiveNetwork((val) => {
         setPreviousNetwork(val);
         return Number(e.target.value);
       })} />
