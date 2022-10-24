@@ -37,6 +37,7 @@ import Arbitrum from "../assets/arbitrum.svg"
 const Home: NextPage = () => {
   const downloadWalletModal = useModal();
   const ethModal = useModal();
+  const whatsnewModal = useModal();
   const [address, connect, disconnect] = useArconnect(downloadWalletModal);
 
   const [activeNetwork, setActiveNetwork] = useState<number>(1);
@@ -254,11 +255,16 @@ const Home: NextPage = () => {
           <Subtitle>
             The multichain identity protocol for web3 social
           </Subtitle>
-          <a href="#faq">
-            <ReadMoreButton>
-              Read more
-            </ReadMoreButton>
-          </a>
+          <div style={{display: "flex", gap: '8px'}}>
+            <a href="#faq">
+              <ReadMoreButton>
+                Read more
+              </ReadMoreButton>
+            </a>
+            <ReadMoreButton onClick={() => whatsnewModal.setState(true)}>
+              What's new
+            </ReadMoreButton>  
+          </div>
         </TopContent>
       </TopSection>
       <Page>
@@ -281,6 +287,13 @@ const Home: NextPage = () => {
             </motion.div>
           )}
         </AnimatePresence>
+        <Modal title="What's new?" {...whatsnewModal.bindings}>
+          <DownloadWalletModals>
+            <h1 style={{fontSize: '25px'}}>
+              EXM re-write coming soon!
+            </h1>
+          </DownloadWalletModals>
+        </Modal>
         <Modal title="No wallet detected" {...downloadWalletModal.bindings}>
           <DownloadWalletModals>
             You need an Ethereum wallet and ArConnect to use this website.
