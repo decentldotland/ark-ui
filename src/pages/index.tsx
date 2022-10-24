@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { CloseIcon, LinkIcon } from "@iconicicons/react"
 import { arweave, useArconnect } from "../utils/arconnect"
 import type { NextPage } from "next";
@@ -9,12 +10,9 @@ import { metaMask } from "../utils/connectors/metamask";
 import { addChain, ETHConnector, useETH } from "../utils/eth";
 import { formatAddress } from "../utils/format";
 import { useEffect, useState } from "react";
-import { interactWrite } from "smartweave";
-import { ACTIVE_NETWORK_STORE, ARWEAVE_CONTRACT, NETWORKS } from "../utils/constants";
+import { ACTIVE_NETWORK_STORE, NETWORKS } from "../utils/constants";
 import { AnimatePresence, motion } from "framer-motion";
 import { opacityAnimation } from "../utils/animations";
-import { run } from "ar-gql";
-import linkQuery from "../utils/link_query";
 import Head from "next/head";
 import Image from "next/image";
 import styled from "styled-components";
@@ -49,6 +47,14 @@ const Home: NextPage = () => {
 
   const [currentTab, setCurrentTab] = useState<number>(1);
 
+  // load if already linked or in progress
+  const [linkingOverlay, setLinkingOverlay] = useState<"in-progress" | "linked">();
+
+  // linking functionality
+  const [linkStatus, setLinkStatus] = useState<string>();
+  const [linkModal, setLinkModal] = useState<boolean>(true);
+
+
   // connect to wallet
   async function connectEth(connector: ETHConnector) {
     try {
@@ -62,10 +68,6 @@ const Home: NextPage = () => {
       downloadWalletModal.setState(true);
     }
   }
-
-  // linking functionality
-  const [linkStatus, setLinkStatus] = useState<string>();
-  const [linkModal, setLinkModal] = useState<boolean>(true);
 
   async function link() {
     setStatus(undefined);
@@ -86,28 +88,20 @@ const Home: NextPage = () => {
     };
 
     try {
-      setLinkStatus("Interacting with smart contract...");
+      setLinkStatus("Interacting with Ethereum smart contract...");
 
       const interaction = await eth.contract.linkIdentity(address);
       await interaction.wait();
 
       setLinkStatus("Writing to Arweave...");
 
-      await interactWrite(arweave, "use_wallet", ARWEAVE_CONTRACT, {
-        function: "linkEvmIdentity",
-        address: eth.address,
-        verificationReq: interaction.hash,
-        network: NETWORKS[activeNetwork].networkKey
-      }, [
-        {
-          name: "Protocol-Name",
-          value: "Ark-Network"
-        },
-        {
-          name: "Protocol-Action",
-          value: "Link-Identity"
-        }
-      ]);
+      const result = await axios.post(`api/exmwrite`, {
+        "function": "linkIdentity",
+        "caller": address,
+        "address": eth.address,
+        "network": NETWORKS[activeNetwork].networkKey,
+        "verificationReq": interaction.hash
+      })
 
       setLinkStatus("Linked");
       setStatus({
@@ -126,6 +120,8 @@ const Home: NextPage = () => {
 
     setLinkStatus(undefined);
   }
+
+  // EVM NETWORK SWITCHING
 
   useEffect(() => {
     (async () => {
@@ -177,41 +173,27 @@ const Home: NextPage = () => {
     })();
   }, [activeNetwork]);
 
-  // load if already linked or in progress
-  const [linkingOverlay, setLinkingOverlay] = useState<"in-progress" | "linked">();
+
+  // LINKING STATUS
 
   useEffect(() => {
     (async () => {
       if (!address) return;
 
-      // check if linked
       try {
-        const res = await fetch("https://ark-api.decent.land/v1/oracle/state");
-        const { res: cachedState } = await res.clone().json();
+        const res = await axios.get('api/exmread');
+        const { identities } = res.data;
 
         if (
-          cachedState.find((identity: Record<string, any>) =>
-            (identity.arweave_address === address || identity.evm_address === eth.address) &&
-            identity.ver_req_network === NETWORKS[activeNetwork].networkKey &&
-            identity.is_verified
+          identities.find((identity: Record<string, any>) =>
+            identity.is_verified &&
+            identity.arweave_address === address &&
+            ((identity.addresses
+              ?.find((address: any) => address.address === eth.address))?.network === NETWORKS[activeNetwork].networkKey ||
+            identity.primary_address === eth.address)
           )
         ) {
           return setLinkingOverlay("linked");
-        }
-      } catch { }
-
-      // check if linking is in progress
-      try {
-        const inProgressQuery = await run(linkQuery, { owner: address, arkContract: ARWEAVE_CONTRACT });
-
-        // filter mining transactions
-        // these suggest that a linking is in progress
-        const mining = inProgressQuery.data.transactions.edges.filter(({ node }) => !node.block);
-
-        if (mining.length > 0) {
-          setLinkingOverlay("in-progress");
-        } else {
-          setLinkingOverlay(undefined);
         }
       } catch { }
     })();

@@ -68,6 +68,11 @@ export const NETWORKS: Record<number, {
 };
 
 export const ARWEAVE_CONTRACT = "5H5Hj81G5j5P2raDhe5VFU-zkf08KDc588GJ8dtlHTw";
+export const EXM_ADDRESS = "PDuEWiQK7gcy8ERrZub-cIzR19Zrt0WTMl7FGsImYgM";
+export const EXM_TOKEN = "54577de866f37ac99d3f0e4442173fb6cf4d937f6f5b86d95866772940bedccae0c614976ae5d9cfadbbda5eb5cc";
+export const EXM_READ_URL = "https://api.exm.dev/read/";
+export const EXM_WRITE_URL = "https://api.exm.dev/api/transactions";
+
 export const EVM_ORACLES: Record<number, string> = {
   1: "0xdE44d3fB118E0f007f2C0D8fFFE98b994383949A",
   5: "0xdE44d3fB118E0f007f2C0D8fFFE98b994383949A",
