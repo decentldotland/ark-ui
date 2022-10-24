@@ -11,12 +11,6 @@ export const NETWORKS: Record<number, {
     urls: ["https://cloudflare-eth.com/"],
     theme: "73, 71, 178"
   },
-  5: {
-    name: "Goerli Testnet",
-    networkKey: "ETH-GOERLI",
-    urls: ["https://rpc.goerli.mudit.blog/"],
-    theme: "48, 153, 242"
-  },
   56: {
     name: "BNB Chain",
     networkKey: "BSC-MAINNET",
@@ -52,6 +46,20 @@ export const NETWORKS: Record<number, {
     networkKey: "POLYGON-MAINNET",
     urls: ["https://polygon-rpc.com"],
     theme: "130, 71, 229"
+  },
+};
+
+export const TEST_NETWORKS: Record<number, {
+  name: string;
+  urls: string[];
+  theme: string;
+  networkKey: string; // Ark Protocol identifier for network
+}> = {
+  5: {
+    name: "Goerli Testnet",
+    networkKey: "ETH-GOERLI",
+    urls: ["https://rpc.goerli.mudit.blog/"],
+    theme: "48, 153, 242"
   },
   // 245022926: {
   //   name: "NEON",
