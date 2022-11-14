@@ -27,7 +27,7 @@ export const useArconnect = (downloadWalletModal: any): Hook => {
         const correctPerms = permissions.sort().toString() == currentPerms.sort().toString();
         if (!correctPerms) {
           await window.arweaveWallet.disconnect();
-          setArconnectError('Re-connect with correct permissions.');
+          if (currentPerms.length !== 0) setArconnectError('Re-connect with correct permissions.');
           return;
         }
         const addr = await window.arweaveWallet.getActiveAddress();
@@ -63,7 +63,7 @@ export const useArconnect = (downloadWalletModal: any): Hook => {
       const correctPerms = permissions.sort().toString() == currentPerms.sort().toString();
       if (!correctPerms) {
         await window.arweaveWallet.disconnect();
-        setArconnectError('Re-connect with correct permissions.');
+        if (currentPerms.length !== 0) setArconnectError('Re-connect with correct permissions.');
         return;
       }
       setArconnectError('');
