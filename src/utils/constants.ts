@@ -76,23 +76,23 @@ export const TEST_NETWORKS: Record<number, {
 };
 
 export interface Identity {
-  arweave_address:         string;
-  primary_address:         string;
-  did:                     string;
-  is_verified:             boolean;
-  first_linkage:           number;
-  last_modification:       number;
-  unevaluated_addresses?:  string[];
   addresses?:              Address[];
+  arweave_address:         string;
+  first_linkage:           number;
+  is_verified:             boolean;
+  last_modification:       number;
+  primary_address:         string;
+  public_key:              string;
+  unevaluated_addresses?:  string[];
 }
 
 export interface Address {
   address:          string;
-  network:          string;
   ark_key:          string;
-  verification_req: string;
-  is_verified:      boolean;
   is_evaluated:     boolean;
+  is_verified:      boolean;
+  network:          string;
+  verification_req: string;
 }
 
 
