@@ -680,6 +680,7 @@ const FormWrapper = styled.div`
 const WalletContainer = styled.div`
   display: flex;
   align-items: center;
+  row-gap: 0.5em;
   justify-content: space-between;
   background-color: #1c1e23;
   border-radius: 20px;
@@ -690,10 +691,12 @@ const WalletContainer = styled.div`
 const WalletChainLogo = styled.div`
   display: flex;
   align-items: center;
+  flex-shrink: 0;
   gap: .75rem;
   font-size: 1.1rem;
   color: #fff;
   font-weight: 500;
+  width: max-content;
 `;
 
 const ChainName = styled.div`
@@ -818,8 +821,8 @@ const CloseStatusIcon = styled(CloseIcon)`
 `;
 
 const ConnectButton = styled(Button)`
-  padding-left: 2.5rem;
-  padding-right: 2.5rem;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
 
   @media screen and (max-width: 720px) {
     padding-left: 0.5rem;
