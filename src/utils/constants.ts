@@ -90,7 +90,7 @@ export interface Address {
 
 
 export const ARWEAVE_CONTRACT = "5H5Hj81G5j5P2raDhe5VFU-zkf08KDc588GJ8dtlHTw";
-export const EXM_ADDRESS = "PDuEWiQK7gcy8ERrZub-cIzR19Zrt0WTMl7FGsImYgM";
+export const EXM_ADDRESS = "FUsocdnUnwXRLoQGd1gvGwp0oUmNzqLbkuVG0zC-nwc";
 export const EXM_TOKEN = process.env.EXM_API_TOKEN;
 export const EXM_READ_URL = "https://api.exm.dev/read/";
 export const EXM_WRITE_URL = "https://api.exm.dev/api/transactions";
