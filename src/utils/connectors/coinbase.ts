@@ -7,7 +7,7 @@ export const [coinbaseWallet, hooks] = initializeConnector<CoinbaseWallet>(
     new CoinbaseWallet({
       actions,
       options: {
-        url: URLS[5][0],
+        url: URLS[1][0],
         appName: "Ark Protocol"
       },
     })
