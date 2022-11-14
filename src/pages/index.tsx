@@ -35,7 +35,7 @@ import Arbitrum from "../assets/arbitrum.svg"
 const Home: NextPage = () => {
   const downloadWalletModal = useModal();
   const ethModal = useModal();
-  const [address, connect, disconnect] = useArconnect(downloadWalletModal);
+  const [address, connect, disconnect, arconnectError] = useArconnect(downloadWalletModal);
 
   const [activeNetwork, setActiveNetwork] = useState<number>(1);
   const [previousNetwork, setPreviousNetwork] = useState<number>(1);
@@ -296,7 +296,7 @@ const Home: NextPage = () => {
                 secondary
                 onClick={() => connect()}
               >
-                Connect
+                {arconnectError ? arconnectError : 'Connect'}
               </ConnectButton>
             )}
           </WalletContainer>

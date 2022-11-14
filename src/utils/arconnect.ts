@@ -5,13 +5,15 @@ import Arweave from "arweave";
 const permissions: PermissionType[] = [
   "ACCESS_ADDRESS",
   "ACCESS_ALL_ADDRESSES",
-  "SIGN_TRANSACTION"
+  "SIGN_TRANSACTION",
+  "ACCESS_PUBLIC_KEY"
 ];
 
-type Hook = [string | undefined, () => Promise<void>, () => Promise<void>];
+type Hook = [string | undefined, () => Promise<void>, () => Promise<void>, string];
 
 export const useArconnect = (downloadWalletModal: any): Hook => {
   const [address, setAddress] = useState<string>();
+  const [arconnectError, setArconnectError] = useState<string>('');
 
   useEffect(() => {
     let apiInjected = false;
@@ -21,8 +23,15 @@ export const useArconnect = (downloadWalletModal: any): Hook => {
       apiInjected = true;
 
       try {
+        const currentPerms = await window.arweaveWallet.getPermissions();
+        const correctPerms = permissions.sort().toString() == currentPerms.sort().toString();
+        if (!correctPerms) {
+          await window.arweaveWallet.disconnect();
+          setArconnectError('Re-connect with correct permissions.');
+          return;
+        }
         const addr = await window.arweaveWallet.getActiveAddress();
-
+        setArconnectError('');
         setAddress(addr);
       } catch {}
     };
@@ -50,6 +59,14 @@ export const useArconnect = (downloadWalletModal: any): Hook => {
   async function connect() {
     try {
       await window.arweaveWallet.connect(permissions, { name: "Ark Protocol" });
+      const currentPerms = await window.arweaveWallet.getPermissions();
+      const correctPerms = permissions.sort().toString() == currentPerms.sort().toString();
+      if (!correctPerms) {
+        await window.arweaveWallet.disconnect();
+        setArconnectError('Re-connect with correct permissions.');
+        return;
+      }
+      setArconnectError('');
       setAddress(await window.arweaveWallet.getActiveAddress());
     } catch {
       downloadWalletModal.setState(true)
@@ -59,11 +76,12 @@ export const useArconnect = (downloadWalletModal: any): Hook => {
   async function disconnect() {
     try {
       await window.arweaveWallet.disconnect();
+      setArconnectError('');
       setAddress(undefined);
     } catch {}
   }
 
-  return [address, connect, disconnect];
+  return [address, connect, disconnect, arconnectError];
 };
 
 export const arweave = new Arweave({
