@@ -88,7 +88,21 @@ const Home: NextPage = () => {
     };
 
     try {
-      setLinkStatus("Interacting with Ethereum smart contract...");
+      setLinkStatus("Generating a signature...");
+
+      const arconnectPubKey = await window.arweaveWallet.getActivePublicKey();  
+      if (!arconnectPubKey) throw new Error("ArConnect public key not found");
+
+      const data = new TextEncoder().encode(`my pubkey for DL ARK is: ${arconnectPubKey}`);
+      const signature = await window.arweaveWallet.signature(data, {
+        name: "RSA-PSS",
+        saltLength: 32,
+      });
+      const signedBase = Buffer.from(signature).toString("base64");
+      console.log("signedBase", signedBase);
+      if (!signedBase) throw new Error("ArConnect signature not found");
+
+      setTimeout(() => setLinkStatus("Interacting with Ethereum smart contract..."), 1000);
 
       const interaction = await eth.contract.linkIdentity(address);
       await interaction.wait();
@@ -100,8 +114,12 @@ const Home: NextPage = () => {
         "caller": address,
         "address": eth.address,
         "network": NETWORKS[activeNetwork].networkKey,
+        "jwk_n": arconnectPubKey,
+        "sig": signedBase,
         "verificationReq": interaction.hash
       })
+
+      console.log(result);
 
       setLinkStatus("Linked");
       setStatus({
