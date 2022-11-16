@@ -10,11 +10,12 @@ import { metaMask } from "../utils/connectors/metamask";
 import { addChain, ETHConnector, useETH } from "../utils/eth";
 import { formatAddress } from "../utils/format";
 import { useEffect, useState } from "react";
-import { ACTIVE_NETWORK_STORE, Identity, Address, NETWORKS } from "../utils/constants";
+import { ACTIVE_NETWORK_STORE, Identity, Address, NETWORKS, TEST_NETWORKS } from "../utils/constants";
 import { AnimatePresence, motion } from "framer-motion";
 import { opacityAnimation } from "../utils/animations";
 import Head from "next/head";
 import Image from "next/image";
+import Link from "next/link";
 import styled from "styled-components";
 import Button from "../components/Button";
 import Page from "../components/Page";
@@ -32,7 +33,7 @@ import Optimism from "../assets/optimism.svg"
 import Polygon from "../assets/polygon.webp"
 import Arbitrum from "../assets/arbitrum.svg"
 
-const Home: NextPage = () => {
+const Migrate: NextPage = () => {
   const downloadWalletModal = useModal();
   const ethModal = useModal();
   const [address, connect, disconnect, arconnectError] = useArconnect(downloadWalletModal);
@@ -46,14 +47,21 @@ const Home: NextPage = () => {
   const [activeConnector, setActiveConnector] = useState<ETHConnector>();
   const eth = useETH(setActiveConnector, activeNetwork);
 
-  const [currentTab, setCurrentTab] = useState<number>(1);
   const [EXMUsers, setEXMUsers] = useState<Identity[]>([]);
+  const [legacyUsers, setLegacyUsers] = useState<any>();
+  const [verificationReq, setVerificationReq] = useState<string>();
+  const [verificationNetwork, setVerificationNetwork] = useState<string>();
+  const [eligibleForPOAP, setEligibleForPOAP] = useState<string>(); // users arweave address to interface with poaps
+  const [poapURL, setPoapURL] = useState<string>(); // url to claim poap
+
   // load if already linked or in progress
-  const [linkingOverlay, setLinkingOverlay] = useState<"in-progress" | "linked">();
+  const [linkingOverlay, setLinkingOverlay] = useState<"just-linked" | "linked-on-exm" | "linked-on-v1" | "not-linked-on-v1" | "wrong-network" | "testnets-deprecated">();
 
   // linking functionality
   const [linkStatus, setLinkStatus] = useState<string>();
   const [linkModal, setLinkModal] = useState<boolean>(true);
+
+  const isTestnet = (req: string | undefined) => Object.keys(TEST_NETWORKS).map((obj: any) => { return TEST_NETWORKS[obj]?.networkKey }).includes(req || "")
 
   // connect to wallet
   async function connectEth(connector: ETHConnector) {
@@ -69,14 +77,16 @@ const Home: NextPage = () => {
     }
   }
 
+  // LINKING STATUS
+  
   async function link() {
     setStatus(undefined);
     setLinkModal(true);
 
-    if (!!linkingOverlay) {
+    if (linkingOverlay === "just-linked" || linkingOverlay === "linked-on-exm") {
       return setStatus({
         type: "error",
-        message: "Already linked one of the addresses on this network"
+        message: "Already linked one of the addresses on this network (EXM)"
       });
     }
 
@@ -86,6 +96,8 @@ const Home: NextPage = () => {
         message: "Arweave or Ethereum not connected"
       });
     };
+
+    setLinkingOverlay(undefined);
 
     try {
       setLinkStatus("Generating a signature...");
@@ -102,11 +114,18 @@ const Home: NextPage = () => {
       console.log("signedBase", signedBase);
       if (!signedBase) throw new Error("ArConnect signature not found");
 
-      setTimeout(() => setLinkStatus("Interacting with Ethereum smart contract..."), 1000);
+      let interaction;
 
-      const interaction = await eth.contract.linkIdentity(address);
-      await interaction.wait();
+      if (!verificationReq && !isTestnet(verificationNetwork)) {
+        setTimeout(() => setLinkStatus("Interacting with Ethereum smart contract..."), 1000);
 
+        interaction = await eth.contract.linkIdentity(address);
+        await interaction.wait();
+      }
+
+      interaction = interaction?.hash || verificationReq;
+
+      console.log(interaction)
       setLinkStatus("Writing to Arweave...");
 
       const result = await axios.post(`api/exmwrite`, {
@@ -116,17 +135,17 @@ const Home: NextPage = () => {
         "network": NETWORKS[activeNetwork].networkKey,
         "jwk_n": arconnectPubKey,
         "sig": signedBase,
-        "verificationReq": interaction.hash
+        "verificationReq": interaction
       })
 
       console.log(result);
 
-      setLinkStatus("Linked");
+      setLinkStatus("Re-linked to Ark V2!");
       setStatus({
         type: "success",
         message: "Linked identity"
       });
-      setLinkingOverlay("in-progress");
+      setLinkingOverlay("just-linked");
     } catch (e) {
       console.log("Failed to link", e);
 
@@ -138,6 +157,69 @@ const Home: NextPage = () => {
 
     setLinkStatus(undefined);
   }
+
+
+  const checkLinkingStatus = async () => {
+    if (!address) return;
+
+    try {
+      let legacyIdentities;
+      if (!legacyUsers) {
+        const legacyUsersData = await axios.get('https://ark-api.decent.land/v1/oracle/state');
+        legacyIdentities = legacyUsersData.data?.res;
+        setLegacyUsers(legacyIdentities);
+      } else legacyIdentities = legacyUsers;
+
+      const userOnLegacy: any = legacyIdentities.find((identity: any) =>
+        identity.is_verified &&
+        identity.arweave_address === address &&
+        identity.evm_address === eth.address);
+      if (userOnLegacy) {
+        setEligibleForPOAP(address);
+        setLinkingOverlay("linked-on-v1");
+        if (Object.keys(TEST_NETWORKS).map((obj: any) => { return TEST_NETWORKS[obj]?.networkKey }).includes(userOnLegacy.ver_req_network)) {
+          setLinkingOverlay("testnets-deprecated");
+        }
+        if (userOnLegacy.ver_req_network !== NETWORKS[activeNetwork].networkKey && !isTestnet(userOnLegacy.ver_req_network)) {
+          setVerificationReq(userOnLegacy.ver_req_network);
+          setVerificationNetwork(userOnLegacy.ver_req_network);
+          setLinkingOverlay("wrong-network");
+        }
+      } else {
+        setLinkingOverlay("not-linked-on-v1");
+      }
+
+      let EXMIdentities = EXMUsers;
+
+      if (EXMUsers?.length === 0) {
+        const EXMUsersData = await axios.get('api/exmread');
+        EXMIdentities = EXMUsersData.data?.identities;
+        setEXMUsers(EXMIdentities);
+      }
+
+      const userIsOnEXM = EXMIdentities.find((identity: Identity) =>
+        identity.is_verified &&
+        identity.arweave_address === address &&
+        (identity.addresses
+          ?.find((address: Address) => address.address === eth.address))?.network === NETWORKS[activeNetwork].networkKey);
+
+      if (userIsOnEXM) return setLinkingOverlay("linked-on-exm");
+    } catch { }
+  }
+
+  useEffect(() => {
+    checkLinkingStatus();
+  }, [address, activeNetwork]);
+
+  useEffect(() => {
+    (async () => {
+      const poapURL = await axios.post(`api/getpoapurl`, {
+        "arweave_address": address,
+      })
+      const url = poapURL.data;
+      if (url) setPoapURL(url); 
+    })()
+  }, [eligibleForPOAP])
 
   // EVM NETWORK SWITCHING
 
@@ -186,37 +268,12 @@ const Home: NextPage = () => {
               }
             } else setActiveNetwork(previousNetwork);
           }
+          await checkLinkingStatus();
         }
       }
     })();
   }, [activeNetwork]);
 
-
-  // LINKING STATUS
-
-  useEffect(() => {
-    (async () => {
-      if (!address) return;
-
-      try {
-        const res = await axios.get('api/exmread');
-        const { identities } = res.data;
-
-        if (
-          identities.find((identity: Identity) =>
-            identity.is_verified &&
-            identity.arweave_address === address &&
-            (identity.addresses
-              ?.find((address: Address) => address.address === eth.address))?.network === NETWORKS[activeNetwork].networkKey
-          )
-        ) {
-          return setLinkingOverlay("linked");
-        } else {
-          setLinkingOverlay(undefined);
-        }
-      } catch { }
-    })();
-  }, [address, activeNetwork]);
 
 
   // DEV MODE FOR EXTRA TESTNETS
@@ -225,13 +282,14 @@ const Home: NextPage = () => {
       setIsDevMode(true)
     }
   }, []);
+
   return (
     <>
       <TopBanner>
         Connect wallet and switch network to use Ark on Avalanche, BNB, Aurora, and Goerli
       </TopBanner>
       <Head>
-        <title>Ark Protocol</title>
+        <title>Migrate Your Profile!</title>
         <link rel="icon" href="/favicon.ico" />
         <meta name="description" content="Ark" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes" />
@@ -243,18 +301,12 @@ const Home: NextPage = () => {
         <meta name="twitter:url" content="https://ark.decent.land/"></meta>
       </Head>
       <TopSection>
-        <ARKLogo>
-          <Image className="rounded-2xl" src="/arkArt.jpg" width={300} height={300} draggable={false} />
-        </ARKLogo>
         <TopContent>
-          <Title>
-            <ProtocolName>
-              Ark
-            </ProtocolName>
-            Protocol
+          <Title className='text-xs'>
+            Migrate from Ark V1 to Ark V2!
           </Title>
           <Subtitle>
-            The multichain identity protocol for web3 social
+            Ark V1 has been deprecated, but not to worry: you can still re-link your identity to Ark V2 for free.
           </Subtitle>
           <a href="#faq">
             <ReadMoreButton>
@@ -399,9 +451,9 @@ const Home: NextPage = () => {
             </ConnectButton>
           </WalletContainer>
           <Spacer y={2.5} />
-          <Button secondary fullWidth disabled={!(address && eth.address && linkingOverlay !== "linked")} onClick={() => link()}>
+          <Button secondary fullWidth disabled={!(address && eth.address && linkingOverlay !== "linked-on-exm" && linkingOverlay !== "just-linked" && linkingOverlay !== "wrong-network" && linkingOverlay !== 'not-linked-on-v1')} onClick={() => link()}>
             {linkStatus && <Loading />}
-            {linkStatus || "Link identity"}
+            {linkStatus || "Re-link to Ark V2"}
           </Button>
           <AnimatePresence>
             {!!linkingOverlay && linkModal && (
@@ -415,56 +467,45 @@ const Home: NextPage = () => {
                 <CloseButton>
                   <Close onClick={() => setLinkModal(false)} />
                 </CloseButton>
-                {(linkingOverlay === "linked" && (
-                  <p>
-                    🥳 Congratulations! You have linked your identity.
-                  </p>
-                )) || <p>Identity link sent to Arweave.</p>}
+                <p className="flex flex-col justify-center items-center gap-y-6">
+                  {linkingOverlay === "linked-on-exm" && "You've already linked on V2, no need to link again 😃"}
+                  {linkingOverlay === "not-linked-on-v1" && "You haven't linked your identity on Ark V1. Feel free to link it on V2 instead!"}
+                  {linkingOverlay === "just-linked" && "🥳 Congratulations! You have successfully re-linked your identity to Ark V2!"}
+                  {linkingOverlay === "testnets-deprecated" && "You've linked your address on Goerli, but we deprecated support for it. Worry not, you're still eligible for a POAP! "}
+                  {linkingOverlay === "wrong-network" && `Your address is linked on ${verificationNetwork}, but you're on ${NETWORKS[activeNetwork].networkKey}. Switch back to continue linking!`}
+                  {linkingOverlay !== "testnets-deprecated" ? (
+                    <Link href="/">
+                      <a>
+                        <Button>
+                          Go To Homepage
+                        </Button>
+                      </a>
+                    </Link>
+                  ): (
+                    <Button onClick={() => setLinkModal(false)}>
+                      Close Modal
+                    </Button>
+                  )}
+                </p>
+                {eligibleForPOAP && (
+                  <p className="flex flex-col justify-center items-center mt-8">
+                    You're eligible to collect your Ark Protocol Early Adopters POAP!
 
-                <p>Tweet a screenshot of this page and <a href="https://twitter.com/decentdotland" className="twitterLink" target="_blank" rel="noopener noreferrer">@decentdotland</a> to be whitelisted for some future rewards. ✨</p>
+                    <Link href={poapURL || "/"} target="_blank">
+                      <a>
+                        <Button>
+                          Claim!
+                        </Button>
+                      </a>
+                    </Link>
+                    (this link redirects to the POAP website)
+                  </p>
+                )}
+                {/* <p>Tweet a screenshot of this page and <a href="https://twitter.com/decentdotland" className="twitterLink" target="_blank" rel="noopener noreferrer">@decentdotland</a> to be whitelisted for some future rewards. ✨</p> */}
               </LinkingInProgress>
             )}
           </AnimatePresence>
         </IdentityCard>
-        <Spacer y={4} />
-        <Permanent href="https://arweave.org" target="_blank" rel="noopener noreferer">
-          <Image src="/permanent.svg" width={150} height={75} />
-        </Permanent>
-        <Spacer id="faq" y={4} />
-        <FAQCard>
-          <Spacer y={1.5} />
-          <Title style={{ textAlign: "center" }}>FAQ</Title>
-          <Spacer y={1.5} />
-          <Faq title="What is Ark Protocol?">
-            Ark is a multichain identity linking protocol built to power decent.land, ANS, and any other applications that rely on users attesting to their identity on other chains. Example use cases include token gating and social data aggregation. With Ark, users can use their Arweave wallet as a master identity to prove activity on multiple other chains.
-          </Faq>
-          <Faq title="Who built Ark?">
-            Ark was built by the <a href="https://decent.land" target="_blank" rel="noopener noreferrer">decent.land</a> team and is one of the project's core social protocols along with ANS and the Public Square.
-          </Faq>
-          <Faq title="Why did decent.land build Ark?">
-            decent.land is a collection of social and identity primitives built on Arweave to support the creation of token-gated social networks and groups. The core contracts live on Arweave but interact with other chains to build a chain-agnostic way to save your identity and control access to DAO discussions and governance.
-            <Spacer y={.5} />
-            Ark is our way to verifiably associate any number of Ethereum/EVM chain addresses with an Arweave wallet or ANS profile, and makes it so our other protocols can read token holdings and activity from Ethereum, Avalanche, BNB Chain, Aurora, Polygon, and more.          </Faq>
-          <Faq title="What do I need to start?">
-            You need the <a href="https://arconnect.io" target="_blank" rel="noopener noreferrer">ArConnect extension</a> to get an Arweave wallet and sign Arweave transactions. It should have enough AR for the interaction, e.g. 0.01 AR.
-            <Spacer y={.5} />
-            You need either <a href="https://metamask.io" target="_blank" rel="noopener noreferrer">Metamask</a>, <a href="https://www.coinbase.com/wallet" target="_blank" rel="noopener noreferrer">Coinbase Wallet</a> or a Wallet Connect compatible Ethereum wallet extension and a wallet on Ethereum mainnet, with enough ETH for gas, e.g. 0.0005 ETH.
-            <Spacer y={.5} />
-            Connect both wallets on the UI, confirm the transactions, and the data will populate on Arweave.          </Faq>
-          <Faq title="What can I do once my identities are linked with Ark?">
-            We are building token-gating protocols for both Telegram and the upcoming decent.land web app. We are also working on aggregation of multichain data for the ANS identity layer, to show activity from any chain on your own ar.page profile.
-            <Spacer y={.5} />
-            Early Ark adopters may be eligible for future beta testing opportunities as we expand the set of protocols and use cases
-          </Faq>
-          <Faq title="How can I build on Ark Protocol?">If your dApp deals with verifying a user’s identity across chains, or is an Arweave dApp built to work with other L1s, Ark Protocol could be a useful primitive to integrate.
-            <a href="https://github.com/decentldotland/ark-network" target="_blank" rel="noopener noreferrer">
-              Check it on GitHub here.
-            </a>
-          </Faq>
-          <Faq title="Why is it called Ark?">
-            In the decent.land <a href="https://github.com/decentldotland/ark-network" target="_blank" rel="noopener noreferrer">lore</a>, settlers arrived on the planet on a fleet of arks - spaceships ranging in size from personal craft to floating cities. Like its spacefaring namesake, the Ark Protocol makes connections between distant environments.
-          </Faq>
-        </FAQCard>
       </Page>
       <Modal title="Choose a wallet" {...ethModal.bindings}>
         <MetamaskButton onClick={() => connectEth(metaMask)} fullWidth>
@@ -750,19 +791,19 @@ const LinkingInProgress = styled(motion.div)`
   right: 0;
   bottom: 0;
   z-index: 100;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(3px);
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(3px);
 
   p {
-    margin: 1rem;
+    padding: 0rem 1rem;
     font-size: 1rem;
     color: ${props => props.theme.secondaryText};
     font-weight: 500;
     text-align: center;
-    max-width: 80%;
   }
 `;
 
@@ -772,4 +813,4 @@ const CloseButton = styled.div`
   right: 0.5rem;
 `;
 
-export default Home;
+export default Migrate;
