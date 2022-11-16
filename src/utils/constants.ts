@@ -95,7 +95,7 @@ export interface Address {
   verification_req: string;
 }
 
-
+export const POAPS = process.env.ARK_EARLY_SUPPORTER_POAP_URLS
 
 export const ARWEAVE_CONTRACT = "5H5Hj81G5j5P2raDhe5VFU-zkf08KDc588GJ8dtlHTw";
 export const EXM_ADDRESS = "FUsocdnUnwXRLoQGd1gvGwp0oUmNzqLbkuVG0zC-nwc";
