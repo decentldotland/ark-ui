@@ -175,7 +175,7 @@ const Migrate: NextPage = () => {
         if (Object.keys(TEST_NETWORKS).map((obj: any) => { return TEST_NETWORKS[obj]?.networkKey }).includes(userOnLegacy.ver_req_network)) {
           setLinkingOverlay("testnets-deprecated");
         }
-        if (userOnLegacy.ver_req_network !== NETWORKS[activeNetwork].networkKey) {
+        if (userOnLegacy.ver_req_network !== NETWORKS[activeNetwork].networkKey && !isTestnet(userOnLegacy.ver_req_network)) {
           setVerificationReq(userOnLegacy.ver_req_network);
           setVerificationNetwork(userOnLegacy.ver_req_network);
           setLinkingOverlay("wrong-network");
