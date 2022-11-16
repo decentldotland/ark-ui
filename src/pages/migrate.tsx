@@ -55,7 +55,7 @@ const Migrate: NextPage = () => {
   const [poapURL, setPoapURL] = useState<string>(); // url to claim poap
 
   // load if already linked or in progress
-  const [linkingOverlay, setLinkingOverlay] = useState<"just-linked" | "linked-on-exm" | "linked-on-v1" | "not-linked-on-v1" | "wrong-network" | "testnets-deprecated">();
+  const [linkingOverlay, setLinkingOverlay] = useState<"just-linked" | "linked-on-exm" | "linked-on-v1" | "not-linked-on-v1" | "testnets-deprecated">();
 
   // linking functionality
   const [linkStatus, setLinkStatus] = useState<string>();
@@ -172,19 +172,10 @@ const Migrate: NextPage = () => {
 
       const userOnLegacy: any = legacyIdentities.find((identity: any) =>
         identity.is_verified &&
-        identity.arweave_address === address &&
-        identity.evm_address === eth.address);
+        identity.arweave_address === address);
       if (userOnLegacy) {
         setEligibleForPOAP(address);
         setLinkingOverlay("linked-on-v1");
-        if (Object.keys(TEST_NETWORKS).map((obj: any) => { return TEST_NETWORKS[obj]?.networkKey }).includes(userOnLegacy.ver_req_network)) {
-          setLinkingOverlay("testnets-deprecated");
-        }
-        if (userOnLegacy.ver_req_network !== NETWORKS[activeNetwork].networkKey && !isTestnet(userOnLegacy.ver_req_network)) {
-          setVerificationReq(userOnLegacy.ver_req_network);
-          setVerificationNetwork(userOnLegacy.ver_req_network);
-          setLinkingOverlay("wrong-network");
-        }
       } else {
         setLinkingOverlay("not-linked-on-v1");
       }
@@ -199,9 +190,8 @@ const Migrate: NextPage = () => {
 
       const userIsOnEXM = EXMIdentities.find((identity: Identity) =>
         identity.is_verified &&
-        identity.arweave_address === address &&
-        (identity.addresses
-          ?.find((address: Address) => address.address === eth.address))?.network === NETWORKS[activeNetwork].networkKey);
+        identity.arweave_address === address);
+        debugger;
 
       if (userIsOnEXM) return setLinkingOverlay("linked-on-exm");
     } catch { }
@@ -301,18 +291,13 @@ const Migrate: NextPage = () => {
         <meta name="twitter:url" content="https://ark.decent.land/"></meta>
       </Head>
       <TopSection>
-        <TopContent>
+        <TopContent className="max-w-[360px]">
           <Title className='text-xs'>
             Migrate from Ark V1 to Ark V2!
           </Title>
           <Subtitle>
             Ark V1 has been deprecated, but not to worry: you can still re-link your identity to Ark V2 for free.
           </Subtitle>
-          <a href="#faq">
-            <ReadMoreButton>
-              Read more
-            </ReadMoreButton>
-          </a>
         </TopContent>
       </TopSection>
       <Page>
@@ -377,86 +362,13 @@ const Migrate: NextPage = () => {
               </ConnectButton>
             )}
           </WalletContainer>
-          <Spacer y={1} />
-          <LinkSymbol>
-            <LinkIcon />
-          </LinkSymbol>
-          <Spacer y={1} />
-          <WalletContainer>
-            <WalletChainLogo>
-              {activeNetwork === 1 || activeNetwork === 5 ? (
-                <Image src="/eth.png" width={30} height={30} draggable={false} />
-              ) : activeNetwork === 1313161555 && (
-                <Image style={{ margin: '3px 0 0 0', borderRadius: '9999px' }} src={Aurora} width={30} height={30} draggable={false} />
-              )
-              } {activeNetwork === 43114 && (
-                <Image style={{ margin: '3px 0 0 0' }} src={Avalanche} width={30} height={30} draggable={false} />
-              )
-              }
-              {activeNetwork === 56 && (
-                <Image style={{ margin: '3px 0 0 0' }} src={Binance} width={30} height={30} draggable={false} />
-              )
-              }
-              {activeNetwork === 250 && (
-                <Image style={{ margin: '3px 0 0 0' }} src={Fantom} width={30} height={30} draggable={false} />
-              )
-              }
-              {activeNetwork === 245022926 && (
-                <Image style={{ margin: '3px 0 0 0' }} src={Neon} width={30} height={30} draggable={false} />
-              )}
-              {activeNetwork === 10 && (
-                <Image style={{ margin: '3px 0 0 0' }} src={Optimism} width={30} height={30} draggable={false} />
-              )}
-              {activeNetwork === 137 && (
-                <Image style={{ margin: '3px 0 0 0' }} src={Polygon} width={30} height={30} draggable={false} />
-              )}
-              {activeNetwork === 42161 && (
-                <Image style={{ margin: '3px 0 0 0' }} src={Arbitrum} width={30} height={30} draggable={false} />
-              )}
-
-
-
-              <ChainName>
-                {(activeNetwork === 1 || activeNetwork === 5) && "Ethereum"}
-                {activeNetwork === 1313161555 && "Aurora"}
-                {activeNetwork === 43114 && "Avalanche"}
-                {activeNetwork === 56 && "BNB Chain"}
-                {activeNetwork === 250 && "Fantom"}
-                {activeNetwork === 245022926 && "NEON Testnet"}
-                {activeNetwork === 10 && "Optimism"}
-                {activeNetwork === 137 && "Polygon"}
-                {activeNetwork === 42161 && "Arbitrum"}
-                <ChainTicker>
-                  {(activeNetwork === 1 || activeNetwork === 10 || activeNetwork === 42161 || activeNetwork === 5) && "ETH"}
-                  {activeNetwork === 137 && "MATIC"}
-                  {activeNetwork === 250 && "FTM"}
-                  {activeNetwork === 43114 && "AVAX"}
-                  {activeNetwork === 56 || 245022926 && ""}
-                </ChainTicker>
-              </ChainName>
-            </WalletChainLogo>
-            <ConnectButton secondary style={{ textTransform: eth.address ? "none" : undefined }} onClick={() => {
-              if (!eth.address) {
-                ethModal.setState(true)
-              } else {
-                eth.disconnect();
-              }
-            }}>
-              {(eth.address && (
-                <>
-                  <Image src={`/${eth.provider}.png`} width={25} height={25} draggable={false} />
-                  {eth.ens || formatAddress(eth.address, 8)}
-                </>
-              )) || "Connect"}
-            </ConnectButton>
-          </WalletContainer>
-          <Spacer y={2.5} />
-          <Button secondary fullWidth disabled={!(address && eth.address && linkingOverlay !== "linked-on-exm" && linkingOverlay !== "just-linked" && linkingOverlay !== "wrong-network" && linkingOverlay !== 'not-linked-on-v1')} onClick={() => link()}>
+          <Spacer y={1.25} />
+          <Button secondary fullWidth disabled={!(address && eth.address && linkingOverlay !== "linked-on-exm" && linkingOverlay !== "just-linked" && linkingOverlay !== 'not-linked-on-v1')} onClick={() => link()}>
             {linkStatus && <Loading />}
             {linkStatus || "Re-link to Ark V2"}
           </Button>
           <AnimatePresence>
-            {!!linkingOverlay && linkModal && (
+            {!!linkingOverlay && linkingOverlay !== "linked-on-v1" && linkModal && (
               <LinkingInProgress
                 initial="transparent"
                 animate="visible"
@@ -470,63 +382,37 @@ const Migrate: NextPage = () => {
                 <p className="flex flex-col justify-center items-center gap-y-6">
                   {linkingOverlay === "linked-on-exm" && "You've already linked on V2, no need to link again 😃"}
                   {linkingOverlay === "not-linked-on-v1" && "You haven't linked your identity on Ark V1. Feel free to link it on V2 instead!"}
-                  {linkingOverlay === "just-linked" && "🥳 Congratulations! You have successfully re-linked your identity to Ark V2!"}
-                  {linkingOverlay === "testnets-deprecated" && "You've linked your address on Goerli, but we deprecated support for it. Worry not, you're still eligible for a POAP! "}
-                  {linkingOverlay === "wrong-network" && `Your address is linked on ${verificationNetwork}, but you're on ${NETWORKS[activeNetwork].networkKey}. Switch back to continue linking!`}
-                  {linkingOverlay !== "testnets-deprecated" ? (
-                    <Link href="/">
-                      <a>
-                        <Button>
-                          Go To Homepage
-                        </Button>
-                      </a>
-                    </Link>
-                  ): (
-                    <Button onClick={() => setLinkModal(false)}>
-                      Close Modal
-                    </Button>
-                  )}
+                  {linkingOverlay === "just-linked" && "🥳 Congratulations! You have successfully re-linked your identity to Ark V2!"}                  
+                  <Link href="/">
+                    <a>
+                      <Button>
+                        Go To Homepage
+                      </Button>
+                    </a>
+                  </Link>
                 </p>
-                {eligibleForPOAP && (
-                  <p className="flex flex-col justify-center items-center mt-8">
-                    You're eligible to collect your Ark Protocol Early Adopters POAP!
-
-                    <Link href={poapURL || "/"} target="_blank">
-                      <a>
-                        <Button>
-                          Claim!
-                        </Button>
-                      </a>
-                    </Link>
-                    (this link redirects to the POAP website)
-                  </p>
-                )}
                 {/* <p>Tweet a screenshot of this page and <a href="https://twitter.com/decentdotland" className="twitterLink" target="_blank" rel="noopener noreferrer">@decentdotland</a> to be whitelisted for some future rewards. ✨</p> */}
               </LinkingInProgress>
             )}
           </AnimatePresence>
         </IdentityCard>
+        <Spacer y={4} />
+        {eligibleForPOAP && (
+          <IdentityCard>
+            <p className="text-[#d3d3d3] text-center font-medium">
+              You're eligible to collect your Ark Protocol Early Adopters POAP!
+              <div className="my-6"></div>
+              <Link href={poapURL || "/"} target="_blank">
+                <a>
+                  <Button secondary fullWidth>
+                    Claim!
+                  </Button>
+                </a>
+              </Link>
+            </p>
+          </IdentityCard>
+        )}
       </Page>
-      <Modal title="Choose a wallet" {...ethModal.bindings}>
-        <MetamaskButton onClick={() => connectEth(metaMask)} fullWidth>
-          <Image src="/metamask.png" width={25} height={25} />
-          Metamask
-        </MetamaskButton>
-        <Spacer y={1} />
-        <WalletConnectButton onClick={() => connectEth(walletConnect)} fullWidth>
-          <Image src="/walletconnect.png" width={25} height={25} />
-          Wallet Connect
-        </WalletConnectButton>
-        <Spacer y={1} />
-        <CoinbaseButton onClick={() => connectEth(coinbaseWallet)} fullWidth>
-          <Image src="/coinbase.png" width={25} height={25} />
-          Coinbase Wallet
-        </CoinbaseButton>
-      </Modal>
-      <Network isDisabled={eth.address ? false : true} isDevMode={isDevMode} value={activeNetwork} onChange={(e) => setActiveNetwork((val) => {
-        setPreviousNetwork(val);
-        return Number(e.target.value);
-      })} />
     </>
   );
 }
