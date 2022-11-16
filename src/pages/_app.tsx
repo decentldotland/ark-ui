@@ -1,4 +1,5 @@
 import type { AppProps } from "next/app";
+import Script from "next/script";
 import styled, { ThemeProvider } from "styled-components";
 import Footer from "../components/Footer"
 import "../styles/globals.css";
@@ -11,6 +12,16 @@ function App({ Component, pageProps }: AppProps) {
       secondaryText: "#d3d3d3",
       tertiaryText: "#a3a3a3"
     }}>
+      <Script async src="https://www.googletagmanager.com/gtag/js?id=G-8YC0E9HXM6" />
+      <Script strategy="beforeInteractive">
+        {`
+          // Google tag (gtag.js)
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-8YC0E9HXM6');
+        `}
+      </Script>
       <Gradient />
       <Component {...pageProps} />
       <Footer />
