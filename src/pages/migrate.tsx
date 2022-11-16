@@ -55,7 +55,7 @@ const Migrate: NextPage = () => {
   const [poapURL, setPoapURL] = useState<string>(); // url to claim poap
 
   // load if already linked or in progress
-  const [linkingOverlay, setLinkingOverlay] = useState<"just-linked" | "linked" | "not-linked-on-v1" | "wrong-network" | "testnets-deprecated">();
+  const [linkingOverlay, setLinkingOverlay] = useState<"just-linked" | "linked-on-exm" | "linked-on-v1" | "not-linked-on-v1" | "wrong-network" | "testnets-deprecated">();
 
   // linking functionality
   const [linkStatus, setLinkStatus] = useState<string>();
@@ -83,10 +83,10 @@ const Migrate: NextPage = () => {
     setStatus(undefined);
     setLinkModal(true);
 
-    if (!!linkingOverlay) {
+    if (linkingOverlay === "just-linked" || linkingOverlay === "linked-on-exm") {
       return setStatus({
         type: "error",
-        message: "Already linked one of the addresses on this network"
+        message: "Already linked one of the addresses on this network (EXM)"
       });
     }
 
@@ -96,6 +96,8 @@ const Migrate: NextPage = () => {
         message: "Arweave or Ethereum not connected"
       });
     };
+
+    setLinkingOverlay(undefined);
 
     try {
       setLinkStatus("Generating a signature...");
@@ -120,8 +122,10 @@ const Migrate: NextPage = () => {
         interaction = await eth.contract.linkIdentity(address);
         await interaction.wait();
       }
+
       interaction = interaction?.hash || verificationReq;
 
+      console.log(interaction)
       setLinkStatus("Writing to Arweave...");
 
       const result = await axios.post(`api/exmwrite`, {
@@ -172,6 +176,7 @@ const Migrate: NextPage = () => {
         identity.evm_address === eth.address);
       if (userOnLegacy) {
         setEligibleForPOAP(address);
+        setLinkingOverlay("linked-on-v1");
         if (Object.keys(TEST_NETWORKS).map((obj: any) => { return TEST_NETWORKS[obj]?.networkKey }).includes(userOnLegacy.ver_req_network)) {
           setLinkingOverlay("testnets-deprecated");
         }
@@ -198,7 +203,7 @@ const Migrate: NextPage = () => {
         (identity.addresses
           ?.find((address: Address) => address.address === eth.address))?.network === NETWORKS[activeNetwork].networkKey);
 
-      if (userIsOnEXM) return setLinkingOverlay("linked");
+      if (userIsOnEXM) return setLinkingOverlay("linked-on-exm");
     } catch { }
   }
 
@@ -446,7 +451,7 @@ const Migrate: NextPage = () => {
             </ConnectButton>
           </WalletContainer>
           <Spacer y={2.5} />
-          <Button secondary fullWidth disabled={!(address && eth.address && linkingOverlay !== "linked" && linkingOverlay !== "just-linked" && linkingOverlay !== "wrong-network" && linkingOverlay !== 'not-linked-on-v1')} onClick={() => link()}>
+          <Button secondary fullWidth disabled={!(address && eth.address && linkingOverlay !== "linked-on-exm" && linkingOverlay !== "just-linked" && linkingOverlay !== "wrong-network" && linkingOverlay !== 'not-linked-on-v1')} onClick={() => link()}>
             {linkStatus && <Loading />}
             {linkStatus || "Re-link to Ark V2"}
           </Button>
@@ -463,7 +468,7 @@ const Migrate: NextPage = () => {
                   <Close onClick={() => setLinkModal(false)} />
                 </CloseButton>
                 <p className="flex flex-col justify-center items-center gap-y-6">
-                  {linkingOverlay === "linked" && "You've already linked on V2, no need to link again 😃"}
+                  {linkingOverlay === "linked-on-exm" && "You've already linked on V2, no need to link again 😃"}
                   {linkingOverlay === "not-linked-on-v1" && "You haven't linked your identity on Ark V1. Feel free to link it on V2 instead!"}
                   {linkingOverlay === "just-linked" && "🥳 Congratulations! You have successfully re-linked your identity to Ark V2!"}
                   {linkingOverlay === "testnets-deprecated" && "You've linked your address on Goerli, but we deprecated support for it. Worry not, you're still eligible for a POAP! "}
