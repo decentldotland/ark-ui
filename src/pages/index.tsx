@@ -244,7 +244,7 @@ const Home: NextPage = () => {
       </Head>
       <TopSection>
         <ARKLogo>
-          <Image style={{ borderRadius: '18px' }} src="/arkArt.jpg" width={300} height={300} draggable={false} />
+          <Image className="rounded-2xl" src="/arkArt.jpg" width={300} height={300} draggable={false} />
         </ARKLogo>
         <TopContent>
           <Title>

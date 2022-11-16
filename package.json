@@ -17,14 +17,17 @@
     "ar-gql": "^0.0.6",
     "arconnect": "^0.4.2",
     "arweave": "^1.11.4",
+    "autoprefixer": "^10.4.13",
     "color-hash": "^2.0.1",
     "ethers": "^5.6.9",
     "framer-motion": "^6.3.16",
     "next": "12.1.6",
+    "postcss": "^8.4.19",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "smartweave": "^0.4.49",
-    "styled-components": "^5.3.5"
+    "styled-components": "^5.3.5",
+    "tailwindcss": "^3.2.4"
   },
   "devDependencies": {
     "@types/node": "18.0.0",
