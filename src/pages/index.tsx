@@ -15,6 +15,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { opacityAnimation } from "../utils/animations";
 import Head from "next/head";
 import Image from "next/image";
+import Link from "next/link";
 import styled from "styled-components";
 import Button from "../components/Button";
 import Page from "../components/Page";
@@ -252,15 +253,27 @@ const Home: NextPage = () => {
               Ark
             </ProtocolName>
             Protocol
+            <ProtocolName className="text-[46px]">
+              <> </>V2
+            </ProtocolName>
           </Title>
           <Subtitle>
             The multichain identity protocol for web3 social
           </Subtitle>
-          <a href="#faq">
-            <ReadMoreButton>
-              Read more
-            </ReadMoreButton>
-          </a>
+          <div className="flex gap-x-5 group text-xl">
+            <a href="#faq">
+              <ReadMoreButton>
+                Read more
+              </ReadMoreButton>
+            </a>
+            <Link href={'/migrate'}>
+              <a>
+                <ReadMoreButton>
+                  V1 -&gt; V2 Migration 🎉
+                </ReadMoreButton>
+              </a>
+            </Link>
+          </div>
         </TopContent>
       </TopSection>
       <Page>
