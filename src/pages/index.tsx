@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { CloseIcon, LinkIcon } from "@iconicicons/react"
 import { arweave, useArconnect } from "../utils/arconnect"
 import type { NextPage } from "next";
@@ -9,14 +10,12 @@ import { metaMask } from "../utils/connectors/metamask";
 import { addChain, ETHConnector, useETH } from "../utils/eth";
 import { formatAddress } from "../utils/format";
 import { useEffect, useState } from "react";
-import { interactWrite } from "smartweave";
-import { ACTIVE_NETWORK_STORE, ARWEAVE_CONTRACT, NETWORKS } from "../utils/constants";
+import { ACTIVE_NETWORK_STORE, Identity, Address, NETWORKS } from "../utils/constants";
 import { AnimatePresence, motion } from "framer-motion";
 import { opacityAnimation } from "../utils/animations";
-import { run } from "ar-gql";
-import linkQuery from "../utils/link_query";
 import Head from "next/head";
 import Image from "next/image";
+import Link from "next/link";
 import styled from "styled-components";
 import Button from "../components/Button";
 import Page from "../components/Page";
@@ -37,7 +36,7 @@ import Arbitrum from "../assets/arbitrum.svg"
 const Home: NextPage = () => {
   const downloadWalletModal = useModal();
   const ethModal = useModal();
-  const [address, connect, disconnect] = useArconnect(downloadWalletModal);
+  const [address, connect, disconnect, arconnectError] = useArconnect(downloadWalletModal);
 
   const [activeNetwork, setActiveNetwork] = useState<number>(1);
   const [previousNetwork, setPreviousNetwork] = useState<number>(1);
@@ -47,6 +46,15 @@ const Home: NextPage = () => {
   const [status, setStatus] = useState<{ type: StatusType, message: string }>();
   const [activeConnector, setActiveConnector] = useState<ETHConnector>();
   const eth = useETH(setActiveConnector, activeNetwork);
+
+  const [currentTab, setCurrentTab] = useState<number>(1);
+  const [EXMUsers, setEXMUsers] = useState<Identity[]>([]);
+  // load if already linked or in progress
+  const [linkingOverlay, setLinkingOverlay] = useState<"in-progress" | "linked">();
+
+  // linking functionality
+  const [linkStatus, setLinkStatus] = useState<string>();
+  const [linkModal, setLinkModal] = useState<boolean>(true);
 
   // connect to wallet
   async function connectEth(connector: ETHConnector) {
@@ -61,10 +69,6 @@ const Home: NextPage = () => {
       downloadWalletModal.setState(true);
     }
   }
-
-  // linking functionality
-  const [linkStatus, setLinkStatus] = useState<string>();
-  const [linkModal, setLinkModal] = useState<boolean>(true);
 
   async function link() {
     setStatus(undefined);
@@ -85,28 +89,38 @@ const Home: NextPage = () => {
     };
 
     try {
-      setLinkStatus("Interacting with smart contract...");
+      setLinkStatus("Generating a signature...");
+
+      const arconnectPubKey = await window.arweaveWallet.getActivePublicKey();  
+      if (!arconnectPubKey) throw new Error("ArConnect public key not found");
+
+      const data = new TextEncoder().encode(`my pubkey for DL ARK is: ${arconnectPubKey}`);
+      const signature = await window.arweaveWallet.signature(data, {
+        name: "RSA-PSS",
+        saltLength: 32,
+      });
+      const signedBase = Buffer.from(signature).toString("base64");
+      console.log("signedBase", signedBase);
+      if (!signedBase) throw new Error("ArConnect signature not found");
+
+      setTimeout(() => setLinkStatus("Interacting with Ethereum smart contract..."), 1000);
 
       const interaction = await eth.contract.linkIdentity(address);
       await interaction.wait();
 
       setLinkStatus("Writing to Arweave...");
 
-      await interactWrite(arweave, "use_wallet", ARWEAVE_CONTRACT, {
-        function: "linkEvmIdentity",
-        address: eth.address,
-        verificationReq: interaction.hash,
-        network: NETWORKS[activeNetwork].networkKey
-      }, [
-        {
-          name: "Protocol-Name",
-          value: "Ark-Network"
-        },
-        {
-          name: "Protocol-Action",
-          value: "Link-Identity"
-        }
-      ]);
+      const result = await axios.post(`api/exmwrite`, {
+        "function": "linkIdentity",
+        "caller": address,
+        "address": eth.address,
+        "network": NETWORKS[activeNetwork].networkKey,
+        "jwk_n": arconnectPubKey,
+        "sig": signedBase,
+        "verificationReq": interaction.hash
+      })
+
+      console.log(result);
 
       setLinkStatus("Linked");
       setStatus({
@@ -125,6 +139,8 @@ const Home: NextPage = () => {
 
     setLinkStatus(undefined);
   }
+
+  // EVM NETWORK SWITCHING
 
   useEffect(() => {
     (async () => {
@@ -176,39 +192,26 @@ const Home: NextPage = () => {
     })();
   }, [activeNetwork]);
 
-  // load if already linked or in progress
-  const [linkingOverlay, setLinkingOverlay] = useState<"in-progress" | "linked">();
+
+  // LINKING STATUS
 
   useEffect(() => {
     (async () => {
       if (!address) return;
 
-      // check if linked
       try {
-        const res = await fetch("https://ark-api.decent.land/v1/oracle/state");
-        const { res: cachedState } = await res.clone().json();
+        const res = await axios.get('api/exmread');
+        const { identities } = res.data;
 
         if (
-          cachedState.find((identity: Record<string, any>) =>
-            (identity.arweave_address === address || identity.evm_address === eth.address) &&
-            identity.ver_req_network === NETWORKS[activeNetwork].networkKey &&
-            identity.is_verified
+          identities.find((identity: Identity) =>
+            identity.is_verified &&
+            identity.arweave_address === address &&
+            (identity.addresses
+              ?.find((address: Address) => address.address === eth.address))?.network === NETWORKS[activeNetwork].networkKey
           )
         ) {
           return setLinkingOverlay("linked");
-        }
-      } catch { }
-
-      // check if linking is in progress
-      try {
-        const inProgressQuery = await run(linkQuery, { owner: address, arkContract: ARWEAVE_CONTRACT });
-
-        // filter mining transactions
-        // these suggest that a linking is in progress
-        const mining = inProgressQuery.data.transactions.edges.filter(({ node }) => !node.block);
-
-        if (mining.length > 0) {
-          setLinkingOverlay("in-progress");
         } else {
           setLinkingOverlay(undefined);
         }
@@ -242,7 +245,7 @@ const Home: NextPage = () => {
       </Head>
       <TopSection>
         <ARKLogo>
-          <Image style={{ borderRadius: '18px' }} src="/arkArt.jpg" width={300} height={300} draggable={false} />
+          <Image className="rounded-2xl" src="/arkArt.jpg" width={300} height={300} draggable={false} />
         </ARKLogo>
         <TopContent>
           <Title>
@@ -250,15 +253,27 @@ const Home: NextPage = () => {
               Ark
             </ProtocolName>
             Protocol
+            <ProtocolName className="text-[46px]">
+              <> </>V2
+            </ProtocolName>
           </Title>
           <Subtitle>
             The multichain identity protocol for web3 social
           </Subtitle>
-          <a href="#faq">
-            <ReadMoreButton>
-              Read more
-            </ReadMoreButton>
-          </a>
+          <div className="flex gap-x-5 group text-xl">
+            <a href="#faq">
+              <ReadMoreButton>
+                What is Ark?
+              </ReadMoreButton>
+            </a>
+            <Link href={'/migrate'}>
+              <a>
+                <SecondaryButton>
+                  V1 -&gt; V2 Migration 🛸
+                </SecondaryButton>
+              </a>
+            </Link>
+          </div>
         </TopContent>
       </TopSection>
       <Page>
@@ -319,7 +334,7 @@ const Home: NextPage = () => {
                 secondary
                 onClick={() => connect()}
               >
-                Connect
+                {arconnectError ? arconnectError : 'Connect'}
               </ConnectButton>
             )}
           </WalletContainer>
@@ -589,6 +604,7 @@ const TopBanner = styled.div`
 const WalletContainer = styled.div`
   display: flex;
   align-items: center;
+  row-gap: 0.5em;
   justify-content: space-between;
   background-color: #1c1e23;
   border-radius: 20px;
@@ -599,10 +615,12 @@ const WalletContainer = styled.div`
 const WalletChainLogo = styled.div`
   display: flex;
   align-items: center;
+  flex-shrink: 0;
   gap: .75rem;
   font-size: 1.1rem;
   color: #fff;
   font-weight: 500;
+  width: max-content;
 `;
 
 const ChainName = styled.div`
@@ -663,6 +681,23 @@ const FAQCard = styled(Card)`
 const ReadMoreButton = styled(Button)`
   font-size: 0.95rem;
   padding: 0.6rem;
+`;
+
+const SecondaryButton = styled(Button)`
+  font-size: 0.95rem;
+  padding: 0.47rem;
+  background: none;
+  color: #fff;
+  border: 2px;
+  border-style: solid;
+  border-color: rgb(${props => props.theme.primary});
+  
+  &:hover {
+    background: rgb(${props => props.theme.primary});
+    color: black;
+    transition: background-color 100ms linear;
+    transition: color 100ms linear;
+  }
 `;
 
 const CoinbaseButton = styled(Button)`
@@ -727,8 +762,8 @@ const CloseStatusIcon = styled(CloseIcon)`
 `;
 
 const ConnectButton = styled(Button)`
-  padding-left: 2.5rem;
-  padding-right: 2.5rem;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
 
   @media screen and (max-width: 720px) {
     padding-left: 0.5rem;

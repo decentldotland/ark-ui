@@ -15,6 +15,11 @@ If this is your first time launching the project, install the packages with yarn
 yarn install
 ```
 
+Then populate the fields with your own values in the `.env.local` file:
+```sh
+echo 'EXM_API_TOKEN=<TOKEN>' > .env.local
+```
+
 And then launch by typing:
 ```sh
 npm run dev
