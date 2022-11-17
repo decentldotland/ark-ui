@@ -199,11 +199,8 @@ const Migrate: NextPage = () => {
 
   return (
     <>
-      <TopBanner>
-        Connect wallet and switch network to use Ark on Avalanche, BNB, Aurora, and Goerli
-      </TopBanner>
       <Head>
-        <title>Migrate Your Profile!</title>
+        <title>Ark Protocol | Migrate Your Profile!</title>
         <link rel="icon" href="/favicon.ico" />
         <meta name="description" content="Ark" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes" />
@@ -217,10 +214,10 @@ const Migrate: NextPage = () => {
       <TopSection>
         <TopContent className="max-w-[360px]">
           <Title className='text-xs'>
-            Migrate from Ark V1 to Ark V2!
+            Migrate to Ark V2!
           </Title>
           <Subtitle>
-            Ark V1 has been deprecated, but not to worry: you can still re-link your identity to Ark V2 for free.
+            Ark V1 has been deprecated. If you linked your identity on V1, re-link your identity to Ark V2 for free and claim an early adopter NFT.
           </Subtitle>
         </TopContent>
       </TopSection>
@@ -264,7 +261,7 @@ const Migrate: NextPage = () => {
         <IdentityCard>
           <Spacer y={.25} />
           <CardSubtitle>
-            Link identity
+            Re-Link identity
           </CardSubtitle>
           <Spacer y={1.25} />
           <WalletContainer>
@@ -409,7 +406,7 @@ const Title = styled.h1`
 `;
 
 const Subtitle = styled.h2`
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 500;
   color: #fff;
   margin: 0;

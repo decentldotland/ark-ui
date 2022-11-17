@@ -263,14 +263,14 @@ const Home: NextPage = () => {
           <div className="flex gap-x-5 group text-xl">
             <a href="#faq">
               <ReadMoreButton>
-                Read more
+                What is Ark?
               </ReadMoreButton>
             </a>
             <Link href={'/migrate'}>
               <a>
-                <ReadMoreButton>
-                  V1 -&gt; V2 Migration 🎉
-                </ReadMoreButton>
+                <SecondaryButton>
+                  V1 -&gt; V2 Migration 🛸
+                </SecondaryButton>
               </a>
             </Link>
           </div>
@@ -681,6 +681,16 @@ const FAQCard = styled(Card)`
 const ReadMoreButton = styled(Button)`
   font-size: 0.95rem;
   padding: 0.6rem;
+`;
+
+const SecondaryButton = styled(Button)`
+  font-size: 0.95rem;
+  padding: 0.6rem;
+  background: none;
+  color: #fff;
+  border: 2px;
+  border-style: solid;
+  border-color: rgb(${props => props.theme.primary});
 `;
 
 const CoinbaseButton = styled(Button)`
