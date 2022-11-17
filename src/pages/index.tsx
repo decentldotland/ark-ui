@@ -685,12 +685,19 @@ const ReadMoreButton = styled(Button)`
 
 const SecondaryButton = styled(Button)`
   font-size: 0.95rem;
-  padding: 0.6rem;
+  padding: 0.47rem;
   background: none;
   color: #fff;
   border: 2px;
   border-style: solid;
   border-color: rgb(${props => props.theme.primary});
+  
+  &:hover {
+    background: rgb(${props => props.theme.primary});
+    color: black;
+    transition: background-color 100ms linear;
+    transition: color 100ms linear;
+  }
 `;
 
 const CoinbaseButton = styled(Button)`
