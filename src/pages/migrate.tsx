@@ -38,6 +38,7 @@ const Migrate: NextPage = () => {
   const [legacyUsers, setLegacyUsers] = useState<any>();
   const [verificationReq, setVerificationReq] = useState<string>();
   const [verificationNetwork, setVerificationNetwork] = useState<string>();
+  const [verificationAddress, setVerificationAddress] = useState<string>();
   const [eligibleForPOAP, setEligibleForPOAP] = useState<string>(''); // users arweave address to interface with poaps
   const [poapURL, setPoapURL] = useState<string>('/'); // url to claim poap
 
@@ -106,8 +107,7 @@ const Migrate: NextPage = () => {
 
       const result = await axios.post(`api/exmwrite`, {
         "function": "linkIdentity",
-        "caller": address,
-        "address": eth.address,
+        "address": verificationAddress,
         "network": verificationNetwork,
         "jwk_n": arconnectPubKey,
         "sig": signedBase,
@@ -155,6 +155,7 @@ const Migrate: NextPage = () => {
         else {
           setVerificationNetwork(userOnLegacy.ver_req_network);
           setVerificationReq(userOnLegacy.verification_req);
+          setVerificationAddress(userOnLegacy.evm_address);
           setLinkingOverlay("linked-on-v1");
         } 
       } else {
