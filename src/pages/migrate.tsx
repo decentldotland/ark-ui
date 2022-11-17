@@ -4,11 +4,7 @@ import { arweave, useArconnect } from "../utils/arconnect"
 import type { NextPage } from "next";
 import Card, { CardSubtitle } from "../components/Card";
 import { Modal, useModal, Close } from "../components/Modal";
-import { coinbaseWallet } from "../utils/connectors/coinbase";
-import { walletConnect } from "../utils/connectors/walletconnect";
-import { metaMask } from "../utils/connectors/metamask";
 import { addChain, ETHConnector, useETH } from "../utils/eth";
-import { formatAddress } from "../utils/format";
 import { useEffect, useState } from "react";
 import { ACTIVE_NETWORK_STORE, Identity, Address, NETWORKS, TEST_NETWORKS } from "../utils/constants";
 import { AnimatePresence, motion } from "framer-motion";
@@ -20,18 +16,9 @@ import styled from "styled-components";
 import Button from "../components/Button";
 import Page from "../components/Page";
 import Spacer from "../components/Spacer";
-import Faq from "../components/Faq";
 import ANS from "../components/ANS";
 import Loading from "../components/Loading";
-import Network from "../components/Network";
-import Avalanche from "../assets/avalanche.svg";
-import Binance from "../assets/binance.png";
-import Neon from "../assets/neon.png";
-import Aurora from "../assets/aurora.png";
-import Fantom from "../assets/fantom.png"
-import Optimism from "../assets/optimism.svg"
-import Polygon from "../assets/polygon.webp"
-import Arbitrum from "../assets/arbitrum.svg"
+import POAP from "../assets/ArkEarlyAdopterPOAP.png";
 
 const Migrate: NextPage = () => {
   const downloadWalletModal = useModal();
@@ -51,8 +38,8 @@ const Migrate: NextPage = () => {
   const [legacyUsers, setLegacyUsers] = useState<any>();
   const [verificationReq, setVerificationReq] = useState<string>();
   const [verificationNetwork, setVerificationNetwork] = useState<string>();
-  const [eligibleForPOAP, setEligibleForPOAP] = useState<string>(); // users arweave address to interface with poaps
-  const [poapURL, setPoapURL] = useState<string>(); // url to claim poap
+  const [eligibleForPOAP, setEligibleForPOAP] = useState<string>(''); // users arweave address to interface with poaps
+  const [poapURL, setPoapURL] = useState<string>('/'); // url to claim poap
 
   // load if already linked or in progress
   const [linkingOverlay, setLinkingOverlay] = useState<"just-linked" | "linked-on-exm" | "linked-on-v1" | "not-linked-on-v1" | "testnets-deprecated">();
@@ -63,19 +50,6 @@ const Migrate: NextPage = () => {
 
   const isTestnet = (req: string | undefined) => Object.keys(TEST_NETWORKS).map((obj: any) => { return TEST_NETWORKS[obj]?.networkKey }).includes(req || "")
 
-  // connect to wallet
-  async function connectEth(connector: ETHConnector) {
-    try {
-      await eth.connect(connector, activeNetwork);
-      setActiveConnector(connector);
-      ethModal.setState(false);
-      setStatus(undefined);
-      localStorage.setItem('isConnected', 'true');
-    } catch (e) {
-      ethModal.setState(false);
-      downloadWalletModal.setState(true);
-    }
-  }
 
   // LINKING STATUS
   
@@ -90,7 +64,7 @@ const Migrate: NextPage = () => {
       });
     }
 
-    if (!address || !eth.address || !eth.contract) {
+    if (!address) {
       return setStatus({
         type: "error",
         message: "Arweave or Ethereum not connected"
@@ -111,31 +85,33 @@ const Migrate: NextPage = () => {
         saltLength: 32,
       });
       const signedBase = Buffer.from(signature).toString("base64");
-      console.log("signedBase", signedBase);
-      if (!signedBase) throw new Error("ArConnect signature not found");
 
-      let interaction;
-
-      if (!verificationReq && !isTestnet(verificationNetwork)) {
-        setTimeout(() => setLinkStatus("Interacting with Ethereum smart contract..."), 1000);
-
-        interaction = await eth.contract.linkIdentity(address);
-        await interaction.wait();
+      if (!signedBase) {
+        setLinkStatus("Failed to generate a signature");
+        return setStatus({
+          type: "error",
+          message: "Failed to sign message, check permissions and try again"
+        });
       }
 
-      interaction = interaction?.hash || verificationReq;
+      if (!verificationReq || isTestnet(verificationNetwork)) {
+        setLinkStatus("Cannot link to testnet");
+        return setStatus({
+          type: "error",
+          message: "Can't link, seems like you've linked on Goerli, or never used Ark V1. Go to https://ark.decent.land to link."
+        });
+      }
 
-      console.log(interaction)
-      setLinkStatus("Writing to Arweave...");
+      setTimeout(() => setLinkStatus("Writing to Arweave..."), 1000);
 
       const result = await axios.post(`api/exmwrite`, {
         "function": "linkIdentity",
         "caller": address,
         "address": eth.address,
-        "network": NETWORKS[activeNetwork].networkKey,
+        "network": verificationNetwork,
         "jwk_n": arconnectPubKey,
         "sig": signedBase,
-        "verificationReq": interaction
+        "verificationReq": verificationReq
       })
 
       console.log(result);
@@ -175,7 +151,12 @@ const Migrate: NextPage = () => {
         identity.arweave_address === address);
       if (userOnLegacy) {
         setEligibleForPOAP(address);
-        setLinkingOverlay("linked-on-v1");
+        if (isTestnet(userOnLegacy.ver_req_network)) setLinkingOverlay("testnets-deprecated");
+        else {
+          setVerificationNetwork(userOnLegacy.ver_req_network);
+          setVerificationReq(userOnLegacy.verification_req);
+          setLinkingOverlay("linked-on-v1");
+        } 
       } else {
         setLinkingOverlay("not-linked-on-v1");
       }
@@ -191,9 +172,8 @@ const Migrate: NextPage = () => {
       const userIsOnEXM = EXMIdentities.find((identity: Identity) =>
         identity.is_verified &&
         identity.arweave_address === address);
-        debugger;
 
-      if (userIsOnEXM) return setLinkingOverlay("linked-on-exm");
+      if (userIsOnEXM) setLinkingOverlay("linked-on-exm");
     } catch { }
   }
 
@@ -210,68 +190,6 @@ const Migrate: NextPage = () => {
       if (url) setPoapURL(url); 
     })()
   }, [eligibleForPOAP])
-
-  // EVM NETWORK SWITCHING
-
-  useEffect(() => {
-    (async () => {
-      const stored = localStorage.getItem(ACTIVE_NETWORK_STORE);
-
-      // load saved network
-      if (stored && !networkLoaded) {
-        setActiveNetwork(Number(stored));
-        setNetworkLoaded(true);
-      } else {
-        // save current network and add it to the addressbook
-        try {
-          localStorage.setItem(ACTIVE_NETWORK_STORE, activeNetwork.toString());
-          if (activeNetwork !== 1 && activeNetwork !== 5) {
-            const provider = eth.getProvider()?.provider;
-            if (!provider) return;
-            // @ts-ignore
-            if (await provider.request({ method: "eth_chainId" }) === activeNetwork) return;
-            // @ts-ignore
-            await provider.request({
-              method: 'wallet_addEthereumChain',
-              params: [{
-                chainName: String(NETWORKS[Number(activeNetwork)]?.name),
-                chainId: `0x${activeNetwork.toString(16)}`,
-                rpcUrls: NETWORKS[Number(activeNetwork)].urls,
-              }],
-            });
-          };
-        } catch {
-          setActiveNetwork(previousNetwork);
-        }
-
-        // reconnect with the new network
-        if (eth.address && activeConnector) {
-          try {
-            await eth.connect(activeConnector, activeNetwork);
-          } catch (e: any) {
-            if (e.code === 4902) {
-              try {
-                await addChain(activeConnector, activeNetwork, NETWORKS[activeNetwork]);
-                await eth.connect(activeConnector, activeNetwork);
-              } catch {
-                setActiveNetwork(previousNetwork);
-              }
-            } else setActiveNetwork(previousNetwork);
-          }
-          await checkLinkingStatus();
-        }
-      }
-    })();
-  }, [activeNetwork]);
-
-
-
-  // DEV MODE FOR EXTRA TESTNETS
-  useEffect(() => {
-    if (window.location.href.includes("localhost")) {
-      setIsDevMode(true)
-    }
-  }, []);
 
   return (
     <>
@@ -369,49 +287,53 @@ const Migrate: NextPage = () => {
           </Button>
           <AnimatePresence>
             {!!linkingOverlay && linkingOverlay !== "linked-on-v1" && linkModal && (
-              <LinkingInProgress
+              <LinkingInProgress  
                 initial="transparent"
                 animate="visible"
                 exit="transparent"
                 variants={opacityAnimation}
                 transition={{ duration: 0.23, ease: "easeInOut" }}
               >
-                <CloseButton>
-                  <Close onClick={() => setLinkModal(false)} />
-                </CloseButton>
-                <p className="flex flex-col justify-center items-center gap-y-6">
+                {linkingOverlay !== "testnets-deprecated" && linkingOverlay !== "not-linked-on-v1" && (
+                  <CloseButton>
+                    <Close onClick={() => setLinkModal(false)} />
+                  </CloseButton>
+                )}
+                <div className="flex flex-col justify-center items-center gap-y-6 text-[#d3d3d3] px-8 text-center">
                   {linkingOverlay === "linked-on-exm" && "You've already linked on V2, no need to link again 😃"}
                   {linkingOverlay === "not-linked-on-v1" && "You haven't linked your identity on Ark V1. Feel free to link it on V2 instead!"}
                   {linkingOverlay === "just-linked" && "🥳 Congratulations! You have successfully re-linked your identity to Ark V2!"}                  
-                  <Link href="/">
+                  {linkingOverlay === "testnets-deprecated" && "Your account has been linked on Goerli, which has been deprecated. Don't worry though, you'll still get a POAP!"}
+                  <Link href={"/"}>
                     <a>
                       <Button>
                         Go To Homepage
                       </Button>
                     </a>
                   </Link>
-                </p>
+                </div>
                 {/* <p>Tweet a screenshot of this page and <a href="https://twitter.com/decentdotland" className="twitterLink" target="_blank" rel="noopener noreferrer">@decentdotland</a> to be whitelisted for some future rewards. ✨</p> */}
               </LinkingInProgress>
             )}
           </AnimatePresence>
         </IdentityCard>
         <Spacer y={4} />
-        {eligibleForPOAP && (
-          <IdentityCard>
-            <p className="text-[#d3d3d3] text-center font-medium">
-              You're eligible to collect your Ark Protocol Early Adopters POAP!
-              <div className="my-6"></div>
-              <Link href={poapURL || "/"} target="_blank">
-                <a>
-                  <Button secondary fullWidth>
-                    Claim!
-                  </Button>
-                </a>
-              </Link>
-            </p>
-          </IdentityCard>
-        )}
+        <IdentityCard>
+          <div className="text-[#d3d3d3] text-center font-medium">
+            {eligibleForPOAP ?
+              "You're eligible to collect your Ark Protocol Early Adopters POAP!":
+              "You're not eligible to collect your Ark Protocol Early Adopters POAP. Stay tuned for more events!"
+            }
+            <div className="my-6">
+              <Image src={POAP} width={200} height={200} draggable={false} className={eligibleForPOAP ? "": "grayscale"} />
+            </div>
+            <a href={poapURL} target="_blank">
+              <Button secondary fullWidth className={eligibleForPOAP ? "" : "grayscale"}>
+                Claim!
+              </Button>
+            </a>
+          </div>
+        </IdentityCard>
       </Page>
     </>
   );
