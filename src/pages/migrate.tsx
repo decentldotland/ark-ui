@@ -158,6 +158,7 @@ const Migrate: NextPage = () => {
           setLinkingOverlay("linked-on-v1");
         } 
       } else {
+        setEligibleForPOAP('no');
         setLinkingOverlay("not-linked-on-v1");
       }
 
@@ -174,15 +175,19 @@ const Migrate: NextPage = () => {
         identity.arweave_address === address);
 
       if (userIsOnEXM) setLinkingOverlay("linked-on-exm");
-    } catch { }
+    } catch { 
+      setEligibleForPOAP('no');
+      setLinkingOverlay("not-linked-on-v1");
+    }
   }
 
   useEffect(() => {
     checkLinkingStatus();
-  }, [address, activeNetwork]);
+  }, [address]);
 
   useEffect(() => {
     (async () => {
+      if (eligibleForPOAP === 'no') return
       const poapURL = await axios.post(`api/getpoapurl`, {
         "arweave_address": address,
       })
@@ -281,7 +286,7 @@ const Migrate: NextPage = () => {
             )}
           </WalletContainer>
           <Spacer y={1.25} />
-          <Button secondary fullWidth disabled={!(address && eth.address && linkingOverlay !== "linked-on-exm" && linkingOverlay !== "just-linked" && linkingOverlay !== 'not-linked-on-v1')} onClick={() => link()}>
+          <Button secondary fullWidth disabled={!(address && linkingOverlay !== "linked-on-exm" && linkingOverlay !== "just-linked" && linkingOverlay !== 'not-linked-on-v1')} onClick={() => link()}>
             {linkStatus && <Loading />}
             {linkStatus || "Re-link to Ark V2"}
           </Button>
@@ -303,7 +308,7 @@ const Migrate: NextPage = () => {
                   {linkingOverlay === "linked-on-exm" && "You've already linked on V2, no need to link again 😃"}
                   {linkingOverlay === "not-linked-on-v1" && "You haven't linked your identity on Ark V1. Feel free to link it on V2 instead!"}
                   {linkingOverlay === "just-linked" && "🥳 Congratulations! You have successfully re-linked your identity to Ark V2!"}                  
-                  {linkingOverlay === "testnets-deprecated" && "Your account has been linked on Goerli, which has been deprecated. Don't worry though, you'll still get a POAP!"}
+                  {linkingOverlay === "testnets-deprecated" && "Your account has been linked on Goerli, which has been deprecated. Don't worry though, you'll still get a POAP! To re-link to V2, go to homepage."}
                   <Link href={"/"}>
                     <a>
                       <Button>
@@ -320,15 +325,14 @@ const Migrate: NextPage = () => {
         <Spacer y={4} />
         <IdentityCard>
           <div className="text-[#d3d3d3] text-center font-medium">
-            {eligibleForPOAP ?
-              "You're eligible to collect your Ark Protocol Early Adopters POAP!":
-              "You're not eligible to collect your Ark Protocol Early Adopters POAP. Stay tuned for more events!"
-            }
+            {eligibleForPOAP === 'no' && "You're not eligible to collect your Ark Protocol Early Adopters POAP. Stay tuned for more events!"}
+            {eligibleForPOAP.length > 3 &&  "You're eligible to collect your Ark Protocol Early Adopters POAP!"}
+            {eligibleForPOAP.length === 0 && "Connect your wallet to check eligibility status."}
             <div className="my-6">
-              <Image src={POAP} width={200} height={200} draggable={false} className={eligibleForPOAP ? "": "grayscale"} />
+              <Image src={POAP} width={200} height={200} draggable={false} className={(eligibleForPOAP === 'no' || eligibleForPOAP.length === 0) ? "grayscale" : ""} />
             </div>
             <a href={poapURL} target="_blank">
-              <Button secondary fullWidth className={eligibleForPOAP ? "" : "grayscale"}>
+              <Button secondary fullWidth className={(eligibleForPOAP === 'no' || eligibleForPOAP.length === 0) ? "grayscale" : ""}>
                 Claim!
               </Button>
             </a>
