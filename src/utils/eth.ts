@@ -157,7 +157,7 @@ export async function addChain(connector: ETHConnector, chainId: number, network
       {
         chainId: "0x" + chainId.toString(16),
         chainName: network?.name,
-        // nativeCurrency: { name: "ONE", symbol: "ONE", decimals: 18 },
+        nativeCurrency: { name: network?.nativeCurrency?.name, symbol: network?.nativeCurrency?.symbol, decimals: network?.nativeCurrency?.decimals },
         rpcUrls: network?.rpcUrls,
       }
     ],
