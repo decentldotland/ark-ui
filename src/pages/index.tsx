@@ -26,6 +26,7 @@ import Loading from "../components/Loading";
 import Network from "../components/Network";
 import Avalanche from "../assets/avalanche.svg";
 import Binance from "../assets/binance.png";
+import Evmos from "../assets/evmos.png";
 import Neon from "../assets/neon.png";
 import Aurora from "../assets/aurora.png";
 import Fantom from "../assets/fantom.png"
@@ -154,11 +155,19 @@ const Home: NextPage = () => {
         // save current network and add it to the addressbook
         try {
           localStorage.setItem(ACTIVE_NETWORK_STORE, activeNetwork.toString());
-          if (activeNetwork !== 1 && activeNetwork !== 5) {
+          if (activeNetwork !== 1) {
             const provider = eth.getProvider()?.provider;
             if (!provider) return;
             // @ts-ignore
             if (await provider.request({ method: "eth_chainId" }) === activeNetwork) return;
+            let nativeCurrency = {};
+            if (NETWORKS[Number(activeNetwork)]?.nativeCurrency) nativeCurrency = {
+              nativeCurrency: {
+                name: NETWORKS[Number(activeNetwork)]?.nativeCurrency?.name,
+                symbol: NETWORKS[Number(activeNetwork)]?.nativeCurrency?.symbol,
+                decimals: NETWORKS[Number(activeNetwork)]?.nativeCurrency?.decimals,
+              }
+            }
             // @ts-ignore
             await provider.request({
               method: 'wallet_addEthereumChain',
@@ -166,6 +175,7 @@ const Home: NextPage = () => {
                 chainName: String(NETWORKS[Number(activeNetwork)]?.name),
                 chainId: `0x${activeNetwork.toString(16)}`,
                 rpcUrls: NETWORKS[Number(activeNetwork)].urls,
+                ...nativeCurrency
               }],
             });
           };
@@ -362,6 +372,9 @@ const Home: NextPage = () => {
                 <Image style={{ margin: '3px 0 0 0' }} src={Fantom} width={30} height={30} draggable={false} />
               )
               }
+              {activeNetwork === 9001 && (
+                <Image style={{ margin: '0px 0 0 0', borderRadius: '100%' }} src={Evmos} width={30} height={30} draggable={false} />
+              )}
               {activeNetwork === 245022926 && (
                 <Image style={{ margin: '3px 0 0 0' }} src={Neon} width={30} height={30} draggable={false} />
               )}
@@ -383,6 +396,7 @@ const Home: NextPage = () => {
                 {activeNetwork === 43114 && "Avalanche"}
                 {activeNetwork === 56 && "BNB Chain"}
                 {activeNetwork === 250 && "Fantom"}
+                {activeNetwork === 9001 && "EVMOS"}
                 {activeNetwork === 245022926 && "NEON Testnet"}
                 {activeNetwork === 10 && "Optimism"}
                 {activeNetwork === 137 && "Polygon"}
@@ -391,6 +405,7 @@ const Home: NextPage = () => {
                   {(activeNetwork === 1 || activeNetwork === 10 || activeNetwork === 42161 || activeNetwork === 5) && "ETH"}
                   {activeNetwork === 137 && "MATIC"}
                   {activeNetwork === 250 && "FTM"}
+                  {activeNetwork === 9001 && "EVMOS"}
                   {activeNetwork === 43114 && "AVAX"}
                   {activeNetwork === 56 || 245022926 && ""}
                 </ChainTicker>

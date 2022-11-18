@@ -4,6 +4,7 @@ export const NETWORKS: Record<number, {
   urls: string[];
   theme: string;
   networkKey: string; // Ark Protocol identifier for network
+  nativeCurrency?: any;
 }> = {
   1: {
     name: "Ethereum Mainnet",
@@ -47,6 +48,17 @@ export const NETWORKS: Record<number, {
     urls: ["https://polygon-rpc.com"],
     theme: "130, 71, 229"
   },
+  9001: {
+    name: "Evmos Mainnet",
+    networkKey: "EVMOS-MAINNET",
+    urls: ["https://eth.bd.evmos.org:8545"],
+    theme: "228, 65, 26",
+    nativeCurrency: {
+      name: "Evmos",
+      symbol: "EVMOS",
+      decimals: 18  
+    }
+  }
 };
 
 export const TEST_NETWORKS: Record<number, {
@@ -105,7 +117,6 @@ export const EXM_WRITE_URL = "https://api.exm.dev/api/transactions";
 
 export const EVM_ORACLES: Record<number, string> = {
   1: "0xdE44d3fB118E0f007f2C0D8fFFE98b994383949A",
-  5: "0xdE44d3fB118E0f007f2C0D8fFFE98b994383949A",
   56: "0xdE44d3fB118E0f007f2C0D8fFFE98b994383949A",
   250: "0xdE44d3fB118E0f007f2C0D8fFFE98b994383949A",
   43114: "0xE5E0A3380811aD9380F91a6996529da0a262EcD1",
@@ -114,6 +125,7 @@ export const EVM_ORACLES: Record<number, string> = {
   137: "0xdE44d3fB118E0f007f2C0D8fFFE98b994383949A",
   // 245022926: "",
   1313161555: "0xfb0200C27185185D7DEe0403D5f102ADb59B7c34",
+  9001: "0xdE44d3fB118E0f007f2C0D8fFFE98b994383949A"
 };
 
 export const URLS: { [chainId: number]: string[] } = Object.keys(NETWORKS).reduce<{ [chainId: number]: string[] }>(
