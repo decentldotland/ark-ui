@@ -1,7 +1,7 @@
 import type { AppProps } from "next/app";
 import Script from "next/script";
 import styled, { ThemeProvider } from "styled-components";
-import Footer from "../components/Footer"
+import Footer from "../components/Footer";
 import "../styles/globals.css";
 
 function App({ Component, pageProps }: AppProps) {

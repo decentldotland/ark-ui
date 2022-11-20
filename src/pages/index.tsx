@@ -1,7 +1,8 @@
 import axios from 'axios';
-import { CloseIcon, LinkIcon } from "@iconicicons/react"
-import { arweave, useArconnect } from "../utils/arconnect"
 import type { NextPage } from "next";
+import { CloseIcon, LinkIcon } from "@iconicicons/react"
+import { useArconnect } from "../utils/arconnect"
+import NearConnect from "../utils/near";
 import Card, { CardSubtitle } from "../components/Card";
 import { Modal, useModal, Close } from "../components/Modal";
 import { coinbaseWallet } from "../utils/connectors/coinbase";
@@ -24,6 +25,7 @@ import Faq from "../components/Faq";
 import ANS from "../components/ANS";
 import Loading from "../components/Loading";
 import Network from "../components/Network";
+// import Toggle from "../components/Toggle";
 import Avalanche from "../assets/avalanche.svg";
 import Binance from "../assets/binance.png";
 import Evmos from "../assets/evmos.png";
@@ -33,6 +35,7 @@ import Fantom from "../assets/fantom.png"
 import Optimism from "../assets/optimism.svg"
 import Polygon from "../assets/polygon.webp"
 import Arbitrum from "../assets/arbitrum.svg"
+import Near from "../assets/near.svg"
 
 const Home: NextPage = () => {
   const downloadWalletModal = useModal();
@@ -48,14 +51,14 @@ const Home: NextPage = () => {
   const [activeConnector, setActiveConnector] = useState<ETHConnector>();
   const eth = useETH(setActiveConnector, activeNetwork);
 
-  const [currentTab, setCurrentTab] = useState<number>(1);
-  const [EXMUsers, setEXMUsers] = useState<Identity[]>([]);
   // load if already linked or in progress
   const [linkingOverlay, setLinkingOverlay] = useState<"in-progress" | "linked">();
 
   // linking functionality
   const [linkStatus, setLinkStatus] = useState<string>();
   const [linkModal, setLinkModal] = useState<boolean>(true);
+
+  const [isEVM, setIsEVM] = useState<boolean>(false);
 
   // connect to wallet
   async function connectEth(connector: ETHConnector) {
@@ -236,6 +239,7 @@ const Home: NextPage = () => {
       setIsDevMode(true)
     }
   }, []);
+
   return (
     <>
       <TopBanner>
@@ -255,7 +259,7 @@ const Home: NextPage = () => {
       </Head>
       <TopSection>
         <ARKLogo>
-          <Image className="rounded-2xl" src="/arkArt.jpg" width={300} height={300} draggable={false} />
+          <Image className="rounded-2xl" src="/arkArt.jpg" width={300} height={300} priority={true} draggable={false} />
         </ARKLogo>
         <TopContent>
           <Title>
@@ -329,6 +333,10 @@ const Home: NextPage = () => {
             Link identity
           </CardSubtitle>
           <Spacer y={1.25} />
+          <button className="text-white" onClick={() => setIsEVM(!isEVM)}>
+            Current Network: { isEVM ? "EVM" : "Exotic"}
+          </button>
+          <Spacer y={1.25} />
           <WalletContainer>
             <WalletChainLogo>
               <Image src="/arweave.png" width={30} height={30} draggable={false} />
@@ -353,79 +361,92 @@ const Home: NextPage = () => {
             <LinkIcon />
           </LinkSymbol>
           <Spacer y={1} />
-          <WalletContainer>
-            <WalletChainLogo>
-              {activeNetwork === 1 || activeNetwork === 5 ? (
-                <Image src="/eth.png" width={30} height={30} draggable={false} />
-              ) : activeNetwork === 1313161555 && (
-                <Image style={{ margin: '3px 0 0 0', borderRadius: '9999px' }} src={Aurora} width={30} height={30} draggable={false} />
-              )
-              } {activeNetwork === 43114 && (
-                <Image style={{ margin: '3px 0 0 0' }} src={Avalanche} width={30} height={30} draggable={false} />
-              )
-              }
-              {activeNetwork === 56 && (
-                <Image style={{ margin: '3px 0 0 0' }} src={Binance} width={30} height={30} draggable={false} />
-              )
-              }
-              {activeNetwork === 250 && (
-                <Image style={{ margin: '3px 0 0 0' }} src={Fantom} width={30} height={30} draggable={false} />
-              )
-              }
-              {activeNetwork === 9001 && (
-                <Image style={{ margin: '0px 0 0 0', borderRadius: '100%' }} src={Evmos} width={30} height={30} draggable={false} />
-              )}
-              {activeNetwork === 245022926 && (
-                <Image style={{ margin: '3px 0 0 0' }} src={Neon} width={30} height={30} draggable={false} />
-              )}
-              {activeNetwork === 10 && (
-                <Image style={{ margin: '3px 0 0 0' }} src={Optimism} width={30} height={30} draggable={false} />
-              )}
-              {activeNetwork === 137 && (
-                <Image style={{ margin: '3px 0 0 0' }} src={Polygon} width={30} height={30} draggable={false} />
-              )}
-              {activeNetwork === 42161 && (
-                <Image style={{ margin: '3px 0 0 0' }} src={Arbitrum} width={30} height={30} draggable={false} />
-              )}
+          {isEVM ? (
+            <WalletContainer>
+              <WalletChainLogo>
+                {activeNetwork === 1 || activeNetwork === 5 ? (
+                  <Image src="/eth.png" width={30} height={30} draggable={false} />
+                ) : activeNetwork === 1313161555 && (
+                  <Image style={{ margin: '3px 0 0 0', borderRadius: '9999px' }} src={Aurora} width={30} height={30} draggable={false} />
+                )
+                } {activeNetwork === 43114 && (
+                  <Image style={{ margin: '3px 0 0 0' }} src={Avalanche} width={30} height={30} draggable={false} />
+                )
+                }
+                {activeNetwork === 56 && (
+                  <Image style={{ margin: '3px 0 0 0' }} src={Binance} width={30} height={30} draggable={false} />
+                )
+                }
+                {activeNetwork === 250 && (
+                  <Image style={{ margin: '3px 0 0 0' }} src={Fantom} width={30} height={30} draggable={false} />
+                )
+                }
+                {activeNetwork === 9001 && (
+                  <Image style={{ margin: '0px 0 0 0', borderRadius: '100%' }} src={Evmos} width={30} height={30} draggable={false} />
+                )}
+                {activeNetwork === 245022926 && (
+                  <Image style={{ margin: '3px 0 0 0' }} src={Neon} width={30} height={30} draggable={false} />
+                )}
+                {activeNetwork === 10 && (
+                  <Image style={{ margin: '3px 0 0 0' }} src={Optimism} width={30} height={30} draggable={false} />
+                )}
+                {activeNetwork === 137 && (
+                  <Image style={{ margin: '3px 0 0 0' }} src={Polygon} width={30} height={30} draggable={false} />
+                )}
+                {activeNetwork === 42161 && (
+                  <Image style={{ margin: '3px 0 0 0' }} src={Arbitrum} width={30} height={30} draggable={false} />
+                )}
 
-
-
-              <ChainName>
-                {(activeNetwork === 1 || activeNetwork === 5) && "Ethereum"}
-                {activeNetwork === 1313161555 && "Aurora"}
-                {activeNetwork === 43114 && "Avalanche"}
-                {activeNetwork === 56 && "BNB Chain"}
-                {activeNetwork === 250 && "Fantom"}
-                {activeNetwork === 9001 && "EVMOS"}
-                {activeNetwork === 245022926 && "NEON Testnet"}
-                {activeNetwork === 10 && "Optimism"}
-                {activeNetwork === 137 && "Polygon"}
-                {activeNetwork === 42161 && "Arbitrum"}
-                <ChainTicker>
-                  {(activeNetwork === 1 || activeNetwork === 10 || activeNetwork === 42161 || activeNetwork === 5) && "ETH"}
-                  {activeNetwork === 137 && "MATIC"}
-                  {activeNetwork === 250 && "FTM"}
+                <ChainName>
+                  {(activeNetwork === 1 || activeNetwork === 5) && "Ethereum"}
+                  {activeNetwork === 1313161555 && "Aurora"}
+                  {activeNetwork === 43114 && "Avalanche"}
+                  {activeNetwork === 56 && "BNB Chain"}
+                  {activeNetwork === 250 && "Fantom"}
                   {activeNetwork === 9001 && "EVMOS"}
-                  {activeNetwork === 43114 && "AVAX"}
-                  {activeNetwork === 56 || 245022926 && ""}
-                </ChainTicker>
-              </ChainName>
-            </WalletChainLogo>
-            <ConnectButton secondary style={{ textTransform: eth.address ? "none" : undefined }} onClick={() => {
-              if (!eth.address) {
-                ethModal.setState(true)
-              } else {
-                eth.disconnect();
-              }
-            }}>
-              {(eth.address && (
-                <>
-                  <Image src={`/${eth.provider}.png`} width={25} height={25} draggable={false} />
-                  {eth.ens || formatAddress(eth.address, 8)}
-                </>
-              )) || "Connect"}
-            </ConnectButton>
-          </WalletContainer>
+                  {activeNetwork === 245022926 && "NEON Testnet"}
+                  {activeNetwork === 10 && "Optimism"}
+                  {activeNetwork === 137 && "Polygon"}
+                  {activeNetwork === 42161 && "Arbitrum"}
+                  <ChainTicker>
+                    {(activeNetwork === 1 || activeNetwork === 10 || activeNetwork === 42161 || activeNetwork === 5) && "ETH"}
+                    {activeNetwork === 137 && "MATIC"}
+                    {activeNetwork === 250 && "FTM"}
+                    {activeNetwork === 9001 && "EVMOS"}
+                    {activeNetwork === 43114 && "AVAX"}
+                    {activeNetwork === 56 || 245022926 && ""}
+                  </ChainTicker>
+                </ChainName>
+              </WalletChainLogo>
+              <ConnectButton secondary style={{ textTransform: eth.address ? "none" : undefined }} onClick={() => {
+                if (!eth.address) {
+                  ethModal.setState(true)
+                } else {
+                  eth.disconnect();
+                }
+              }}>
+                {(eth.address && (
+                  <>
+                    <Image src={`/${eth.provider}.png`} width={25} height={25} draggable={false} />
+                    {eth.ens || formatAddress(eth.address, 8)}
+                  </>
+                )) || "Connect"}
+              </ConnectButton>
+            </WalletContainer>
+          ) : (
+            <WalletContainer>
+              <WalletChainLogo>
+                <Image src={Near} width={30} height={30} draggable={false} />
+                <ChainName>
+                  NEAR
+                  <ChainTicker>
+                    NEAR
+                  </ChainTicker>
+                </ChainName>
+              </WalletChainLogo>
+              <NearConnect />
+            </WalletContainer>
+          )}
           <Spacer y={2.5} />
           <Button secondary fullWidth disabled={!(address && eth.address && linkingOverlay !== "linked")} onClick={() => link()}>
             {linkStatus && <Loading />}
@@ -510,7 +531,7 @@ const Home: NextPage = () => {
           Coinbase Wallet
         </CoinbaseButton>
       </Modal>
-      <Network isDisabled={eth.address ? false : true} isDevMode={isDevMode} value={activeNetwork} onChange={(e) => setActiveNetwork((val) => {
+      <Network isDisabled={!isEVM || (eth.address ? false : true)} isDevMode={isDevMode} value={activeNetwork} onChange={(e) => setActiveNetwork((val) => {
         setPreviousNetwork(val);
         return Number(e.target.value);
       })} />

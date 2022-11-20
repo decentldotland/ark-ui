@@ -1,3 +1,5 @@
+import type { AccountView } from "near-api-js/lib/providers/provider";
+
 export const RCP = "https://rpc.goerli.mudit.blog/";
 export const NETWORKS: Record<number, {
   name: string;
@@ -87,6 +89,10 @@ export const TEST_NETWORKS: Record<number, {
   }
 };
 
+export const EXOTIC_NETWORKS = {
+  "NEAR": {}
+}
+
 export interface Identity {
   addresses?:              Address[];
   arweave_address:         string;
@@ -106,6 +112,16 @@ export interface Address {
   network:          string;
   verification_req: string;
 }
+
+export interface Message {
+  premium: boolean;
+  sender: string;
+  text: string;
+}
+
+export type Account = AccountView & {
+  account_id: string;
+};
 
 export const POAPS = process.env.ARK_EARLY_SUPPORTER_POAP_URLS
 
@@ -127,6 +143,12 @@ export const EVM_ORACLES: Record<number, string> = {
   1313161555: "0xfb0200C27185185D7DEe0403D5f102ADb59B7c34",
   9001: "0xdE44d3fB118E0f007f2C0D8fFFE98b994383949A"
 };
+
+export const NEAR_ORACLE = "ark_station_1.near";
+
+export const EXOTIC_ORACLES: Record<string, string> = {
+  "NEAR": NEAR_ORACLE,
+}
 
 export const URLS: { [chainId: number]: string[] } = Object.keys(NETWORKS).reduce<{ [chainId: number]: string[] }>(
   (accumulator, chainId) => {
