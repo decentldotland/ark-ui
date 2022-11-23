@@ -2,7 +2,7 @@ import axios from 'axios';
 import type { NextPage } from "next";
 import { CloseIcon, LinkIcon } from "@iconicicons/react"
 import { useArconnect } from "../utils/arconnect"
-import NearConnect from "../utils/near";
+import NearConnect, { useNear } from "../utils/near";
 import Card, { CardSubtitle } from "../components/Card";
 import { Modal, useModal, Close } from "../components/Modal";
 import { coinbaseWallet } from "../utils/connectors/coinbase";
@@ -46,10 +46,12 @@ const Home: NextPage = () => {
   const [previousNetwork, setPreviousNetwork] = useState<number>(1);
   const [networkLoaded, setNetworkLoaded] = useState<boolean>(false);
   const [isDevMode, setIsDevMode] = useState<boolean>(false);
+  
 
   const [status, setStatus] = useState<{ type: StatusType, message: string }>();
   const [activeConnector, setActiveConnector] = useState<ETHConnector>();
   const eth = useETH(setActiveConnector, activeNetwork);
+  const { modal, selector, accounts, account, accountId, loading, linkNear, checkNearLinking } = useNear();
 
   // load if already linked or in progress
   const [linkingOverlay, setLinkingOverlay] = useState<"in-progress" | "linked">();
@@ -57,6 +59,7 @@ const Home: NextPage = () => {
   // linking functionality
   const [linkStatus, setLinkStatus] = useState<string>();
   const [linkModal, setLinkModal] = useState<boolean>(true);
+  const [nearIsLinked, setNearIsLinked] = useState<boolean>(false);
 
   const [isEVM, setIsEVM] = useState<boolean>(false);
 
@@ -85,12 +88,19 @@ const Home: NextPage = () => {
       });
     }
 
-    if (!address || !eth.address || !eth.contract) {
+    if (isEVM && (!address || !eth.address || !eth.contract)) {
       return setStatus({
         type: "error",
         message: "Arweave or Ethereum not connected"
       });
-    };
+    } else {
+      if (!address || !accountId) {
+        return setStatus({
+          type: "error",
+          message: "Arweave or NEAR not connected"
+        });
+      }
+    }
 
     try {
       setLinkStatus("Generating a signature...");
@@ -107,21 +117,26 @@ const Home: NextPage = () => {
       console.log("signedBase", signedBase);
       if (!signedBase) throw new Error("ArConnect signature not found");
 
-      setTimeout(() => setLinkStatus("Interacting with Ethereum smart contract..."), 1000);
+      setTimeout(() => setLinkStatus("Interacting with the smart contract..."), 1000);
+      let interaction;
 
-      const interaction = await eth.contract.linkIdentity(address);
-      await interaction.wait();
+      if (isEVM) {
+        interaction = await eth.contract.linkIdentity(address);
+        await interaction.wait();  
+      } else {
+        interaction = await linkNear(address)
+      }
 
       setLinkStatus("Writing to Arweave...");
 
       const result = await axios.post(`api/exmwrite`, {
         "function": "linkIdentity",
         "caller": address,
-        "address": eth.address,
-        "network": NETWORKS[activeNetwork].networkKey,
+        "address": isEVM ? eth.address : accountId,
+        "network": isEVM ? NETWORKS[activeNetwork].networkKey : "NEAR-MAINNET",
         "jwk_n": arconnectPubKey,
         "sig": signedBase,
-        "verificationReq": interaction.hash
+        "verificationReq": isEVM ? interaction.hash : interaction.transaction.hash
       })
 
       console.log(result);
@@ -206,7 +221,13 @@ const Home: NextPage = () => {
   }, [activeNetwork]);
 
 
-  // LINKING STATUS
+  // LINKING STATUS + CHECK EXISTING LINKS
+
+  useEffect(() => {
+    // TODO: don't just fetch once; subscribe!
+    checkNearLinking()?.then(value => setNearIsLinked(value?.length > 4 ? true: false));
+  }, [account]);
+
 
   useEffect(() => {
     (async () => {
@@ -221,8 +242,10 @@ const Home: NextPage = () => {
             identity.is_verified &&
             identity.arweave_address === address &&
             (identity.addresses
-              ?.find((address: Address) => address.address === eth.address))?.network === NETWORKS[activeNetwork].networkKey
-          )
+              ?.find((address: Address) => address.address === eth.address))?.ark_key === "EVM"
+              ||
+              identity.addresses?.find((address: Address) => address.address === accountId)?.ark_key === "EXOTIC"
+            )
         ) {
           return setLinkingOverlay("linked");
         } else {
@@ -240,10 +263,13 @@ const Home: NextPage = () => {
     }
   }, []);
 
+  const linkButtonIsDisabled = isEVM ? !(address && eth.address && linkingOverlay !== "linked")
+    : (nearIsLinked || !account || linkingOverlay === "linked");
+
   return (
     <>
       <TopBanner>
-        Connect wallet and switch network to use Ark on Avalanche, BNB, Aurora, and Goerli
+        Connect wallet and switch network to use Ark on Avalanche, BNB, Aurora, and more.
       </TopBanner>
       <Head>
         <title>Ark Protocol</title>
@@ -333,9 +359,9 @@ const Home: NextPage = () => {
             Link identity
           </CardSubtitle>
           <Spacer y={1.25} />
-          <button className="text-white" onClick={() => setIsEVM(!isEVM)}>
+          <Button className="text-white" onClick={() => setIsEVM(!isEVM)}>
             Current Network: { isEVM ? "EVM" : "Exotic"}
-          </button>
+          </Button>
           <Spacer y={1.25} />
           <WalletContainer>
             <WalletChainLogo>
@@ -444,11 +470,12 @@ const Home: NextPage = () => {
                   </ChainTicker>
                 </ChainName>
               </WalletChainLogo>
-              <NearConnect />
+              {/* @ts-ignore */}
+              <NearConnect modal={modal} selector={selector} account={account} accountId={accountId} loading={loading} />
             </WalletContainer>
           )}
           <Spacer y={2.5} />
-          <Button secondary fullWidth disabled={!(address && eth.address && linkingOverlay !== "linked")} onClick={() => link()}>
+          <Button secondary fullWidth disabled={linkButtonIsDisabled} onClick={() => link()}>
             {linkStatus && <Loading />}
             {linkStatus || "Link identity"}
           </Button>
@@ -531,7 +558,7 @@ const Home: NextPage = () => {
           Coinbase Wallet
         </CoinbaseButton>
       </Modal>
-      <Network isDisabled={!isEVM || (eth.address ? false : true)} isDevMode={isDevMode} value={activeNetwork} onChange={(e) => setActiveNetwork((val) => {
+      <Network isDisabled={!isEVM || (eth.address ? false : true)} isDevMode={isDevMode} isEVM={isEVM} value={activeNetwork} onChange={(e) => setActiveNetwork((val) => {
         setPreviousNetwork(val);
         return Number(e.target.value);
       })} />

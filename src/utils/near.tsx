@@ -1,32 +1,81 @@
-import { WalletSelectorContextProvider } from "../contexts/WalletSelectorContext";
 
 import React, { Fragment, useCallback, useEffect, useState } from "react";
 import styled from "styled-components";
+import { Buffer } from 'buffer';
+
+import { map, distinctUntilChanged } from "rxjs";
 import { providers, utils } from "near-api-js";
 import type {
   AccountView,
   CodeResult,
 } from "near-api-js/lib/providers/provider";
-import type { Transaction } from "@near-wallet-selector/core";
 
-import { useWalletSelector } from "../contexts/WalletSelectorContext";
+import type { Transaction, WalletSelector, AccountState } from "@near-wallet-selector/core";
+import { setupWalletSelector } from "@near-wallet-selector/core";
+import {  WalletSelectorModal, setupModal } from "@near-wallet-selector/modal-ui";
+
+import { setupDefaultWallets } from "@near-wallet-selector/default-wallets";
+import { setupNearWallet } from "@near-wallet-selector/near-wallet";
+import { setupSender } from "@near-wallet-selector/sender";
+import { setupMeteorWallet } from "@near-wallet-selector/meteor-wallet";
+
+import "@near-wallet-selector/modal-ui/styles.css";
+
 import { NEAR_ORACLE } from "./constants";
-import { walletConnect } from "./connectors/walletconnect";
+
 import Button from "../components/Button";
+
 
 const SUGGESTED_DONATION = "0";
 const BOATLOAD_OF_GAS = utils.format.parseNearAmount("0.00000000003")!;
 
-const Content: React.FC = () => {
-  const { selector, modal, accounts, accountId } = useWalletSelector();
+declare global {
+  interface Window {
+    selector: WalletSelector;
+    modal: WalletSelectorModal;
+  }
+}
+
+// interface WalletSelectorContextValue {
+//   selector: WalletSelector;
+//   modal: WalletSelectorModal;
+//   accounts: Array<AccountState>;
+//   accountId: string | null;
+// }
+
+export const useNear = () => {
+  const [selector, setSelector] = useState<WalletSelector | null>(null);
+  const [modal, setModal] = useState<WalletSelectorModal | null>(null);
   const [account, setAccount] = useState<any>(null);
-  const [messages, setMessages] = useState<Array<any>>([]);
+  const [accounts, setAccounts] = useState<Array<AccountState>>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
+  const accountId = accounts.find((account) => account.active)?.accountId || null;
+
+  const init = useCallback(async () => {
+    const _selector = await setupWalletSelector({
+      network: "mainnet",
+      debug: true,
+      modules: [
+        ...(await setupDefaultWallets()),
+        setupNearWallet(),
+        setupSender(),
+        setupMeteorWallet(),
+      ],
+    });
+    const _modal = setupModal(_selector, { contractId: NEAR_ORACLE, theme: "dark" });
+    const state = _selector.store.getState();
+    setAccounts(state.accounts);
+
+    window.selector = _selector;
+    window.modal = _modal;
+
+    setSelector(_selector);
+    setModal(_modal);
+  }, []);
+
   const getAccount = useCallback(async (): Promise<any | null> => {
-    if (!accountId) {
-      return null;
-    }
+    if (!accountId || !selector) return null;
 
     const { network } = selector.options;
     const provider = new providers.JsonRpcProvider({ url: network.nodeUrl });
@@ -41,9 +90,43 @@ const Content: React.FC = () => {
         ...data,
         account_id: accountId,
       }));
-  }, [accountId, selector.options]);
+  }, [accountId, selector?.options]);
 
-  const getMessages = useCallback(() => {
+  const linkNear = useCallback(
+    async (arweave_addr: string, customAccountId='') => {
+      if (!accountId || !selector) return;
+      // const { contract } = selector.store.getState();
+      const wallet = await selector.wallet();
+      return wallet
+        .signAndSendTransaction({
+          signerId: accountId!,
+          actions: [
+            {
+              type: "FunctionCall",
+              params: {
+                methodName: "set_id",
+                args: { account_id: customAccountId || accountId, arweave_addr: arweave_addr },
+                gas: BOATLOAD_OF_GAS,
+                deposit: '0', // utils.format.parseNearAmount(donation)!,
+              },
+            },
+          ],
+        })
+        .catch((err) => {
+          alert("Failed to link account: " + err);
+          console.log("Failed to link account: ", err);
+          throw err;
+        });
+    },
+    [selector, accountId]
+  );
+
+  /**
+    * Checks if the user has linked their account on Near
+    * @returns {object} The `result` property inside is an array buffer, that if converted is either a null or a 43 (or 45) character-long txid
+  */
+  const checkNearLinking = useCallback((customAccountId='') => {
+    if (!accountId || !selector) return;
     const { network } = selector.options;
     const provider = new providers.JsonRpcProvider({ url: network.nodeUrl });
 
@@ -51,17 +134,18 @@ const Content: React.FC = () => {
       .query<CodeResult>({
         request_type: "call_function",
         account_id: NEAR_ORACLE,
-        method_name: "getMessages",
-        args_base64: "",
+        method_name: "get_id",
+        args_base64: Buffer.from(JSON.stringify({ account_id: "helloworld.near" || accountId })).toString("base64"),
         finality: "optimistic",
       })
-      .then((res) => JSON.parse(Buffer.from(res.result).toString()));
+      .catch((err) => {
+        throw err;
+      })
+      .then((res) => {
+        console.log(res, String.fromCharCode.apply(null, res.result));
+        return String.fromCharCode.apply(null, res.result);
+      }); 
   }, [selector]);
-
-  useEffect(() => {
-    // TODO: don't just fetch once; subscribe!
-    // getMessages().then(setMessages);
-  }, []);
 
   useEffect(() => {
     if (!accountId) {
@@ -76,11 +160,45 @@ const Content: React.FC = () => {
     });
   }, [accountId, getAccount]);
 
+  useEffect(() => {
+    init().catch((err) => {
+      console.error(err);
+      alert("Failed to initialise wallet selector");
+    });
+  }, [init]);
+
+  useEffect(() => {
+    if (!selector) {
+      return;
+    }
+
+    const subscription = selector.store.observable
+      .pipe(
+        map((state) => state.accounts),
+        distinctUntilChanged()
+      )
+      .subscribe((nextAccounts) => {
+        console.log("Accounts Update", nextAccounts);
+
+        setAccounts(nextAccounts);
+      });
+
+    return () => subscription.unsubscribe();
+  }, [selector]);
+
+  return {modal, selector, accounts, account, accountId, loading, linkNear, checkNearLinking};
+};
+
+
+const NearConnect: React.FC = (props: any) => {
+  const { modal, selector, account, accountId, loading } = props;
+
   const handleSignIn = () => {
-    modal.show();
+    modal?.show();
   };
 
   const handleSignOut = async () => {
+    if (!selector) return;
     const wallet = await selector.wallet();
 
     wallet.signOut().catch((err) => {
@@ -89,174 +207,64 @@ const Content: React.FC = () => {
     });
   };
 
-  const handleSwitchWallet = () => {
-    modal.show();
-  };
+  // const handleSwitchWallet = () => {
+  //   modal?.show();
+  // };
 
-  const handleSwitchAccount = () => {
-    const currentIndex = accounts.findIndex((x) => x.accountId === accountId);
-    const nextIndex = currentIndex < accounts.length - 1 ? currentIndex + 1 : 0;
+  // const handleSwitchAccount = () => {
+  //   const currentIndex = accounts.findIndex((x) => x.accountId === accountId);
+  //   const nextIndex = currentIndex < accounts.length - 1 ? currentIndex + 1 : 0;
 
-    const nextAccountId = accounts[nextIndex].accountId;
+  //   const nextAccountId = accounts[nextIndex].accountId;
 
-    selector.setActiveAccount(nextAccountId);
+  //   selector?.setActiveAccount(nextAccountId);
 
-    alert("Switched account to " + nextAccountId);
-  };
+  //   alert("Switched account to " + nextAccountId);
+  // };
 
-  const addMessages = useCallback(
-    async (message: string, donation: string, multiple: boolean) => {
-      const { contract } = selector.store.getState();
-      const wallet = await selector.wallet();
+  // const handleVerifyOwner = async () => {
+  //   if (!selector) return;
+  //   const wallet = await selector.wallet();
+  //   try {
+  //     const owner = await wallet.verifyOwner({
+  //       message: "test message for verification",
+  //     });
 
-      if (!multiple) {
-        return wallet
-          .signAndSendTransaction({
-            signerId: accountId!,
-            actions: [
-              {
-                type: "FunctionCall",
-                params: {
-                  methodName: "addMessage",
-                  args: { text: message },
-                  gas: BOATLOAD_OF_GAS,
-                  deposit: utils.format.parseNearAmount(donation)!,
-                },
-              },
-            ],
-          })
-          .catch((err) => {
-            alert("Failed to add message");
-            console.log("Failed to add message");
+  //     if (owner) {
+  //       alert(`Signature for verification: ${JSON.stringify(owner)}`);
+  //     }
+  //   } catch (err) {
+  //     const message =
+  //       err instanceof Error ? err.message : "Something went wrong";
+  //     alert(message);
+  //   }
+  // };
 
-            throw err;
-          });
-      }
-
-      const transactions: Array<Transaction> = [];
-
-      for (let i = 0; i < 2; i += 1) {
-        transactions.push({
-          signerId: accountId!,
-          receiverId: contract!.contractId,
-          actions: [
-            {
-              type: "FunctionCall",
-              params: {
-                methodName: "addMessage",
-                args: {
-                  text: `${message} (${i + 1}/2)`,
-                },
-                gas: BOATLOAD_OF_GAS,
-                deposit: utils.format.parseNearAmount(donation)!,
-              },
-            },
-          ],
-        });
-      }
-
-      return wallet.signAndSendTransactions({ transactions }).catch((err) => {
-        alert("Failed to add messages exception " + err);
-        console.log("Failed to add messages");
-
-        throw err;
-      });
-    },
-    [selector, accountId]
-  );
-
-  const handleVerifyOwner = async () => {
-    const wallet = await selector.wallet();
-    try {
-      const owner = await wallet.verifyOwner({
-        message: "test message for verification",
-      });
-
-      if (owner) {
-        alert(`Signature for verification: ${JSON.stringify(owner)}`);
-      }
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Something went wrong";
-      alert(message);
-    }
-  };
-
-  const handleSubmit = useCallback(
-    async (e: SubmitEvent) => {
-      e.preventDefault();
-
-      // TODO: Fix the typing so that target.elements exists..
-      // @ts-ignore.
-      const { fieldset, message, donation, multiple } = e.target.elements;
-
-      fieldset.disabled = true;
-
-      return addMessages(message.value, donation.value || "0", multiple.checked)
-        .then(() => {
-          return getMessages()
-            .then((nextMessages) => {
-              setMessages(nextMessages);
-              message.value = "";
-              donation.value = SUGGESTED_DONATION;
-              fieldset.disabled = false;
-              multiple.checked = false;
-              message.focus();
-            })
-            .catch((err) => {
-              alert("Failed to refresh messages");
-              console.log("Failed to refresh messages");
-
-              throw err;
-            });
-        })
-        .catch((err) => {
-          console.error(err);
-
-          fieldset.disabled = false;
-        });
-    },
-    [addMessages, getMessages]
-  );
-
-  if (loading) {
-    return null;
+  const beautifyAddress = (address: string) => {
+    if (!address) return '';
+    return address.slice(0, 8) + "..." + address.slice(-8);
   }
 
-  if (!account) {
-    return (
-      <Fragment>
-        <div>
-          <ConnectButton onClick={handleSignIn}>Connect</ConnectButton>
-        </div>
-      </Fragment>
-    );
-  }
-
-  return (
-    <Fragment>
-      <div>
-        <ConnectButton onClick={handleSignOut}>{accountId}</ConnectButton>
-        {/* <button onClick={handleSwitchWallet}>Switch Wallet</button>
-        <button onClick={handleVerifyOwner}>Verify Owner</button>
-        {accounts.length > 1 && (
-          <button onClick={handleSwitchAccount}>Switch Account</button>
-        )} */}
-      </div>
-    </Fragment>
-  );
-};
-
-const NearConnect = () => {
   return (
     <div>
-      {/* @ts-ignore */}
-      <WalletSelectorContextProvider>
-        <Content />
-      </WalletSelectorContextProvider>
+      {loading ? (<></>): (
+        <>
+          {account ? (
+            <ConnectButton onClick={handleSignOut}>
+              {accountId?.length === 64 ? beautifyAddress(accountId) : accountId}
+            </ConnectButton>
+          ) : <ConnectButton onClick={handleSignIn}>Connect</ConnectButton>}
+        </>
+      )}
     </div>
   );
+  {/* <button onClick={handleSwitchWallet}>Switch Wallet</button>
+  <button onClick={handleVerifyOwner}>Verify Owner</button>
+  {accounts.length > 1 && (
+    <button onClick={handleSwitchAccount}>Switch Account</button>
+  )} */}
 };
+
 
 export default NearConnect;
 

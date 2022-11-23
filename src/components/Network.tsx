@@ -1,8 +1,8 @@
 import { ChangeEventHandler, useEffect, useState } from "react";
-import { NETWORKS, TEST_NETWORKS } from "../utils/constants";
+import { EXOTIC_NETWORKS, NETWORKS, TEST_NETWORKS } from "../utils/constants";
 import styled from "styled-components";
 
-const Network = ({ onChange, value, isDisabled, isDevMode }: NetworkProps) => {
+const Network = ({ onChange, value, isDisabled, isDevMode, isEVM }: NetworkProps) => {
   const NEW_NETWORKS = NETWORKS // isDevMode ? {...NETWORKS, ...TEST_NETWORKS}: NETWORKS
   const [theme, setTheme] = useState(NEW_NETWORKS[value]?.theme);
 
@@ -19,8 +19,8 @@ const Network = ({ onChange, value, isDisabled, isDevMode }: NetworkProps) => {
     <NetworkWrapper color={theme} >
       <NetworkColor color={theme} />
       <NetworkSelect onChange={handleChange} value={value}>
-        {Object.keys(NEW_NETWORKS).map((key, i) => (
-          <option disabled={isDisabled} key={i} value={key}>{NEW_NETWORKS[Number(key)].name}</option>
+        {Object.keys(isEVM ? NEW_NETWORKS: EXOTIC_NETWORKS).map((key, i) => (
+          <option disabled={isDisabled} key={i} value={key}>{isEVM ? NEW_NETWORKS[Number(key)].name: "NEAR Mainnet"}</option>
         ))}
       </NetworkSelect>
     </NetworkWrapper>
@@ -32,6 +32,7 @@ interface NetworkProps {
   isDisabled: boolean;
   onChange: ChangeEventHandler<HTMLSelectElement>;
   isDevMode: boolean;
+  isEVM?: boolean;
 }
 
 const NetworkWrapper = styled.div<{ color: string }>`
