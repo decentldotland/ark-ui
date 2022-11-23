@@ -121,6 +121,7 @@ const Home: NextPage = () => {
       let interaction;
 
       if (isEVM) {
+        //@ts-ignore
         interaction = await eth.contract.linkIdentity(address);
         await interaction.wait();  
       } else {
