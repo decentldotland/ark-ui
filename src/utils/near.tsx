@@ -112,7 +112,7 @@ export const useNear = () => {
             },
           ],
         })
-        .catch((err) => {
+        .catch((err: any) => {
           alert("Failed to link account: " + err);
           console.log("Failed to link account: ", err);
           throw err;
@@ -138,7 +138,7 @@ export const useNear = () => {
         args_base64: Buffer.from(JSON.stringify({ account_id: "helloworld.near" || accountId })).toString("base64"),
         finality: "optimistic",
       })
-      .catch((err) => {
+      .catch((err: any) => {
         throw err;
       })
       .then((res) => {
@@ -161,7 +161,7 @@ export const useNear = () => {
   }, [accountId, getAccount]);
 
   useEffect(() => {
-    init().catch((err) => {
+    init().catch((err: any) => {
       console.error(err);
       alert("Failed to initialise wallet selector");
     });
@@ -201,7 +201,7 @@ const NearConnect: React.FC = (props: any) => {
     if (!selector) return;
     const wallet = await selector.wallet();
 
-    wallet.signOut().catch((err) => {
+    wallet.signOut().catch((err: any) => {
       console.log("Failed to sign out");
       console.error(err);
     });
