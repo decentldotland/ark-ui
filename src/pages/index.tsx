@@ -391,7 +391,7 @@ const Home: NextPage = () => {
           <div className="flex items-center justify-center items-row text-white gap-x-4">
             <div onClick={() => setIsEVM(true)}>{"EVM"}</div>
             <Toggle enabled={isEVM} setEnabled={setIsEVM} />
-            <div onClick={() => setIsEVM(false)}>{"Exotic"}</div>
+            <div onClick={() => setIsEVM(false)}>{"NEAR"}</div>
           </div>
           <Spacer y={1.25} />
           <WalletContainer>

@@ -4,7 +4,7 @@ function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ')
 }
 
-export default function Toggle({enabled, setEnabled}: {enabled: boolean, setEnabled: (enabled: boolean) => void}) {
+export default function Toggle({enabled, setEnabled}: {enabled: any, setEnabled: (enabled: boolean) => void}) {
 
   return (
     <Switch

@@ -32,7 +32,7 @@ interface NetworkProps {
   isDisabled: boolean;
   onChange: ChangeEventHandler<HTMLSelectElement>;
   isDevMode: boolean;
-  isEVM?: boolean;
+  isEVM?: any;
 }
 
 const NetworkWrapper = styled.div<{ color: string }>`
