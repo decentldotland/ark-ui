@@ -11,7 +11,6 @@ const Button = styled.button<{ secondary?: boolean; fullWidth?: boolean; }>`
   gap: .5rem;
   font-size: .9rem;
   font-weight: ${props => props.secondary ? "400" : "500"};
-  text-transform: capitalize;
   cursor: pointer;
   flex-shrink: 0;
   padding: .5rem ${props => props.fullWidth ? "0" : "0.5rem"};

@@ -61,8 +61,7 @@ const Home: NextPage = () => {
   // linking functionality
   const [linkStatus, setLinkStatus] = useState<string>();
   const [linkModal, setLinkModal] = useState<boolean>(true);
-
-  const [isEVM, setIsEVM] = useState<boolean>(true);
+  const [isEVM, setIsEVM] = useState<boolean | null>(null);
 
   // connect to wallet
   async function connectEth(connector: ETHConnector) {
@@ -266,13 +265,32 @@ const Home: NextPage = () => {
     })();
   }, [address, activeNetwork]);
 
-
-  // DEV MODE FOR EXTRA TESTNETS
+  // DEV MODE FOR EXTRA TESTNETS and other stuff
   useEffect(() => {
     if (window.location.href.includes("localhost")) {
       setIsDevMode(true)
     }
   }, []);
+
+  useEffect(() => {
+    const localStorageIsEVM = localStorage.getItem("isEVM")
+    if (localStorageIsEVM === "false") {
+      setIsEVM(false)
+    }
+    if (localStorageIsEVM === "true") {
+      setIsEVM(true)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (isEVM === null) return
+    if (isEVM) {
+      localStorage.setItem("isEVM", "true")
+    }
+    if (!isEVM) {
+      localStorage.setItem("isEVM", "false")
+    }
+  }, [isEVM])
 
   const linkButtonIsDisabled = isEVM ? !(address && eth.address && linkingOverlay !== "linked")
     : (!account || linkingOverlay === "linked");
