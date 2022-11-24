@@ -92,7 +92,7 @@ export const TEST_NETWORKS: Record<number, {
 export const EXOTIC_NETWORKS: any = {
   "NEAR-MAINNET": {
     name: "NEAR-MAINNET",
-    theme: "255, 255, 255",
+    theme: "125, 125, 125",
     textTheme: "black",
   }
 }

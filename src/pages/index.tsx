@@ -275,6 +275,10 @@ const Home: NextPage = () => {
 
   useEffect(() => {
     const localStorageIsEVM = localStorage.getItem("isEVM")
+    if (!localStorageIsEVM) {
+      localStorage.setItem("isEVM", "true")
+      return
+    }
     if (localStorageIsEVM === "false") {
       setIsEVM(false)
     }
