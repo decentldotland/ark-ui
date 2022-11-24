@@ -1,6 +1,8 @@
 import axios from 'axios';
 import type { NextPage } from "next";
 import { CloseIcon, LinkIcon } from "@iconicicons/react"
+// I sincerely hope this project won't burn down in flames for each module I install
+import Toggle from '../components/Toggle';
 import { useArconnect } from "../utils/arconnect"
 import NearConnect, { useNear } from "../utils/near";
 import Card, { CardSubtitle } from "../components/Card";
@@ -59,7 +61,6 @@ const Home: NextPage = () => {
   // linking functionality
   const [linkStatus, setLinkStatus] = useState<string>();
   const [linkModal, setLinkModal] = useState<boolean>(true);
-  const [nearIsLinked, setNearIsLinked] = useState<boolean>(false);
 
   const [isEVM, setIsEVM] = useState<boolean>(false);
 
@@ -123,9 +124,14 @@ const Home: NextPage = () => {
       if (isEVM) {
         //@ts-ignore
         interaction = await eth.contract.linkIdentity(address);
-        await interaction.wait();  
+        await interaction.wait();
       } else {
+        // const nearLinkingTX = localStorage.getItem("nearLinkingTX");
         interaction = await linkNear(address)
+        // if (interaction) {
+        //   localStorage.setItem("nearLinkingTX", String(interaction));
+        // }
+        // console.log(nearLinkingTX)
       }
 
       setLinkStatus("Writing to Arweave...");
@@ -226,7 +232,11 @@ const Home: NextPage = () => {
 
   useEffect(() => {
     // TODO: don't just fetch once; subscribe!
-    checkNearLinking()?.then(value => setNearIsLinked(value?.length > 4 ? true: false));
+    // checkNearLinking()?.then(value => {
+    //   if (value.length > 4) {
+    //     setNearLinkingTX(newVal)
+    //   }
+    // });
   }, [account]);
 
 
@@ -265,7 +275,7 @@ const Home: NextPage = () => {
   }, []);
 
   const linkButtonIsDisabled = isEVM ? !(address && eth.address && linkingOverlay !== "linked")
-    : (nearIsLinked || !account || linkingOverlay === "linked");
+    : (!account || linkingOverlay === "linked");
 
   return (
     <>
@@ -360,9 +370,11 @@ const Home: NextPage = () => {
             Link identity
           </CardSubtitle>
           <Spacer y={1.25} />
-          <Button className="text-white" onClick={() => setIsEVM(!isEVM)}>
-            Current Network: { isEVM ? "EVM" : "Exotic"}
-          </Button>
+          <div className="flex items-center justify-center items-row text-white gap-x-4">
+            <div onClick={() => setIsEVM(true)}>{"EVM"}</div>
+            <Toggle enabled={isEVM} setEnabled={setIsEVM} />
+            <div onClick={() => setIsEVM(false)}>{"Exotic"}</div>
+          </div>
           <Spacer y={1.25} />
           <WalletContainer>
             <WalletChainLogo>

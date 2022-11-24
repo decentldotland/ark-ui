@@ -26,7 +26,6 @@ import { NEAR_ORACLE } from "./constants";
 import Button from "../components/Button";
 
 
-const SUGGESTED_DONATION = "0";
 const BOATLOAD_OF_GAS = utils.format.parseNearAmount("0.00000000003")!;
 
 declare global {
@@ -94,7 +93,7 @@ export const useNear = () => {
 
   const linkNear = useCallback(
     async (arweave_addr: string, customAccountId='') => {
-      if (!accountId || !selector) return;
+      if (!account || !accountId || !selector) return;
       // const { contract } = selector.store.getState();
       const wallet = await selector.wallet();
       return wallet
@@ -105,7 +104,7 @@ export const useNear = () => {
               type: "FunctionCall",
               params: {
                 methodName: "set_id",
-                args: { account_id: customAccountId || accountId, arweave_addr: arweave_addr },
+                args: { arweave_addr: arweave_addr },
                 gas: BOATLOAD_OF_GAS,
                 deposit: '0', // utils.format.parseNearAmount(donation)!,
               },
@@ -126,7 +125,7 @@ export const useNear = () => {
     * @returns {object} The `result` property inside is an array buffer, that if converted is either a null or a 43 (or 45) character-long txid
   */
   const checkNearLinking = useCallback((customAccountId='') => {
-    if (!accountId || !selector) return;
+    if (!account || !accountId || !selector) return;
     const { network } = selector.options;
     const provider = new providers.JsonRpcProvider({ url: network.nodeUrl });
 
@@ -135,7 +134,7 @@ export const useNear = () => {
         request_type: "call_function",
         account_id: NEAR_ORACLE,
         method_name: "get_id",
-        args_base64: Buffer.from(JSON.stringify({ account_id: "helloworld.near" || accountId })).toString("base64"),
+        args_base64: Buffer.from(JSON.stringify({ account_id: customAccountId || accountId })).toString("base64"),
         finality: "optimistic",
       })
       .catch((err: any) => {
@@ -250,7 +249,7 @@ const NearConnect: React.FC = (props: any) => {
       {loading ? (<></>): (
         <>
           {account ? (
-            <ConnectButton onClick={handleSignOut}>
+            <ConnectButton secondary onClick={handleSignOut}>
               {accountId?.length === 64 ? beautifyAddress(accountId) : accountId}
             </ConnectButton>
           ) : <ConnectButton onClick={handleSignIn}>Connect</ConnectButton>}
