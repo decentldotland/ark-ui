@@ -2,7 +2,7 @@ import { ChangeEventHandler, useEffect, useState } from "react";
 import { EXOTIC_NETWORKS, NETWORKS, TEST_NETWORKS } from "../utils/constants";
 import styled from "styled-components";
 
-const Network = ({ onChange, value, isDisabled, isDevMode, isEVM }: NetworkProps) => {
+const Network = ({ onChange, value, isDisabled, isDevMode }: NetworkProps) => {
   const NEW_NETWORKS = NETWORKS // isDevMode ? {...NETWORKS, ...TEST_NETWORKS}: NETWORKS
   const [theme, setTheme] = useState(NEW_NETWORKS[value]?.theme);
 
@@ -19,19 +19,51 @@ const Network = ({ onChange, value, isDisabled, isDevMode, isEVM }: NetworkProps
     <NetworkWrapper color={theme} >
       <NetworkColor color={theme} />
       <NetworkSelect onChange={handleChange} value={value}>
-        {Object.keys(isEVM ? NEW_NETWORKS: EXOTIC_NETWORKS).map((key, i) => (
-          <option disabled={isDisabled} key={i} value={key}>{isEVM ? NEW_NETWORKS[Number(key)].name: "NEAR Mainnet"}</option>
+        {Object.keys(NEW_NETWORKS).map((key, i) => (
+          <option disabled={isDisabled} key={i} value={key}>{NEW_NETWORKS[Number(key)].name}</option>
         ))}
       </NetworkSelect>
     </NetworkWrapper>
   );
 };
 
+export const ExoticNetwork = ({ onChange, value, isDisabled }: ExoticNetworkProps) => {
+  // const EXOTIC_NETWORKS = EXOTIC_NETWORKS // isDevMode ? {...NETWORKS, ...TEST_NETWORKS}: NETWORKS
+  const [theme, setTheme] = useState(EXOTIC_NETWORKS[value]?.theme);
+
+  useEffect(() => {
+    setTheme(EXOTIC_NETWORKS[value]?.theme);
+  }, [value]);
+
+  const handleChange: ChangeEventHandler<HTMLSelectElement> = (e) => {
+    setTheme(EXOTIC_NETWORKS[value]?.theme);
+    // onChange(e);
+  }
+
+  return (
+    <NetworkWrapper color={theme} >
+      <NetworkColor color={theme} />
+      <NetworkSelect exotic onChange={handleChange} value={value}>
+        {Object.keys(EXOTIC_NETWORKS).map((key, i) => (
+          <option disabled={isDisabled} key={i} value={key}>{EXOTIC_NETWORKS[value]?.name}</option>
+        ))}
+      </NetworkSelect>
+    </NetworkWrapper>
+  )
+}
 interface NetworkProps {
   value: number;
   isDisabled: boolean;
   onChange: ChangeEventHandler<HTMLSelectElement>;
   isDevMode: boolean;
+  isEVM?: any;
+}
+
+interface ExoticNetworkProps {
+  value: string;
+  isDisabled: boolean;
+  onChange?: ChangeEventHandler<HTMLSelectElement>;
+  isDevMode?: boolean;
   isEVM?: any;
 }
 
@@ -67,10 +99,9 @@ const NetworkColor = styled.span<{ color: string }>`
   transition: all .23s ease-in-out;
 `;
 
-const NetworkSelect = styled.select`
-  color: inherit;
+const NetworkSelect = styled.select<{ exotic?: any}>`
+  color: ${props => props.exotic ? "DarkGray" : "inherit"};
   background-color: transparent;
-  color: inherint;
   font-weight: 500;
   padding: .5em 0;
   margin: 0;

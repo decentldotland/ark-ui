@@ -26,7 +26,7 @@ import Spacer from "../components/Spacer";
 import Faq from "../components/Faq";
 import ANS from "../components/ANS";
 import Loading from "../components/Loading";
-import Network from "../components/Network";
+import Network, { ExoticNetwork } from "../components/Network";
 // import Toggle from "../components/Toggle";
 import Avalanche from "../assets/avalanche.svg";
 import Binance from "../assets/binance.png";
@@ -45,6 +45,7 @@ const Home: NextPage = () => {
   const [address, connect, disconnect, arconnectError] = useArconnect(downloadWalletModal);
 
   const [activeNetwork, setActiveNetwork] = useState<number>(1);
+  const [activeExoticNetwork, setActiveExoticNetwork] = useState<string>("NEAR-MAINNET");
   const [previousNetwork, setPreviousNetwork] = useState<number>(1);
   const [networkLoaded, setNetworkLoaded] = useState<boolean>(false);
   const [isDevMode, setIsDevMode] = useState<boolean>(false);
@@ -589,10 +590,14 @@ const Home: NextPage = () => {
           Coinbase Wallet
         </CoinbaseButton>
       </Modal>
-      <Network isDisabled={!isEVM || (eth.address ? false : true)} isDevMode={isDevMode} isEVM={isEVM} value={activeNetwork} onChange={(e) => setActiveNetwork((val) => {
-        setPreviousNetwork(val);
-        return Number(e.target.value);
-      })} />
+      {isEVM ? (
+        <Network isDisabled={!isEVM || (eth.address ? false : true)} isDevMode={isDevMode} isEVM={isEVM} value={activeNetwork} onChange={(e) => setActiveNetwork((val) => {
+          setPreviousNetwork(val);
+          return Number(e.target.value);
+        })} />        
+      ) : (
+        <ExoticNetwork onChange={() => setActiveExoticNetwork} value={activeExoticNetwork} isDisabled={false} />
+      )}
     </>
   );
 }

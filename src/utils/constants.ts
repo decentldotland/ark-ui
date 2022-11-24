@@ -89,8 +89,12 @@ export const TEST_NETWORKS: Record<number, {
   }
 };
 
-export const EXOTIC_NETWORKS = {
-  "NEAR": {}
+export const EXOTIC_NETWORKS: any = {
+  "NEAR-MAINNET": {
+    name: "NEAR-MAINNET",
+    theme: "255, 255, 255",
+    textTheme: "black",
+  }
 }
 
 export interface Identity {
