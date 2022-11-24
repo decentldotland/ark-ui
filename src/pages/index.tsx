@@ -62,7 +62,7 @@ const Home: NextPage = () => {
   const [linkStatus, setLinkStatus] = useState<string>();
   const [linkModal, setLinkModal] = useState<boolean>(true);
 
-  const [isEVM, setIsEVM] = useState<boolean>(false);
+  const [isEVM, setIsEVM] = useState<boolean>(true);
 
   // connect to wallet
   async function connectEth(connector: ETHConnector) {
