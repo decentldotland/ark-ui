@@ -54,7 +54,7 @@ const Home: NextPage = () => {
   const [status, setStatus] = useState<{ type: StatusType, message: string }>();
   const [activeConnector, setActiveConnector] = useState<ETHConnector>();
   const eth = useETH(setActiveConnector, activeNetwork);
-  const { modal, selector, accounts, account, accountId, loading, linkNear, checkNearLinking } = useNear();
+  const { modal, selector, accounts, account, accountId, loading, linkNear, checkNearLinking, getAccount } = useNear();
 
   // load if already linked or in progress
   const [linkingOverlay, setLinkingOverlay] = useState<"in-progress" | "linked">();
@@ -119,32 +119,52 @@ const Home: NextPage = () => {
       if (!signedBase) throw new Error("ArConnect signature not found");
 
       setTimeout(() => setLinkStatus("Interacting with the smart contract..."), 1000);
-      let interaction;
 
+      let EVMInteraction;
+      let ExoticInteraction;
       if (isEVM) {
         //@ts-ignore
-        interaction = await eth.contract.linkIdentity(address);
-        await interaction.wait();
+        EVMInteraction = await eth.contract.linkIdentity(address);
+        await EVMInteraction.wait();
       } else {
-        // const nearLinkingTX = localStorage.getItem("nearLinkingTX");
-        interaction = await linkNear(address)
-        // if (interaction) {
-        //   localStorage.setItem("nearLinkingTX", String(interaction));
+        // const nearLinkingTXHash = localStorage.getItem("nearLinkingTXHash");
+        // const linkedNearAccount = localStorage.getItem("nearAccount");
+
+        // in case EXM is down, we save the linking TX hash and the linked account in local storage
+        // if (nearLinkingTXHash && linkedNearAccount === accountId) {
+        //   ExoticInteraction = nearLinkingTXHash;
+        // } else {
+          ExoticInteraction = await linkNear(address);
+          console.log("ExoticInteraction", ExoticInteraction);
+          ExoticInteraction = ExoticInteraction?.transaction?.hash;
+        //   localStorage.setItem("nearLinkingTXHash", ExoticInteraction);
+        //   localStorage.setItem("nearAccount", accountId);
         // }
-        // console.log(nearLinkingTX)
+      }
+
+      const EXMObject: any = {
+        "function": "linkIdentity",
+        "caller": address,
+        "jwk_n": arconnectPubKey,
+        "sig": signedBase,
+        "address": "",
+        "network": "",
+        "verificationReq": "",
+      }
+
+      if (isEVM) {
+        EXMObject.address = eth.address;
+        EXMObject.network = NETWORKS[activeNetwork].networkKey;
+        EXMObject.verificationReq = EVMInteraction?.hash;
+      } else {
+        EXMObject.address = accountId;
+        EXMObject.network = "NEAR-MAINNET";
+        EXMObject.verificationReq = ExoticInteraction;
       }
 
       setLinkStatus("Writing to Arweave...");
 
-      const result = await axios.post(`api/exmwrite`, {
-        "function": "linkIdentity",
-        "caller": address,
-        "address": isEVM ? eth.address : accountId,
-        "network": isEVM ? NETWORKS[activeNetwork].networkKey : "NEAR-MAINNET",
-        "jwk_n": arconnectPubKey,
-        "sig": signedBase,
-        "verificationReq": isEVM ? interaction.hash : interaction.transaction.hash
-      })
+      const result = await axios.post(`api/exmwrite`, EXMObject);
 
       console.log(result);
 
@@ -394,9 +414,9 @@ const Home: NextPage = () => {
           </CardSubtitle>
           <Spacer y={1.25} />
           <div className="flex items-center justify-center items-row text-white gap-x-4">
-            <div onClick={() => setIsEVM(true)}>{"EVM"}</div>
+            <div className={`cursor-pointer ${isEVM && ""}`} onClick={() => setIsEVM(true)}>{"EVM"}</div>
             <Toggle enabled={isEVM} setEnabled={setIsEVM} />
-            <div onClick={() => setIsEVM(false)}>{"NEAR"}</div>
+            <div className={`cursor-pointer ${!isEVM && ""}`} onClick={() => setIsEVM(false)}>{"NEAR"}</div>
           </div>
           <Spacer y={1.25} />
           <WalletContainer>

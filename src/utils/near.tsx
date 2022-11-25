@@ -185,7 +185,7 @@ export const useNear = () => {
     return () => subscription.unsubscribe();
   }, [selector]);
 
-  return {modal, selector, accounts, account, accountId, loading, linkNear, checkNearLinking};
+  return {modal, selector, accounts, account, accountId, loading, linkNear, checkNearLinking, getAccount};
 };
 
 
@@ -252,7 +252,7 @@ const NearConnect: React.FC = (props: any) => {
             <ConnectButton secondary onClick={handleSignOut}>
               {accountId?.length === 64 ? beautifyAddress(accountId) : accountId}
             </ConnectButton>
-          ) : <ConnectButton onClick={handleSignIn}>Connect</ConnectButton>}
+          ) : <ConnectButton secondary onClick={handleSignIn}>Connect</ConnectButton>}
         </>
       )}
     </div>
