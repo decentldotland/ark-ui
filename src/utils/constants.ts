@@ -110,7 +110,7 @@ export interface Address {
 export const POAPS = process.env.ARK_EARLY_SUPPORTER_POAP_URLS
 
 export const ARWEAVE_CONTRACT = "5H5Hj81G5j5P2raDhe5VFU-zkf08KDc588GJ8dtlHTw";
-export const EXM_ADDRESS = "FUsocdnUnwXRLoQGd1gvGwp0oUmNzqLbkuVG0zC-nwc";
+export const EXM_ADDRESS = "Z7JzRRt2iTQWV5LziNhTV6SP51tVKkCf_qrUqtlwzpg";
 export const EXM_TOKEN = process.env.EXM_API_TOKEN;
 export const EXM_READ_URL = "https://api.exm.dev/read/";
 export const EXM_WRITE_URL = "https://api.exm.dev/api/transactions";
