@@ -16,6 +16,7 @@ import { useEffect, useState } from "react";
 import { ACTIVE_NETWORK_STORE, Identity, Address, NETWORKS } from "../utils/constants";
 import { AnimatePresence, motion } from "framer-motion";
 import { opacityAnimation } from "../utils/animations";
+import { useRouter } from 'next/router'
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
@@ -63,6 +64,9 @@ const Home: NextPage = () => {
   const [linkStatus, setLinkStatus] = useState<string>();
   const [linkModal, setLinkModal] = useState<boolean>(true);
   const [isEVM, setIsEVM] = useState<boolean | null>(null);
+
+  const router = useRouter()
+  const {evm} = router.query; // returns true or false, or null
 
   // connect to wallet
   async function connectEth(connector: ETHConnector) {
@@ -135,10 +139,16 @@ const Home: NextPage = () => {
         //   ExoticInteraction = nearLinkingTXHash;
         // } else {
           ExoticInteraction = await linkNear(address);
-          console.log("ExoticInteraction", ExoticInteraction);
-          ExoticInteraction = ExoticInteraction?.transaction?.hash;
-        //   localStorage.setItem("nearLinkingTXHash", ExoticInteraction);
-        //   localStorage.setItem("nearAccount", accountId);
+          if (!ExoticInteraction || !ExoticInteraction?.transaction?.hash) {
+            return setStatus({
+              type: "error",
+              message: "NEAR linking failed"
+            });
+          } else {
+            ExoticInteraction = ExoticInteraction?.transaction?.hash;
+            // localStorage.setItem("nearLinkingTXHash", ExoticInteraction);
+            // localStorage.setItem("nearAccount", accountId);  
+          }
         // }
       }
 
@@ -158,11 +168,13 @@ const Home: NextPage = () => {
         EXMObject.verificationReq = EVMInteraction?.hash;
       } else {
         EXMObject.address = accountId;
-        EXMObject.network = "NEAR-MAINNET";
+        EXMObject.network = "NEAR-MAINNET"; // TODO: change to activeExoticNetwork
         EXMObject.verificationReq = ExoticInteraction;
       }
 
       setLinkStatus("Writing to Arweave...");
+
+      console.log(EXMObject)
 
       const result = await axios.post(`api/exmwrite`, EXMObject);
 
@@ -299,13 +311,22 @@ const Home: NextPage = () => {
       localStorage.setItem("isEVM", "true")
       return
     }
-    if (localStorageIsEVM === "false") {
-      setIsEVM(false)
+    if (evm) {
+      if (evm === "false") {
+        setIsEVM(false)
+      }
+      if (evm === "true") {
+        setIsEVM(true)
+      }
+    } else {
+      if (localStorageIsEVM === "false") {
+        setIsEVM(false)
+      } else if (localStorageIsEVM === "true") {
+        setIsEVM(true)
+      }
     }
-    if (localStorageIsEVM === "true") {
-      setIsEVM(true)
-    }
-  }, [])
+    console.log(localStorageIsEVM, evm)
+  }, [evm])
 
   useEffect(() => {
     if (isEVM === null) return
