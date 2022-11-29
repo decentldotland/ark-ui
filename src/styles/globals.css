@@ -36,3 +36,7 @@ a {
   color:white;
   text-decoration: underline;
 }
+
+:root {
+  --wallet-selector-content-bg: #1c1e23;
+}

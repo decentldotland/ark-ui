@@ -10,7 +10,7 @@ const ANS = ({ address, onClick }: { address: string, onClick?: MouseEventHandle
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch(`https://ans-testnet.herokuapp.com/profile/${address}`);
+        const res = await fetch(`https://ark-api.decent.land/v1/profile/arweave/${address}`);
         const ans = await res.json();
 
         if (!ans) return;
