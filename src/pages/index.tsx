@@ -134,7 +134,7 @@ const Home: NextPage = () => {
         // const nearLinkingTXHash = localStorage.getItem("nearLinkingTXHash");
         // const linkedNearAccount = localStorage.getItem("nearAccount");
 
-        // in case EXM is down, we save the linking TX hash and the linked account in local storage
+        // in case EXM is down again, we save the linking TX hash and the linked account in local storage
         // if (nearLinkingTXHash && linkedNearAccount === accountId) {
         //   ExoticInteraction = nearLinkingTXHash;
         // } else {
@@ -142,12 +142,12 @@ const Home: NextPage = () => {
           if (!ExoticInteraction || !ExoticInteraction?.transaction?.hash) {
             return setStatus({
               type: "error",
-              message: "NEAR linking failed"
+              message: "NEAR linking failed, check if you have enough NEAR"
             });
           } else {
             ExoticInteraction = ExoticInteraction?.transaction?.hash;
-            // localStorage.setItem("nearLinkingTXHash", ExoticInteraction);
-            // localStorage.setItem("nearAccount", accountId);  
+            localStorage.setItem("nearLinkingTXHash", ExoticInteraction);
+            localStorage.setItem("nearAccount", accountId);  
           }
         // }
       }

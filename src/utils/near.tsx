@@ -93,7 +93,7 @@ export const useNear = () => {
 
   const linkNear = useCallback(
     async (arweave_addr: string, customAccountId='') => {
-      if (!account || !accountId || !selector) return;
+      if (!accountId || !selector) throw new Error("No account selected");
       // const { contract } = selector.store.getState();
       const wallet = await selector.wallet();
       return wallet
@@ -125,7 +125,7 @@ export const useNear = () => {
     * @returns {object} The `result` property inside is an array buffer, that if converted is either a null or a 43 (or 45) character-long txid
   */
   const checkNearLinking = useCallback((customAccountId='') => {
-    if (!account || !accountId || !selector) return;
+    if (!accountId || !selector) throw new Error("No account selected");
     const { network } = selector.options;
     const provider = new providers.JsonRpcProvider({ url: network.nodeUrl });
 
