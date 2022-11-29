@@ -305,17 +305,26 @@ const Home: NextPage = () => {
     }
   }, []);
 
+  // TODO: pray to God and re-write this mess
   useEffect(() => {
     const localStorageIsEVM = localStorage.getItem("isEVM")
     if (!localStorageIsEVM) {
-      localStorage.setItem("isEVM", "true")
+      if (evm === "false") {
+        setIsEVM(false)
+        localStorage.setItem("isEVM", "false")
+      } else if (evm === "true") {
+        setIsEVM(true)
+        localStorage.setItem("isEVM", "true")
+      } else {
+        setIsEVM(true)
+        localStorage.setItem("isEVM", "true")        
+      }
       return
     }
     if (evm) {
       if (evm === "false") {
         setIsEVM(false)
-      }
-      if (evm === "true") {
+      } else if (evm === "true") {
         setIsEVM(true)
       }
     } else {
@@ -325,7 +334,6 @@ const Home: NextPage = () => {
         setIsEVM(true)
       }
     }
-    console.log(localStorageIsEVM, evm)
   }, [evm])
 
   useEffect(() => {
