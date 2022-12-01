@@ -130,7 +130,7 @@ const Home: NextPage = () => {
         //@ts-ignore
         EVMInteraction = await eth.contract.linkIdentity(address);
         await EVMInteraction.wait();
-      } else {
+      } else if (!isEVM) {
         // const nearLinkingTXHash = localStorage.getItem("nearLinkingTXHash");
         // const linkedNearAccount = localStorage.getItem("nearAccount");
 
@@ -138,6 +138,7 @@ const Home: NextPage = () => {
         // if (nearLinkingTXHash && linkedNearAccount === accountId) {
         //   ExoticInteraction = nearLinkingTXHash;
         // } else {
+          // @ts-ignore
           ExoticInteraction = await linkNear(address);
           if (!ExoticInteraction || !ExoticInteraction?.transaction?.hash) {
             return setStatus({
@@ -147,6 +148,7 @@ const Home: NextPage = () => {
           } else {
             ExoticInteraction = ExoticInteraction?.transaction?.hash;
             localStorage.setItem("nearLinkingTXHash", ExoticInteraction);
+            // @ts-ignore
             localStorage.setItem("nearAccount", accountId);  
           }
         // }
