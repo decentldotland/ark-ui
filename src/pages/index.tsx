@@ -98,7 +98,7 @@ const Home: NextPage = () => {
         type: "error",
         message: "Arweave or Ethereum not connected"
       });
-    } else {
+    } else if (!isEVM) {
       if (!address || !accountId) {
         return setStatus({
           type: "error",
