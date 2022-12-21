@@ -753,6 +753,7 @@ const TopBanner = styled.div`
   padding: 1em;
   font-size: 0.9rem;
   text-align: center;
+  visibility: hidden;
 `;
 
 const WalletContainer = styled.div`
