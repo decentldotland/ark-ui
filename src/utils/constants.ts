@@ -110,7 +110,7 @@ export interface Identity {
 
 export interface Address {
   address:          string;
-  ark_key:          string;
+  ark_key:          "ARWEAVE" | "EVM" | "EXOTIC";
   is_evaluated:     boolean;
   is_verified:      boolean;
   network:          string;
@@ -133,7 +133,7 @@ export const ARWEAVE_CONTRACT = "5H5Hj81G5j5P2raDhe5VFU-zkf08KDc588GJ8dtlHTw";
 export const EXM_ADDRESS = "Z7JzRRt2iTQWV5LziNhTV6SP51tVKkCf_qrUqtlwzpg";
 export const EXM_TOKEN = process.env.EXM_API_TOKEN;
 export const EXM_READ_URL = "https://api.exm.dev/read/";
-export const EXM_WRITE_URL = "https://api.exm.dev/api/transactions";
+export const EXM_WRITE_URL = "https://api.exm.dev/api/transactions?token=";
 
 export const EVM_ORACLES: Record<number, string> = {
   1: "0xdE44d3fB118E0f007f2C0D8fFFE98b994383949A",
