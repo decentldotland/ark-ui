@@ -131,11 +131,24 @@ const Connections: NextPage = () => {
 
     const disconnect = async () => {
       if (arweaveIdentity) {
+        const arconnectPubKey = await window.arweaveWallet.getActivePublicKey();  
+        if (!arconnectPubKey) throw new Error("ArConnect public key not found");
+  
+        const data = new TextEncoder().encode(`my pubkey for DL ARK is: ${arconnectPubKey}`);
+        const signature = await window.arweaveWallet.signature(data, {
+          name: "RSA-PSS",
+          saltLength: 32,
+        });
+        const signedBase = Buffer.from(signature).toString("base64");
+        if (!signedBase) throw new Error("ArConnect signature generation failed");
+
         setLoading(true)
         const payload = {
           "function": "unlinkIdentity",
           "caller": arweaveIdentity?.address,
           "address": address.address,
+          "jwk_n": arconnectPubKey,
+          "sig": signedBase,
         }
         const result = await axios.post('api/exmwrite', payload);
         console.log(result)
