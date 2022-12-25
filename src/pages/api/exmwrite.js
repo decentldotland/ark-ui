@@ -1,9 +1,9 @@
 import axios from "axios"
-import { EXM_ADDRESS, EXM_TOKEN } from '../../utils/constants'
+import { EXM_ADDRESS, EXM_WRITE_URL, EXM_TOKEN } from '../../utils/constants'
 
 export default async function handler(req, res) {
   try {
-    const data = await axios.post(`https://api.exm.dev/api/transactions?token=${EXM_TOKEN}`, {
+    const data = await axios.post(EXM_WRITE_URL + EXM_TOKEN, {
       functionId: EXM_ADDRESS,
       inputs: [{
         "input": JSON.stringify({
