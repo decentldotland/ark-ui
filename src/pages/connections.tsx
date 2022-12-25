@@ -7,9 +7,16 @@ import { AdjustmentsHorizontalIcon, XCircleIcon } from "@heroicons/react/24/soli
 import { Address, Identity } from '../utils/constants';
 import { formatAddress } from '../utils/format';
 import { EXMHandleNetworks } from '../utils/exm';
+import { useArconnect } from '../utils/arconnect';
+import { useModal } from '../components/Modal';
+import ANS from '../components/ANS';
+import styled from 'styled-components';
+import Button from '../components/Button';
 
 const Connections: NextPage = () => {
-  const router = useRouter()
+  const router = useRouter();
+  const downloadWalletModal = useModal();
+  const [address, connect, disconnect, arconnectError] = useArconnect(downloadWalletModal);
 
   const [loading, setLoading] = useState<boolean | null>(null);
   const [response, setResponse] = useState<any>();
@@ -19,7 +26,7 @@ const Connections: NextPage = () => {
   const [filterNetwork, setFilterNetwork] = useState<string>("");  
   const [isFilterMenuOpen, setIsFilterMenuOpen] = useState<boolean>(false);
   const [addresses, setAddresses] = useState<any>();
-
+  
   useEffect(() => {
     setLoading(true)
     const fetchData = async () => {
@@ -35,14 +42,14 @@ const Connections: NextPage = () => {
 
   useEffect(() => {
     const findIdentity = async () => {
-      const address = await window?.arweaveWallet?.getActiveAddress();
+      // const address = await window?.arweaveWallet?.getActiveAddress();
 
       const myIdentity = response?.identities?.find((identity: Identity) => identity.arweave_address === address);
       if (myIdentity) {
         setIdentity(myIdentity);
 
         const arweaveAddress: Address = {
-          address: identity.arweave_address,
+          address: address || '',
           ark_key: "ARWEAVE",
           is_evaluated: true,
           is_verified: true,
@@ -55,7 +62,7 @@ const Connections: NextPage = () => {
       }
     }
     findIdentity()
-  }, [response])
+  }, [response, address])
 
   useEffect(() => {
     setAddresses(
@@ -186,8 +193,8 @@ const Connections: NextPage = () => {
         <h1 className="text-[32px] font-bold">Ark Connections</h1>
         <h2>Manage your connected addresses</h2>
       </div>
-      {loading === true && (<div>loading</div>)}
-      {loading === false && (
+      {(loading === true && address) && (<div>loading</div>)}
+      {(loading === false && address) && (
         <div className="flex flex-col self-center md:w-[800px] relative">
           <button onClick={() => setIsFilterMenuOpen(prev => !prev)} className="self-end mb-2 flex items-center">
             {/* <div className="mr-2">Filter</div> */}
@@ -228,8 +235,31 @@ const Connections: NextPage = () => {
           </ul>
         </div>
       )}
+      {!address && 
+        <div className="text-2xl flex justify-center items-center flex-col">
+          <div className="mb-2">Please connect your wallet</div>
+          {(address && <ANS address={address} onClick={() => disconnect()} />) || (
+            <ConnectButton
+              secondary
+              onClick={() => connect()}
+            >
+              {arconnectError ? arconnectError : 'Connect'}
+            </ConnectButton>
+          )}
+        </div>
+      }
     </div>
   )
 }
+
+const ConnectButton = styled(Button)`
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+
+  @media screen and (max-width: 720px) {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+`;
 
 export default Connections
