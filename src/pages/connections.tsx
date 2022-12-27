@@ -98,12 +98,13 @@ const Connections: NextPage = () => {
 
   interface ConnectionStatusInterface {
     is_verified: boolean | undefined;
+    connected: boolean;
   };
 
-  const ConnectionStatus = ({is_verified}: ConnectionStatusInterface) => (
+  const ConnectionStatus = ({is_verified, connected}: ConnectionStatusInterface) => (
     <div className="col-span-2 flex items-center select-none">
-      <div className={`${is_verified ? "bg-green-300 ": "bg-red-500"} rounded-full w-[15px] h-[15px]`}></div>
-      <div className="ml-2">{is_verified ? "" : "not "} connected</div>
+      <div className={`${(is_verified && connected) ? "bg-green-300 ": "bg-red-500"} rounded-full w-[15px] h-[15px]`}></div>
+      <div className="ml-2 text-sm">{(is_verified && connected) ? "connected" : "not connected"}</div>
     </div>
   )
 
@@ -124,10 +125,9 @@ const Connections: NextPage = () => {
     )
   }
 
-  const ChainAction = ({address}: {address: Address}) => {
+  const ChainAction = ({address, connected, setConnected}: {address: Address, connected: boolean, setConnected: (arg0: boolean) => void}) => {
 
     const [loading, setLoading] = useState<boolean | null>(null)
-    const [connected, setConnected] = useState(true);
 
     const disconnect = async () => {
       if (arweaveIdentity) {
@@ -159,11 +159,21 @@ const Connections: NextPage = () => {
 
     return (
       <>
-        {address.ark_key === "ARWEAVE" && 
+        {address.ark_key === "ARWEAVE" && (address.is_verified && connected) ? (
           <div className="col-span-2 italic text-gray-400 font-light select-none">
             master ID
           </div>
-        }
+        ) : (
+          <button
+            onClick={() => router.push('/')} 
+            className={`
+              col-span-2 font-light py-1 select-none rounded-xl
+              bg-[rgb(38,191,168)] hover:bg-[rgb(38,191,168)]/80
+            `}
+          >
+            connect
+          </button>
+        )}        
         {(address.ark_key === "EVM" || address.ark_key === "EXOTIC") && 
           <button 
             onClick={() => connected ? disconnect(): router.push('/')} 
@@ -188,14 +198,15 @@ const Connections: NextPage = () => {
   }
 
   const Connection = ({address}: {address: Address}) => {
+    const [connected, setConnected] = useState(true);
 
     return (
       <li className={`${address.ark_key !== "ARWEAVE" && "bg-[rgb(35,54,58)]"} border-[3px] border-[rgb(35,54,58)] w-full rounded-2xl px-4 py-2 grid grid-cols-12 mb-3 items-center`}>
         <ChainInfo address={address} />
         <AddressComponent address={address} />
         <div className="col-span-1"></div>
-        <ConnectionStatus is_verified={address.is_verified} />
-        <ChainAction address={address} />
+        <ConnectionStatus is_verified={address.is_verified} connected={connected} />
+        <ChainAction address={address} setConnected={setConnected} connected={connected} />
       </li>
     )
   };
@@ -237,9 +248,21 @@ const Connections: NextPage = () => {
               ))}
             </ul>
           )}
-
           <ul className="flex flex-col">
-            {arweaveIdentity !== undefined && <Connection address={arweaveIdentity} />}
+            {arweaveIdentity !== undefined ? (
+              <Connection address={arweaveIdentity} />
+            ): (
+              <Connection address={
+                {
+                  address: address || '',
+                  ark_key: "ARWEAVE",
+                  is_evaluated: false,
+                  is_verified: false,
+                  network: 'ARWEAVE-MAINNET',
+                  verification_req: '',
+                }
+              } />
+            )}
             {addresses?.map((address: Address, idx: number) => (
               <Fragment key={idx}>
                 <Connection address={address} />
