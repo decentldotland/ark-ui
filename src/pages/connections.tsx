@@ -3,7 +3,8 @@ import Image from 'next/image';
 import { useRouter } from 'next/router'
 import type { NextPage } from 'next'
 import { useEffect, useState, useMemo, Fragment } from 'react';
-import { AdjustmentsHorizontalIcon, XCircleIcon } from "@heroicons/react/24/solid";
+import { AdjustmentsHorizontalIcon, XCircleIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
+
 import { Address, Identity } from '../utils/constants';
 import { formatAddress } from '../utils/format';
 import { EXMHandleNetworks } from '../utils/exm';
@@ -163,7 +164,7 @@ const Connections: NextPage = () => {
           <div className="col-span-2 italic text-gray-400 font-light select-none">
             master ID
           </div>
-        ) : (
+        ): (
           <button
             onClick={() => router.push('/')} 
             className={`
@@ -217,37 +218,46 @@ const Connections: NextPage = () => {
         <h1 className="text-[32px] font-bold">Ark Connections</h1>
         <h2>Manage your connected addresses</h2>
       </div>
-      {(loading === true && address) && (<div>loading</div>)}
+      {(loading === true && address) && (
+        <div className="flex justify-center items-center">
+          <ArrowPathIcon className="animate-spin text-white rounded-full w-10 h-10" />
+          <div className="ml-2">loading</div>
+        </div>
+      )}
       {(loading === false && address) && (
         <div className="flex flex-col self-center md:w-[800px] relative">
-          <button onClick={() => setIsFilterMenuOpen(prev => !prev)} className="self-end mb-2 flex items-center">
-            {/* <div className="mr-2">Filter</div> */}
-            <AdjustmentsHorizontalIcon className="w-6 h-6 text-[#A6A6A6]" />
-          </button>
-          {isFilterMenuOpen && (
-            <ul className="absolute w-40 right-0 top-8 bg-black rounded-lg px-2 pt-2 flex flex-col">
-              {filterNetwork !== "" &&
-                <li className="mb-2 self-end">
-                  <button 
-                    onClick={() => setFilterNetwork('')}
-                    className="flex items-center bg-[rgb(35,54,58)] pl-2 pr-1 rounded-lg"
-                  >
-                    <div className='mr-1'>Clear</div>
-                    <XCircleIcon className="w-5 h-5 " />
-                  </button>
-                </li>
-              }
-              {addresses?.map((address: Address, idx: number) => (
-                <li
-                  key={idx}
-                  onClick={() => setFilterNetwork(address.network)} 
-                  className="mb-2 transition-all ease-in-out duration-150 rounded-lg hover:bg-gray-700 cursor-pointer"
-                >
-                  <ChainInfo address={address} />
-                </li>
-              ))}
-            </ul>
-          )}
+          {addresses?.length > 0 &&
+            <>
+              <button onClick={() => setIsFilterMenuOpen(prev => !prev)} className="self-end mb-2 flex items-center">
+                {/* <div className="mr-2">Filter</div> */}
+                <AdjustmentsHorizontalIcon className="w-6 h-6 text-[#A6A6A6]" />
+              </button>
+              {isFilterMenuOpen && (
+                <ul className="absolute w-40 right-0 top-8 bg-black rounded-lg px-2 pt-2 flex flex-col">
+                  {filterNetwork !== "" &&
+                    <li className="mb-2 self-end">
+                      <button 
+                        onClick={() => setFilterNetwork('')}
+                        className="flex items-center bg-[rgb(35,54,58)] pl-2 pr-1 rounded-lg"
+                      >
+                        <div className='mr-1'>Clear</div>
+                        <XCircleIcon className="w-5 h-5 " />
+                      </button>
+                    </li>
+                  }
+                  {addresses?.map((address: Address, idx: number) => (
+                    <li
+                      key={idx}
+                      onClick={() => setFilterNetwork(address.network)} 
+                      className="mb-2 transition-all ease-in-out duration-150 rounded-lg hover:bg-gray-700 cursor-pointer"
+                    >
+                      <ChainInfo address={address} />
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </>
+          }
           <ul className="flex flex-col">
             {arweaveIdentity !== undefined ? (
               <Connection address={arweaveIdentity} />
