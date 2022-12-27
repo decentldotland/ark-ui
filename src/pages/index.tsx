@@ -282,16 +282,10 @@ const Home: NextPage = () => {
         const res = await axios.get('api/exmread');
         const { identities } = res.data;
 
-        if (
-          identities.find((identity: Identity) =>
-            identity.is_verified &&
-            identity.arweave_address === address &&
-            (identity.addresses
-              ?.find((address: Address) => address.address === eth.address))?.ark_key === "EVM"
-              ||
-              identity.addresses?.find((address: Address) => address.address === accountId)?.ark_key === "EXOTIC"
-            )
-        ) {
+        const identityOnArweave = identities.find((identity: Identity) => identity.is_verified && identity.arweave_address === address)
+        const identityIsOnEVM = identityOnArweave?.addresses?.find((address: Address) => address.address === eth.address)?.ark_key === "EVM";
+        const identityIsOnExotics = identityOnArweave.addresses?.find((address: Address) => address.address === accountId)?.ark_key === "EXOTIC";
+        if (identityOnArweave) {
           return setLinkingOverlay("linked");
         } else {
           setLinkingOverlay(undefined);
