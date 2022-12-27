@@ -91,7 +91,7 @@ const Connections: NextPage = () => {
     if (!networkData) return (<></>)
     return (
       <div className="col-span-2 flex items-center">
-        <Image src={networkData.iconURL} width={38} height={38} draggable={false} style={{borderRadius: "4px !important"}} />
+        <Image src={networkData.iconURL} width={38} height={38} draggable={false} style={{borderRadius: "4px"}} />
         <div className="ml-3">{networkData.name}</div>
       </div>
     )
@@ -160,33 +160,37 @@ const Connections: NextPage = () => {
 
     return (
       <>
-        {address.ark_key === "ARWEAVE" && (address.is_verified && connected) ? (
-          <div className="col-span-2 italic text-gray-400 font-light select-none">
-            master ID
-          </div>
-        ): (
-          <button
-            onClick={() => router.push('/')} 
-            className={`
-              col-span-2 font-light py-1 select-none rounded-xl
-              bg-[rgb(38,191,168)] hover:bg-[rgb(38,191,168)]/80
-            `}
-          >
-            connect
-          </button>
-        )}        
+        {address.ark_key === "ARWEAVE" &&
+          <>
+            {(address.is_verified && connected) ? (
+              <div className="col-span-2 italic text-gray-400 font-light select-none">
+                master ID
+              </div>
+            ): (
+              <button
+                onClick={() => router.push('/')} 
+                className={`
+                  col-span-2 font-light py-1 select-none rounded-xl
+                  bg-[rgb(38,191,168)] hover:bg-[rgb(38,191,168)]/80
+                `}
+              >
+                connect
+              </button>
+            )}
+          </>
+        }        
         {(address.ark_key === "EVM" || address.ark_key === "EXOTIC") && 
           <button 
-            onClick={() => connected ? disconnect(): router.push('/')} 
+            onClick={() => (connected && address.is_verified) ? disconnect(): router.push('/')} 
             className={`
               col-span-2 font-light py-1 select-none rounded-xl
-              ${connected ? 
+              ${(connected && address.is_verified) ? 
                 "bg-red-500 hover:bg-red-600": 
                 "bg-[rgb(38,191,168)] hover:bg-[rgb(38,191,168)]/80"
               }
             `}
           >
-            {connected ? (
+            {(connected && address.is_verified) ? (
               <>
                 {(loading === null || loading === false) && "disconnect"}
                 {loading && "disconnecting..."}
