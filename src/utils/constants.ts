@@ -1,13 +1,40 @@
 import type { AccountView } from "near-api-js/lib/providers/provider";
 
+
+export const chainNames = {
+  'ETH-MAINNET': "Ethereum",
+  'BSC-MAINNET': "BNB Chain",
+  'FTM': "Fantom",
+}
+
+export const chainTickers = {
+  "AURORA-MAINNET": "AURORA",
+  "BSC-MAINNET": "BNB",
+  "ETH-MAINNET": "ETH",
+  "EVMOS-MAINNET": "EVMOS",
+  "AVALANCHE-MAINNET": "AVAX",
+  "FTM-MAINNET": "FTM",
+  "OPTIMISM-MAINNET": "ETH",
+  "ARBITRUM-MAINNET": "ETH",
+  "POLYGON-MAINNET": "MATIC",
+  "NEAR-MAINNET": "NEAR",
+  "SOLANA-MAINNET": "SOL",
+  "TRON-MAINNET": "TRX"
+}
+
 export const RCP = "https://rpc.goerli.mudit.blog/";
-export const NETWORKS: Record<number, {
+
+export interface EVM_NETWORK_UI_INTERFACE {
   name: string;
   urls: string[];
   theme: string;
   networkKey: string; // Ark Protocol identifier for network
   nativeCurrency?: any;
-}> = {
+}
+
+// EVM NETWORKS
+
+export const NETWORKS:Record<number, EVM_NETWORK_UI_INTERFACE>  = {
   1: {
     name: "Ethereum Mainnet",
     networkKey: "ETH-MAINNET",
