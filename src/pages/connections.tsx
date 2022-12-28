@@ -122,7 +122,7 @@ const Connections: NextPage = () => {
         ${address.ark_key === "ARWEAVE" ? "bg-[#1D3135]" : "bg-[#304C52]"}
       `}>
         {formattedAddress}
-      </div>  
+      </div>
     )
   }
 
@@ -163,7 +163,7 @@ const Connections: NextPage = () => {
         {address.ark_key === "ARWEAVE" &&
           <>
             {(address.is_verified && connected) ? (
-              <div className="col-span-2 italic text-gray-400 font-light select-none">
+              <div className="col-span-2 text-gray-400 font-light select-none">
                 master ID
               </div>
             ): (
