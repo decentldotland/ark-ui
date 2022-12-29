@@ -160,7 +160,7 @@ const Home: NextPage = () => {
         EXMObject.verificationReq = EVMInteraction?.hash;
       } else {
         EXMObject.address = accountId;
-        EXMObject.network = "NEAR-MAINNET"; // TODO: change to activeExoticNetwork
+        EXMObject.network = activeExoticNetwork;
         EXMObject.verificationReq = ExoticInteraction;
       }
 
