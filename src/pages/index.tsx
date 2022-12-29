@@ -279,15 +279,17 @@ const Home: NextPage = () => {
 
         if (isEVM ? !identityOnEVM: !identityOnExotic) return setLinkingOverlay(undefined)
         if (isEVM ? identityOnEVM.arweave_address === address: identityOnExotic.arweave_address === address) {
+          setLinkModal(true)
           return setLinkingOverlay('linked')
         } else {
+          setLinkModal(true)
           return setLinkingOverlay('address-mismatch')
         }
       } catch (e) {
         console.log(e)
        }
     })();
-  }, [address, activeNetwork, activeExoticNetwork]);
+  }, [isEVM, address, activeNetwork, activeExoticNetwork]);
 
   useEffect(() => {
     const fetchData = async () => {
