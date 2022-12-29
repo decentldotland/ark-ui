@@ -48,7 +48,7 @@ const Home: NextPage = () => {
   const { modal, selector, accounts, account, accountId, loading, linkNear, checkNearLinking, getAccount } = useNear();
 
   // load if already linked or in progress
-  const [linkingOverlay, setLinkingOverlay] = useState<"in-progress" | "linked" | "address-mismatch">();
+  const [linkingOverlay, setLinkingOverlay] = useState<"linked" | "address-mismatch">();
 
   // linking functionality
   const [linkStatus, setLinkStatus] = useState<string>();
@@ -177,7 +177,7 @@ const Home: NextPage = () => {
         type: "success",
         message: "Linked identity"
       });
-      setLinkingOverlay("in-progress");
+      setLinkingOverlay("linked");
     } catch (e) {
       console.log("Failed to link", e);
 
@@ -269,13 +269,13 @@ const Home: NextPage = () => {
       if (!address) return;
 
       try {
-        if (!address) return setLinkingOverlay(undefined)
+        if (!address) return setLinkingOverlay(undefined);
         const res = await axios.get('api/exmread');
         const { identities } = res.data;
 
         // const identityOnArweave = identities.find((identity: Identity) => identity.is_verified && identity.arweave_address === address);
-        const identityOnEVM = identities.find((identity: Identity) => identity?.addresses?.find((address: Address) => address.address === eth.address))
-        const identityOnExotic = identities.find((identity: Identity) => identity?.addresses?.find((address: Address) => address.address === accountId))
+        const identityOnEVM = identities.find((identity: Identity) => identity?.addresses?.find((address: Address) => address.address === eth.address && address.is_verified))
+        const identityOnExotic = identities.find((identity: Identity) => identity?.addresses?.find((address: Address) => address.address === accountId && address.is_verified))
 
         if (isEVM ? !identityOnEVM: !identityOnExotic) return setLinkingOverlay(undefined)
         if (isEVM ? identityOnEVM.arweave_address === address: identityOnExotic.arweave_address === address) {
@@ -283,7 +283,7 @@ const Home: NextPage = () => {
           return setLinkingOverlay('linked')
         } else {
           setLinkModal(true)
-          return setLinkingOverlay('address-mismatch')
+          return setLinkingOverlay('address-mismatch')  
         }
       } catch (e) {
         console.log(e)
@@ -550,8 +550,8 @@ const Home: NextPage = () => {
                 )}
                 {(linkingOverlay === "linked" && (
                   <>
-                    <p>
-                      🥳 Congratulations! You have linked your identity.
+                    <p className="">
+                      🥳 Congratulations! You have linked your {chainInfo?.name} address to Ark!
                     </p>
                     <p>Tweet a screenshot of this page at <a 
                         href={`
@@ -913,6 +913,7 @@ const LinkingInProgress = styled(motion.div)`
   bottom: 0;
   z-index: 100;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   background-color: rgba(0, 0, 0, 0.2);
