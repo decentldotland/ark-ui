@@ -154,6 +154,17 @@ export type Account = AccountView & {
   account_id: string;
 };
 
+export const BASE_ARK_API_URL = "https://ark-core.decent.land/";
+
+// https://github.com/decentldotland/ark-protocol#4--resolve-ark-addresses-for-a-given-address
+export const RESOLVE_ARK_ADDRESS_URL = BASE_ARK_API_URL + "v2/address/resolve/";
+
+// https://github.com/decentldotland/ark-protocol#7--soark-only-domains
+export const RESOLVE_ARK_ADDRESS_TO_DOMAINS_URL = BASE_ARK_API_URL + "/v2/domains/" // :network/:address
+
+export const ANS_STATS_URL = "https://ans-stats.decent.land/profile/" // ANS label goes here
+
+
 export const POAPS = process.env.ARK_EARLY_SUPPORTER_POAP_URLS
 
 export const ARWEAVE_CONTRACT = "5H5Hj81G5j5P2raDhe5VFU-zkf08KDc588GJ8dtlHTw";

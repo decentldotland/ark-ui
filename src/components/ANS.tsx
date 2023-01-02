@@ -2,6 +2,7 @@ import { MouseEventHandler, useEffect, useState } from "react";
 import { formatAddress } from "../utils/format";
 import styled from "styled-components";
 import ColorHash from "color-hash";
+import { ANS_STATS_URL } from '../utils/constants';
 
 const ANS = ({ address, onClick }: { address: string, onClick?: MouseEventHandler<HTMLDivElement> }) => {
   const [avatar, setAvatar] = useState<string>();
@@ -10,7 +11,7 @@ const ANS = ({ address, onClick }: { address: string, onClick?: MouseEventHandle
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch(`https://ark-api.decent.land/v1/profile/arweave/${address}`);
+        const res = await fetch(ANS_STATS_URL + address);
         const ans = await res.json();
 
         if (!ans) return;
