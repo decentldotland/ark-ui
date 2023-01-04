@@ -308,7 +308,7 @@ const Connections: NextPage = () => {
       )}
       {!address && 
         <div className="text-2xl flex justify-center items-center flex-col">
-          <div className="mb-2">Please connect your wallet</div>
+          <div className="mb-2">Please connect your Arconnect wallet</div>
           {(address && <ANS address={address} onClick={() => disconnect()} />) || (
             <ConnectButton
               secondary
