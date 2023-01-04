@@ -8,10 +8,10 @@ const Footer = () => {
   return(
     <div className="fixed w-full bg-black/75 backdrop-blur-md z-[500] h-14 text-white flex text-center items-center flex-row gap-x-4 pl-4">
       <Link href="/">
-        <Button disabled={router.pathname === '/'}>Ark Protocol</Button>
+        <button className={`background-none ${router.pathname === '/' ? "text-teal-500 font-bold" : ""}`} disabled={router.pathname === '/'}>Ark Protocol</button>
       </Link>
       <Link href="/connections">
-        <Button disabled={router.pathname === '/connections'}>My Ark ID</Button>
+        <button className={`background-none ${router.pathname === '/connections' ? "text-teal-500 font-bold" : ""}`} disabled={router.pathname === '/connections'}>My Ark ID</button>
       </Link>
     </div>
   );

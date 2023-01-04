@@ -126,7 +126,7 @@ const Connections: NextPage = () => {
   const ConnectionStatus = ({is_verified, connected}: ConnectionStatusInterface) => (
     <div className="col-span-2 flex items-center select-none">
       <div className={`${(is_verified && connected) ? "bg-green-300 ": "bg-red-500"} rounded-full w-[15px] h-[15px]`}></div>
-      <div className="ml-2 text-sm">{(is_verified && connected) ? "connected" : "not connected"}</div>
+      <div className="ml-2 text-sm">{(is_verified && connected) ? "connected" : "connection failed"}</div>
     </div>
   )
 
@@ -308,7 +308,6 @@ const Connections: NextPage = () => {
       )}
       {!address && 
         <div className="text-2xl flex justify-center items-center flex-col">
-          <div className="mb-2">Please connect your Arconnect wallet</div>
           {(address && <ANS address={address} onClick={() => disconnect()} />) || (
             <ConnectButton
               secondary
@@ -317,6 +316,7 @@ const Connections: NextPage = () => {
               {arconnectError ? arconnectError : 'Connect'}
             </ConnectButton>
           )}
+          <div className="h-96"></div> {/* horrid hack - instead, stick the footer to the bottom of the page regardless of other elements */}
         </div>
       }
     </div>
