@@ -107,7 +107,12 @@ const Connections: NextPage = () => {
     if (!networkData) return (<></>)
     return (
       <div className="col-span-2 flex items-center">
-        <Image src={networkData.iconURL} width={38} height={38} draggable={false} style={{borderRadius: "4px"}} />
+        <div className="w-[38px] h-[38px] relative">
+          <Image src={networkData.iconURL} width={38} height={38} draggable={false} style={{borderRadius: "4px"}} />
+          <div className="absolute text-xs -bottom-1 -right-1">
+            {address.ark_key === "EVM" && <div className="w-[20px] h-[20px] rounded-full bg-white"><Image src={'/eth-bnw.png'} width={12} height={20} /></div>}
+          </div>
+        </div>
         <div className="ml-3">{networkData.name}</div>
       </div>
     )
