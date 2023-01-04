@@ -26,8 +26,19 @@ const Connections: NextPage = () => {
   const [convertedNetworks, setConvertedNetworks] = useState<any>();
   const [filterNetwork, setFilterNetwork] = useState<string>("");  
   const [isFilterMenuOpen, setIsFilterMenuOpen] = useState<boolean>(false);
-  const [addresses, setAddresses] = useState<any>();
-  
+  const [addresses, setAddresses] = useState<Address[] | undefined>();
+  const [filteredAddresses, setFilteredAddresses] = useState<any>();
+
+  const filterDuplicates = (array: any) => {
+    const seen = new Set();
+    const filteredArr = array?.filter((address: Address) => {
+      const duplicate = seen.has(address.network);
+      seen.add(address.network);
+      return !duplicate;
+    });
+    return filteredArr;
+  }
+
   useEffect(() => {
     setLoading(true)
     const fetchData = async () => {
@@ -58,8 +69,9 @@ const Connections: NextPage = () => {
           verification_req: '',
         };
         setArweaveIdentity(arweaveAddress);
-        setAddresses(myIdentity.addresses)
-        // console.log(myIdentity)
+        setFilteredAddresses(filterDuplicates(myIdentity?.addresses));
+        setAddresses(myIdentity?.addresses);
+        // console.log(myIdentity);
       }
     }
     findIdentity()
@@ -69,6 +81,10 @@ const Connections: NextPage = () => {
     setAddresses(
       identity?.addresses?.filter((address: Address) => address.network.includes(filterNetwork))
     );
+
+    setFilteredAddresses(
+      filterDuplicates(identity?.addresses?.filter((address: Address) => address.network.includes(filterNetwork)))
+    )
   }, [filterNetwork])
 
   interface NETWORK {
@@ -230,7 +246,7 @@ const Connections: NextPage = () => {
       )}
       {(loading === false && address) && (
         <div className="flex flex-col self-center md:w-[800px] relative">
-          {addresses?.length > 0 &&
+          {addresses && addresses?.length > 0 &&
             <>
               <button onClick={() => setIsFilterMenuOpen(prev => !prev)} className="self-end mb-2 flex items-center">
                 {/* <div className="mr-2">Filter</div> */}
@@ -249,7 +265,7 @@ const Connections: NextPage = () => {
                       </button>
                     </li>
                   }
-                  {addresses?.map((address: Address, idx: number) => (
+                  {filteredAddresses.map((address: Address, idx: number) => (
                     <li
                       key={idx}
                       onClick={() => setFilterNetwork(address.network)} 
