@@ -25,6 +25,7 @@ import Spacer from "../components/Spacer";
 import Faq from "../components/Faq";
 import ANS from "../components/ANS";
 import Loading from "../components/Loading";
+import Footer from "../components/Footer";
 import Network, { ExoticNetwork } from "../components/Network";
 import Toggle from '../components/Toggle';
 import { EXMHandleNetworks } from '../utils/exm';
@@ -630,6 +631,7 @@ const Home: NextPage = () => {
       ) : (
         <ExoticNetwork onChange={() => setActiveExoticNetwork} value={activeExoticNetwork} isDisabled={false} />
       )}
+      <Footer />
     </>
   );
 }

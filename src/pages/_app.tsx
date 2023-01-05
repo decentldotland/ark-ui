@@ -1,7 +1,6 @@
 import type { AppProps } from "next/app";
 import Script from "next/script";
 import styled, { ThemeProvider } from "styled-components";
-import Footer from "../components/Footer";
 import Header from "../components/Header";
 import "../styles/globals.css";
 
@@ -26,7 +25,6 @@ function App({ Component, pageProps }: AppProps) {
       <Header />
       <Gradient />
       <Component {...pageProps} />
-      <Footer />
     </ThemeProvider>
   );
 }

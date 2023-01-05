@@ -1,5 +1,6 @@
 import axios from 'axios';
 import Image from 'next/image';
+import styled from 'styled-components';
 import { useRouter } from 'next/router'
 import type { NextPage } from 'next'
 import { useEffect, useState, useMemo, Fragment } from 'react';
@@ -11,8 +12,8 @@ import { EXMHandleNetworks } from '../utils/exm';
 import { useArconnect } from '../utils/arconnect';
 import { useModal } from '../components/Modal';
 import ANS from '../components/ANS';
-import styled from 'styled-components';
 import Button from '../components/Button';
+import Footer from "../components/Footer";
 
 const Connections: NextPage = () => {
   const router = useRouter();
@@ -126,7 +127,7 @@ const Connections: NextPage = () => {
   const ConnectionStatus = ({is_verified, connected}: ConnectionStatusInterface) => (
     <div className="col-span-2 flex items-center select-none">
       <div className={`${(is_verified && connected) ? "bg-green-300 ": "bg-red-500"} rounded-full w-[15px] h-[15px]`}></div>
-      <div className="ml-2 text-sm">{(is_verified && connected) ? "connected" : "connection failed"}</div>
+      <div className="ml-2 text-sm">{(is_verified && connected) ? "connected" : "not connected"}</div>
     </div>
   )
 
@@ -238,87 +239,91 @@ const Connections: NextPage = () => {
   };
 
   return (
-    <div className="flex flex-col justify-center text-center text-white">
-      <div className="mt-20 mb-[60px]">
-        <h1 className="text-[32px] font-bold">Ark Connections</h1>
-        <h2>Manage your connected addresses</h2>
-      </div>
-      {(loading === true && address) && (
-        <div className="flex justify-center items-center">
-          <ArrowPathIcon className="animate-spin text-white rounded-full w-10 h-10" />
-          <div className="ml-2">loading</div>
+    <div>
+      <div className="flex flex-col justify-center text-center h-5/6 text-white">
+        <div className="mt-20 mb-[60px]">
+          <h1 className="text-[32px] font-bold">Ark Connections</h1>
+          <h2>Manage your connected addresses</h2>
         </div>
-      )}
-      {(loading === false && address) && (
-        <div className="flex flex-col self-center md:w-[800px] relative">
-          {addresses && addresses?.length > 0 &&
-            <>
-              <button onClick={() => setIsFilterMenuOpen(prev => !prev)} className="self-end mb-2 flex items-center">
-                {/* <div className="mr-2">Filter</div> */}
-                <AdjustmentsHorizontalIcon className="w-6 h-6 text-[#A6A6A6]" />
-              </button>
-              {isFilterMenuOpen && (
-                <ul className="absolute w-40 right-0 top-8 bg-black rounded-lg px-2 pt-2 flex flex-col">
-                  {filterNetwork !== "" &&
-                    <li className="mb-2 self-end">
-                      <button 
-                        onClick={() => setFilterNetwork('')}
-                        className="flex items-center bg-[rgb(35,54,58)] pl-2 pr-1 rounded-lg"
+        {(loading === true && address) && (
+          <div className="flex justify-center items-center">
+            <ArrowPathIcon className="animate-spin text-white rounded-full w-10 h-10" />
+            <div className="ml-2">loading</div>
+          </div>
+        )}
+        {(loading === false && address) && (
+          <div className="flex flex-col self-center md:w-[800px] relative">
+            {addresses && addresses?.length > 0 &&
+              <>
+                <button onClick={() => setIsFilterMenuOpen(prev => !prev)} className="self-end mb-2 flex items-center">
+                  {/* <div className="mr-2">Filter</div> */}
+                  <AdjustmentsHorizontalIcon className="w-6 h-6 text-[#A6A6A6]" />
+                </button>
+                {isFilterMenuOpen && (
+                  <ul className="absolute w-40 right-0 top-8 bg-black rounded-lg px-2 pt-2 flex flex-col">
+                    {filterNetwork !== "" &&
+                      <li className="mb-2 self-end">
+                        <button 
+                          onClick={() => setFilterNetwork('')}
+                          className="flex items-center bg-[rgb(35,54,58)] pl-2 pr-1 rounded-lg"
+                        >
+                          <div className='mr-1'>Clear</div>
+                          <XCircleIcon className="w-5 h-5 " />
+                        </button>
+                      </li>
+                    }
+                    {filteredAddresses.map((address: Address, idx: number) => (
+                      <li
+                        key={idx}
+                        onClick={() => setFilterNetwork(address.network)} 
+                        className="mb-2 transition-all ease-in-out duration-150 rounded-lg hover:bg-gray-700 cursor-pointer"
                       >
-                        <div className='mr-1'>Clear</div>
-                        <XCircleIcon className="w-5 h-5 " />
-                      </button>
-                    </li>
+                        <ChainInfo address={address} />
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </>
+            }
+            <ul className="flex flex-col overflow-scroll max-h-[420px]">
+              {arweaveIdentity !== undefined ? (
+                <Connection address={arweaveIdentity} />
+              ): (
+                <Connection address={
+                  {
+                    address: address || '',
+                    ark_key: "ARWEAVE",
+                    is_evaluated: false,
+                    is_verified: false,
+                    network: 'ARWEAVE-MAINNET',
+                    verification_req: '',
                   }
-                  {filteredAddresses.map((address: Address, idx: number) => (
-                    <li
-                      key={idx}
-                      onClick={() => setFilterNetwork(address.network)} 
-                      className="mb-2 transition-all ease-in-out duration-150 rounded-lg hover:bg-gray-700 cursor-pointer"
-                    >
-                      <ChainInfo address={address} />
-                    </li>
-                  ))}
-                </ul>
+                } />
               )}
-            </>
-          }
-          <ul className="flex flex-col">
-            {arweaveIdentity !== undefined ? (
-              <Connection address={arweaveIdentity} />
-            ): (
-              <Connection address={
-                {
-                  address: address || '',
-                  ark_key: "ARWEAVE",
-                  is_evaluated: false,
-                  is_verified: false,
-                  network: 'ARWEAVE-MAINNET',
-                  verification_req: '',
-                }
-              } />
+              {addresses?.map((address: Address, idx: number) => (
+                <Fragment key={idx}>
+                  <Connection address={address} />
+                </Fragment>
+              ))}
+            </ul>
+          </div>
+        )}
+        {!address && 
+          <div className="text-2xl flex justify-center items-center flex-col">
+            {(address && <ANS address={address} onClick={() => disconnect()} />) || (
+              <ConnectButton
+                secondary
+                onClick={() => connect()}
+              >
+                {arconnectError ? arconnectError : 'Connect'}
+              </ConnectButton>
             )}
-            {addresses?.map((address: Address, idx: number) => (
-              <Fragment key={idx}>
-                <Connection address={address} />
-              </Fragment>
-            ))}
-          </ul>
-        </div>
-      )}
-      {!address && 
-        <div className="text-2xl flex justify-center items-center flex-col">
-          {(address && <ANS address={address} onClick={() => disconnect()} />) || (
-            <ConnectButton
-              secondary
-              onClick={() => connect()}
-            >
-              {arconnectError ? arconnectError : 'Connect'}
-            </ConnectButton>
-          )}
-          <div className="h-96"></div> {/* horrid hack - instead, stick the footer to the bottom of the page regardless of other elements */}
-        </div>
-      }
+          </div>
+        }
+      </div>
+      <div className="fixed -bottom-8 w-full">
+        <Footer />
+      </div>
     </div>
   )
 }
