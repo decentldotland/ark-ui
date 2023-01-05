@@ -7,6 +7,7 @@
   "dependencies": {
     "@coinbase/wallet-sdk": "^3.3.0",
     "@headlessui/react": "^1.7.4",
+    "@heroicons/react": "^2.0.13",
     "@iconicicons/react": "^1.5.0",
     "@near-wallet-selector/core": "^7.2.0",
     "@near-wallet-selector/default-wallets": "^7.2.0",

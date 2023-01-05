@@ -1,13 +1,40 @@
 import type { AccountView } from "near-api-js/lib/providers/provider";
 
+
+export const chainNames = {
+  'ETH-MAINNET': "Ethereum",
+  'BSC-MAINNET': "BNB Chain",
+  'FTM': "Fantom",
+}
+
+export const chainTickers = {
+  "AURORA-MAINNET": "AURORA",
+  "BSC-MAINNET": "BNB",
+  "ETH-MAINNET": "ETH",
+  "EVMOS-MAINNET": "EVMOS",
+  "AVALANCHE-MAINNET": "AVAX",
+  "FTM-MAINNET": "FTM",
+  "OPTIMISM-MAINNET": "ETH",
+  "ARBITRUM-MAINNET": "ETH",
+  "POLYGON-MAINNET": "MATIC",
+  "NEAR-MAINNET": "NEAR",
+  "SOLANA-MAINNET": "SOL",
+  "TRON-MAINNET": "TRX"
+}
+
 export const RCP = "https://rpc.goerli.mudit.blog/";
-export const NETWORKS: Record<number, {
+
+export interface EVM_NETWORK_UI_INTERFACE {
   name: string;
   urls: string[];
   theme: string;
   networkKey: string; // Ark Protocol identifier for network
   nativeCurrency?: any;
-}> = {
+}
+
+// EVM NETWORKS
+
+export const NETWORKS:Record<number, EVM_NETWORK_UI_INTERFACE>  = {
   1: {
     name: "Ethereum Mainnet",
     networkKey: "ETH-MAINNET",
@@ -110,7 +137,7 @@ export interface Identity {
 
 export interface Address {
   address:          string;
-  ark_key:          string;
+  ark_key:          "ARWEAVE" | "EVM" | "EXOTIC";
   is_evaluated:     boolean;
   is_verified:      boolean;
   network:          string;
@@ -127,13 +154,24 @@ export type Account = AccountView & {
   account_id: string;
 };
 
+export const BASE_ARK_API_URL = "https://ark-core.decent.land/";
+
+// https://github.com/decentldotland/ark-protocol#4--resolve-ark-addresses-for-a-given-address
+export const RESOLVE_ARK_ADDRESS_URL = BASE_ARK_API_URL + "v2/address/resolve/";
+
+// https://github.com/decentldotland/ark-protocol#7--soark-only-domains
+export const RESOLVE_ARK_ADDRESS_TO_DOMAINS_URL = BASE_ARK_API_URL + "/v2/domains/" // :network/:address
+
+export const ANS_STATS_URL = "https://ans-stats.decent.land/profile/" // ANS label goes here
+
+
 export const POAPS = process.env.ARK_EARLY_SUPPORTER_POAP_URLS
 
 export const ARWEAVE_CONTRACT = "5H5Hj81G5j5P2raDhe5VFU-zkf08KDc588GJ8dtlHTw";
 export const EXM_ADDRESS = "Z7JzRRt2iTQWV5LziNhTV6SP51tVKkCf_qrUqtlwzpg";
 export const EXM_TOKEN = process.env.EXM_API_TOKEN;
 export const EXM_READ_URL = "https://api.exm.dev/read/";
-export const EXM_WRITE_URL = "https://api.exm.dev/api/transactions";
+export const EXM_WRITE_URL = "https://api.exm.dev/api/transactions?token=";
 
 export const EVM_ORACLES: Record<number, string> = {
   1: "0xdE44d3fB118E0f007f2C0D8fFFE98b994383949A",

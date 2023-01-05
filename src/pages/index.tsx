@@ -1,8 +1,6 @@
 import axios from 'axios';
 import type { NextPage } from "next";
 import { CloseIcon, LinkIcon } from "@iconicicons/react"
-// I sincerely hope this project won't burn down in flames for each module I install
-import Toggle from '../components/Toggle';
 import { useArconnect } from "../utils/arconnect"
 import NearConnect, { useNear } from "../utils/near";
 import Card, { CardSubtitle } from "../components/Card";
@@ -27,18 +25,10 @@ import Spacer from "../components/Spacer";
 import Faq from "../components/Faq";
 import ANS from "../components/ANS";
 import Loading from "../components/Loading";
+import Footer from "../components/Footer";
 import Network, { ExoticNetwork } from "../components/Network";
-// import Toggle from "../components/Toggle";
-import Avalanche from "../assets/avalanche.svg";
-import Binance from "../assets/binance.png";
-import Evmos from "../assets/evmos.png";
-import Neon from "../assets/neon.png";
-import Aurora from "../assets/aurora.png";
-import Fantom from "../assets/fantom.png"
-import Optimism from "../assets/optimism.svg"
-import Polygon from "../assets/polygon.webp"
-import Arbitrum from "../assets/arbitrum.svg"
-import Near from "../assets/near.svg"
+import Toggle from '../components/Toggle';
+import { EXMHandleNetworks } from '../utils/exm';
 
 const Home: NextPage = () => {
   const downloadWalletModal = useModal();
@@ -50,7 +40,8 @@ const Home: NextPage = () => {
   const [previousNetwork, setPreviousNetwork] = useState<number>(1);
   const [networkLoaded, setNetworkLoaded] = useState<boolean>(false);
   const [isDevMode, setIsDevMode] = useState<boolean>(false);
-  
+  const [EXMState, setEXMState] = useState<any>();
+  const [convertedNetworks, setConvertedNetworks] = useState<any>()
 
   const [status, setStatus] = useState<{ type: StatusType, message: string }>();
   const [activeConnector, setActiveConnector] = useState<ETHConnector>();
@@ -58,7 +49,7 @@ const Home: NextPage = () => {
   const { modal, selector, accounts, account, accountId, loading, linkNear, checkNearLinking, getAccount } = useNear();
 
   // load if already linked or in progress
-  const [linkingOverlay, setLinkingOverlay] = useState<"in-progress" | "linked">();
+  const [linkingOverlay, setLinkingOverlay] = useState<"linked" | "address-mismatch">();
 
   // linking functionality
   const [linkStatus, setLinkStatus] = useState<string>();
@@ -170,7 +161,7 @@ const Home: NextPage = () => {
         EXMObject.verificationReq = EVMInteraction?.hash;
       } else {
         EXMObject.address = accountId;
-        EXMObject.network = "NEAR-MAINNET"; // TODO: change to activeExoticNetwork
+        EXMObject.network = activeExoticNetwork;
         EXMObject.verificationReq = ExoticInteraction;
       }
 
@@ -187,7 +178,7 @@ const Home: NextPage = () => {
         type: "success",
         message: "Linked identity"
       });
-      setLinkingOverlay("in-progress");
+      setLinkingOverlay("linked");
     } catch (e) {
       console.log("Failed to link", e);
 
@@ -279,26 +270,38 @@ const Home: NextPage = () => {
       if (!address) return;
 
       try {
+        if (!address) return setLinkingOverlay(undefined);
         const res = await axios.get('api/exmread');
         const { identities } = res.data;
 
-        if (
-          identities.find((identity: Identity) =>
-            identity.is_verified &&
-            identity.arweave_address === address &&
-            (identity.addresses
-              ?.find((address: Address) => address.address === eth.address))?.ark_key === "EVM"
-              ||
-              identity.addresses?.find((address: Address) => address.address === accountId)?.ark_key === "EXOTIC"
-            )
-        ) {
-          return setLinkingOverlay("linked");
+        // const identityOnArweave = identities.find((identity: Identity) => identity.is_verified && identity.arweave_address === address);
+        const identityOnEVM = identities.find((identity: Identity) => identity?.addresses?.find((address: Address) => address.address === eth.address && address.is_verified))
+        const identityOnExotic = identities.find((identity: Identity) => identity?.addresses?.find((address: Address) => address.address === accountId && address.is_verified))
+
+        if (isEVM ? !identityOnEVM: !identityOnExotic) return setLinkingOverlay(undefined)
+        if (isEVM ? identityOnEVM.arweave_address === address: identityOnExotic.arweave_address === address) {
+          setLinkModal(true)
+          return setLinkingOverlay('linked')
         } else {
-          setLinkingOverlay(undefined);
+          setLinkModal(true)
+          return setLinkingOverlay('address-mismatch')  
         }
-      } catch { }
+      } catch (e) {
+        console.log(e)
+       }
     })();
-  }, [address, activeNetwork]);
+  }, [isEVM, address, activeNetwork, activeExoticNetwork]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const res = await axios.get('api/exmread');
+      const data = res.data;
+      setEXMState(data)
+      const converted = EXMHandleNetworks([...data.evm_networks, ...data.exotic_networks])
+      setConvertedNetworks(converted)
+    }
+    fetchData()
+  }, [])
 
   // DEV MODE FOR EXTRA TESTNETS and other stuff
   useEffect(() => {
@@ -348,8 +351,14 @@ const Home: NextPage = () => {
     }
   }, [isEVM])
 
-  const linkButtonIsDisabled = isEVM ? !(address && eth.address && linkingOverlay !== "linked")
-    : (!account || linkingOverlay === "linked");
+  const linkButtonIsDisabled = address && isEVM ? (!eth.address || !!linkingOverlay)
+    : (!account || !!linkingOverlay);
+
+  const chainInfo = convertedNetworks ? 
+    // @ts-ignore
+    convertedNetworks[isEVM ? NETWORKS[activeNetwork].networkKey: activeExoticNetwork]
+    :
+    undefined;
 
   return (
     <>
@@ -474,63 +483,21 @@ const Home: NextPage = () => {
             <LinkIcon />
           </LinkSymbol>
           <Spacer y={1} />
-          {isEVM ? (
-            <WalletContainer>
-              <WalletChainLogo>
-                {activeNetwork === 1 || activeNetwork === 5 ? (
-                  <Image src="/eth.png" width={30} height={30} draggable={false} />
-                ) : activeNetwork === 1313161555 && (
-                  <Image style={{ margin: '3px 0 0 0', borderRadius: '9999px' }} src={Aurora} width={30} height={30} draggable={false} />
-                )
-                } {activeNetwork === 43114 && (
-                  <Image style={{ margin: '3px 0 0 0' }} src={Avalanche} width={30} height={30} draggable={false} />
-                )
-                }
-                {activeNetwork === 56 && (
-                  <Image style={{ margin: '3px 0 0 0' }} src={Binance} width={30} height={30} draggable={false} />
-                )
-                }
-                {activeNetwork === 250 && (
-                  <Image style={{ margin: '3px 0 0 0' }} src={Fantom} width={30} height={30} draggable={false} />
-                )
-                }
-                {activeNetwork === 9001 && (
-                  <Image style={{ margin: '0px 0 0 0', borderRadius: '100%' }} src={Evmos} width={30} height={30} draggable={false} />
-                )}
-                {activeNetwork === 245022926 && (
-                  <Image style={{ margin: '3px 0 0 0' }} src={Neon} width={30} height={30} draggable={false} />
-                )}
-                {activeNetwork === 10 && (
-                  <Image style={{ margin: '3px 0 0 0' }} src={Optimism} width={30} height={30} draggable={false} />
-                )}
-                {activeNetwork === 137 && (
-                  <Image style={{ margin: '3px 0 0 0' }} src={Polygon} width={30} height={30} draggable={false} />
-                )}
-                {activeNetwork === 42161 && (
-                  <Image style={{ margin: '3px 0 0 0' }} src={Arbitrum} width={30} height={30} draggable={false} />
-                )}
-
-                <ChainName>
-                  {(activeNetwork === 1 || activeNetwork === 5) && "Ethereum"}
-                  {activeNetwork === 1313161555 && "Aurora"}
-                  {activeNetwork === 43114 && "Avalanche"}
-                  {activeNetwork === 56 && "BNB Chain"}
-                  {activeNetwork === 250 && "Fantom"}
-                  {activeNetwork === 9001 && "EVMOS"}
-                  {activeNetwork === 245022926 && "NEON Testnet"}
-                  {activeNetwork === 10 && "Optimism"}
-                  {activeNetwork === 137 && "Polygon"}
-                  {activeNetwork === 42161 && "Arbitrum"}
-                  <ChainTicker>
-                    {(activeNetwork === 1 || activeNetwork === 10 || activeNetwork === 42161 || activeNetwork === 5) && "ETH"}
-                    {activeNetwork === 137 && "MATIC"}
-                    {activeNetwork === 250 && "FTM"}
-                    {activeNetwork === 9001 && "EVMOS"}
-                    {activeNetwork === 43114 && "AVAX"}
-                    {activeNetwork === 56 || 245022926 && ""}
-                  </ChainTicker>
-                </ChainName>
-              </WalletChainLogo>
+          <WalletContainer>
+            <WalletChainLogo>
+              {chainInfo &&
+                <>
+                  <Image src={chainInfo.iconURL} width={30} height={30} draggable={false} />
+                  <ChainName>
+                    {chainInfo.name}
+                    <ChainTicker>
+                      {chainInfo.ticker}
+                    </ChainTicker>
+                  </ChainName>
+                </>
+              }
+            </WalletChainLogo>
+            {isEVM ? (
               <ConnectButton secondary style={{ textTransform: eth.address ? "none" : undefined }} onClick={() => {
                 if (!eth.address) {
                   ethModal.setState(true)
@@ -545,22 +512,13 @@ const Home: NextPage = () => {
                   </>
                 )) || "Connect"}
               </ConnectButton>
-            </WalletContainer>
-          ) : (
-            <WalletContainer>
-              <WalletChainLogo>
-                <Image src={Near} width={30} height={30} draggable={false} />
-                <ChainName>
-                  NEAR
-                  <ChainTicker>
-                    NEAR
-                  </ChainTicker>
-                </ChainName>
-              </WalletChainLogo>
-              {/* @ts-ignore */}
-              <NearConnect modal={modal} selector={selector} account={account} accountId={accountId} loading={loading} />
-            </WalletContainer>
-          )}
+            ):(
+              <>
+                {/* @ts-ignore */}
+                <NearConnect modal={modal} selector={selector} account={account} accountId={accountId} loading={loading} />
+              </>
+            )}
+          </WalletContainer>
           <Spacer y={2.5} />
           <Button secondary fullWidth disabled={linkButtonIsDisabled} onClick={() => link()}>
             {linkStatus && <Loading />}
@@ -578,13 +536,33 @@ const Home: NextPage = () => {
                 <CloseButton>
                   <Close onClick={() => setLinkModal(false)} />
                 </CloseButton>
-                {(linkingOverlay === "linked" && (
+                {(linkingOverlay === "address-mismatch") && (
                   <p>
-                    🥳 Congratulations! You have linked your identity.
+                    🤔 Looks like this {chainInfo?.name} address has already been connected to arweave address {
+                      formatAddress(
+                        EXMState?.identities?.find((identity: Identity) => 
+                          identity?.addresses?.find((address: Address) => 
+                            (isEVM ? (address.address === eth.address) : (address.address === accountId))
+                          )
+                        ).arweave_address || ""
+                      )
+                    }
                   </p>
-                )) || <p>Identity link sent to Arweave.</p>}
-
-                <p>Tweet a screenshot of this page and <a href="https://twitter.com/decentdotland" className="twitterLink" target="_blank" rel="noopener noreferrer">@decentdotland</a> to be whitelisted for some future rewards. ✨</p>
+                )}
+                {(linkingOverlay === "linked" && (
+                  <>
+                    <p className="">
+                      🥳 Congratulations! You have linked your {chainInfo?.name} address to Ark!
+                    </p>
+                    <p>Tweet a screenshot of this page at <a 
+                        href={`
+                          https://twitter.com/intent/tweet?text=Hi+%40decentdotland%2C+I+just+linked+my+%23${chainInfo?.name || "blockchain"}+address+on+Ark+Network%21`}
+                        className="twitterLink"
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                      >@decentdotland</a> to be whitelisted for some future rewards. ✨</p>
+                  </>
+                ))}
               </LinkingInProgress>
             )}
           </AnimatePresence>
@@ -653,6 +631,7 @@ const Home: NextPage = () => {
       ) : (
         <ExoticNetwork onChange={() => setActiveExoticNetwork} value={activeExoticNetwork} isDisabled={false} />
       )}
+      <Footer />
     </>
   );
 }
@@ -753,6 +732,7 @@ const TopBanner = styled.div`
   padding: 1em;
   font-size: 0.9rem;
   text-align: center;
+  visibility: hidden;
 `;
 
 const WalletContainer = styled.div`
@@ -935,6 +915,7 @@ const LinkingInProgress = styled(motion.div)`
   bottom: 0;
   z-index: 100;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   background-color: rgba(0, 0, 0, 0.2);
