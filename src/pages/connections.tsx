@@ -240,8 +240,8 @@ const Connections: NextPage = () => {
 
   return (
     <div>
-      <div className="flex flex-col justify-center text-center h-5/6 text-white">
-        <div className="mt-20 mb-[60px]">
+      <div className="flex flex-col text-center h-[83vh] text-white relative">
+        <div className="mt-[20vh] mb-6">
           <h1 className="text-[32px] font-bold">Ark Connections</h1>
           <h2>Manage your connected addresses</h2>
         </div>
@@ -252,7 +252,7 @@ const Connections: NextPage = () => {
           </div>
         )}
         {(loading === false && address) && (
-          <div className="flex flex-col self-center md:w-[800px] relative">
+          <div className="flex flex-col self-center md:w-[800px] relative mt-12">
             {addresses && addresses?.length > 0 &&
               <>
                 <button onClick={() => setIsFilterMenuOpen(prev => !prev)} className="self-end mb-2 flex items-center">
@@ -285,7 +285,7 @@ const Connections: NextPage = () => {
                 )}
               </>
             }
-            <ul className="flex flex-col overflow-scroll max-h-[420px]">
+            <ul className="flex flex-col max-h-[60vh]">
               {arweaveIdentity !== undefined ? (
                 <Connection address={arweaveIdentity} />
               ): (
@@ -320,9 +320,6 @@ const Connections: NextPage = () => {
             )}
           </div>
         }
-      </div>
-      <div className="fixed -bottom-8 w-full">
-        <Footer />
       </div>
     </div>
   )
