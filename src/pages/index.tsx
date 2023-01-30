@@ -1,14 +1,13 @@
 import axios from 'axios';
 import type { NextPage } from "next";
+import { ConnectButton as ConnectRainbowKitButton } from '@rainbow-me/rainbowkit';
+import { useAccount, useNetwork } from 'wagmi';
+import { usePrepareContractWrite, useContractWrite } from 'wagmi';
 import { CloseIcon, LinkIcon } from "@iconicicons/react"
 import { useArconnect } from "../utils/arconnect"
 import NearConnect, { useNear } from "../utils/near";
 import Card, { CardSubtitle } from "../components/Card";
 import { Modal, useModal, Close } from "../components/Modal";
-import { coinbaseWallet } from "../utils/connectors/coinbase";
-import { walletConnect } from "../utils/connectors/walletconnect";
-import { metaMask } from "../utils/connectors/metamask";
-import { addChain, ETHConnector, useETH } from "../utils/eth";
 import { formatAddress } from "../utils/format";
 import { useEffect, useState } from "react";
 import { ACTIVE_NETWORK_STORE, Identity, Address, NETWORKS } from "../utils/constants";
@@ -29,11 +28,13 @@ import Footer from "../components/Footer";
 import Network, { ExoticNetwork } from "../components/Network";
 import Toggle from '../components/Toggle';
 import { EXMHandleNetworks } from '../utils/exm';
+import ArkNetwork from "../assets/ArkNetwork.json";
 
 const Home: NextPage = () => {
   const downloadWalletModal = useModal();
-  const ethModal = useModal();
-  const [address, connect, disconnect, arconnectError] = useArconnect(downloadWalletModal);
+  const { address: ethereumAddress } = useAccount();
+  const { chain: currentChain } = useNetwork();
+  const [arweaveAddress, connect, disconnect, arconnectError] = useArconnect(downloadWalletModal);
 
   const [activeNetwork, setActiveNetwork] = useState<number>(1);
   const [activeExoticNetwork, setActiveExoticNetwork] = useState<string>("NEAR-MAINNET");
@@ -42,10 +43,17 @@ const Home: NextPage = () => {
   const [isDevMode, setIsDevMode] = useState<boolean>(false);
   const [EXMState, setEXMState] = useState<any>();
   const [convertedNetworks, setConvertedNetworks] = useState<any>()
-
+  const [EXMObject, setEXMObject] = useState<any>();
   const [status, setStatus] = useState<{ type: StatusType, message: string }>();
-  const [activeConnector, setActiveConnector] = useState<ETHConnector>();
-  const eth = useETH(setActiveConnector, activeNetwork);
+
+  const { config, error } = usePrepareContractWrite({
+    address: '0xdE44d3fB118E0f007f2C0D8fFFE98b994383949A',
+    abi: ArkNetwork.abi,
+    functionName: 'linkIdentity',
+    args: [arweaveAddress],
+  })
+  const { data: ethData, isLoading, isSuccess, write } = useContractWrite(config)
+
   const { modal, selector, accounts, account, accountId, loading, linkNear, checkNearLinking, getAccount } = useNear();
 
   // load if already linked or in progress
@@ -59,20 +67,6 @@ const Home: NextPage = () => {
   const router = useRouter()
   const {evm} = router.query; // returns true or false, or null
 
-  // connect to wallet
-  async function connectEth(connector: ETHConnector) {
-    try {
-      await eth.connect(connector, activeNetwork);
-      setActiveConnector(connector);
-      ethModal.setState(false);
-      setStatus(undefined);
-      localStorage.setItem('isConnected', 'true');
-    } catch (e) {
-      ethModal.setState(false);
-      downloadWalletModal.setState(true);
-    }
-  }
-
   async function link() {
     setStatus(undefined);
     setLinkModal(true);
@@ -84,13 +78,20 @@ const Home: NextPage = () => {
       });
     }
 
-    if (isEVM && (!address || !eth.address || !eth.contract)) {
+    if (!arweaveAddress) {
+      return setStatus({
+        type: "error",
+        message: "Arweave not connected"
+      });
+    }
+
+    if (isEVM && (!arweaveAddress || !ethereumAddress)) {
       return setStatus({
         type: "error",
         message: "Arweave or Ethereum not connected"
       });
     } else if (!isEVM) {
-      if (!address || !accountId) {
+      if (!arweaveAddress || !accountId) {
         return setStatus({
           type: "error",
           message: "Arweave or NEAR not connected"
@@ -118,36 +119,31 @@ const Home: NextPage = () => {
       let EVMInteraction;
       let ExoticInteraction;
       if (isEVM) {
-        //@ts-ignore
-        EVMInteraction = await eth.contract.linkIdentity(address);
-        await EVMInteraction.wait();
+        write?.();
       } else if (!isEVM) {
         // const nearLinkingTXHash = localStorage.getItem("nearLinkingTXHash");
         // const linkedNearAccount = localStorage.getItem("nearAccount");
 
         // in case EXM is down again, we save the linking TX hash and the linked account in local storage
-        // if (nearLinkingTXHash && linkedNearAccount === accountId) {
-        //   ExoticInteraction = nearLinkingTXHash;
-        // } else {
+        //ExoticInteraction = nearLinkingTXHash;
+        if (!arweaveAddress) return;
+        ExoticInteraction = await linkNear(arweaveAddress);
+        if (!ExoticInteraction || !ExoticInteraction?.transaction?.hash) {
+          return setStatus({
+            type: "error",
+            message: "NEAR linking failed, check if you have enough NEAR"
+          });
+        } else {
+          ExoticInteraction = ExoticInteraction?.transaction?.hash;
+          localStorage.setItem("nearLinkingTXHash", ExoticInteraction);
           // @ts-ignore
-          ExoticInteraction = await linkNear(address);
-          if (!ExoticInteraction || !ExoticInteraction?.transaction?.hash) {
-            return setStatus({
-              type: "error",
-              message: "NEAR linking failed, check if you have enough NEAR"
-            });
-          } else {
-            ExoticInteraction = ExoticInteraction?.transaction?.hash;
-            localStorage.setItem("nearLinkingTXHash", ExoticInteraction);
-            // @ts-ignore
-            localStorage.setItem("nearAccount", accountId);  
-          }
-        // }
+          localStorage.setItem("nearAccount", accountId);  
+        }
       }
 
       const EXMObject: any = {
         "function": "linkIdentity",
-        "caller": address,
+        "caller": arweaveAddress,
         "jwk_n": arconnectPubKey,
         "sig": signedBase,
         "address": "",
@@ -156,9 +152,9 @@ const Home: NextPage = () => {
       }
 
       if (isEVM) {
-        EXMObject.address = eth.address;
-        EXMObject.network = NETWORKS[activeNetwork].networkKey;
-        EXMObject.verificationReq = EVMInteraction?.hash;
+        EXMObject.address = ethereumAddress;
+        setEXMObject(EXMObject);
+        return;
       } else {
         EXMObject.address = accountId;
         EXMObject.network = activeExoticNetwork;
@@ -191,67 +187,29 @@ const Home: NextPage = () => {
     setLinkStatus(undefined);
   }
 
-  // EVM NETWORK SWITCHING
 
   useEffect(() => {
-    (async () => {
-      const stored = localStorage.getItem(ACTIVE_NETWORK_STORE);
+    const sendToEXM = async () => {
+      if (!currentChain) return;
 
-      // load saved network
-      if (stored && !networkLoaded) {
-        setActiveNetwork(Number(stored));
-        setNetworkLoaded(true);
-      } else {
-        // save current network and add it to the addressbook
-        try {
-          localStorage.setItem(ACTIVE_NETWORK_STORE, activeNetwork.toString());
-          if (activeNetwork !== 1) {
-            const provider = eth.getProvider()?.provider;
-            if (!provider) return;
-            // @ts-ignore
-            if (await provider.request({ method: "eth_chainId" }) === activeNetwork) return;
-            let nativeCurrency = {};
-            if (NETWORKS[Number(activeNetwork)]?.nativeCurrency) nativeCurrency = {
-              nativeCurrency: {
-                name: NETWORKS[Number(activeNetwork)]?.nativeCurrency?.name,
-                symbol: NETWORKS[Number(activeNetwork)]?.nativeCurrency?.symbol,
-                decimals: NETWORKS[Number(activeNetwork)]?.nativeCurrency?.decimals,
-              }
-            }
-            // @ts-ignore
-            await provider.request({
-              method: 'wallet_addEthereumChain',
-              params: [{
-                chainName: String(NETWORKS[Number(activeNetwork)]?.name),
-                chainId: `0x${activeNetwork.toString(16)}`,
-                rpcUrls: NETWORKS[Number(activeNetwork)].urls,
-                ...nativeCurrency
-              }],
-            });
-          };
-        } catch {
-          setActiveNetwork(previousNetwork);
-        }
-
-        // reconnect with the new network
-        if (eth.address && activeConnector) {
-          try {
-            await eth.connect(activeConnector, activeNetwork);
-          } catch (e: any) {
-            if (e.code === 4902) {
-              try {
-                await addChain(activeConnector, activeNetwork, NETWORKS[activeNetwork]);
-                await eth.connect(activeConnector, activeNetwork);
-              } catch {
-                setActiveNetwork(previousNetwork);
-              }
-            } else setActiveNetwork(previousNetwork);
-          }
-        }
+      const exmObj = {
+        ...EXMObject,
+        "network": NETWORKS[currentChain.id].networkKey,
+        "verificationReq": ethData?.hash,
       }
-    })();
-  }, [activeNetwork]);
-
+  
+      const result = await axios.post(`api/exmwrite`, exmObj);
+      if (result.status === 200) {
+        setLinkStatus("Linked");
+        setStatus({
+          type: "success",
+          message: "Linked identity"
+        });
+        setLinkingOverlay("linked");  
+      }
+    }
+    if (isSuccess) sendToEXM()
+  }, [ethData, isSuccess, EXMObject])
 
   // LINKING STATUS + CHECK EXISTING LINKS
 
@@ -267,19 +225,19 @@ const Home: NextPage = () => {
 
   useEffect(() => {
     (async () => {
-      if (!address) return;
+      if (!arweaveAddress) return;
 
       try {
-        if (!address) return setLinkingOverlay(undefined);
+        if (!arweaveAddress) return setLinkingOverlay(undefined);
         const res = await axios.get('api/exmread');
         const { identities } = res.data;
 
         // const identityOnArweave = identities.find((identity: Identity) => identity.is_verified && identity.arweave_address === address);
-        const identityOnEVM = identities.find((identity: Identity) => identity?.addresses?.find((address: Address) => address.address === eth.address && address.is_verified))
+        const identityOnEVM = identities.find((identity: Identity) => identity?.addresses?.find((address: Address) => address.address === ethereumAddress && address.is_verified))
         const identityOnExotic = identities.find((identity: Identity) => identity?.addresses?.find((address: Address) => address.address === accountId && address.is_verified))
 
         if (isEVM ? !identityOnEVM: !identityOnExotic) return setLinkingOverlay(undefined)
-        if (isEVM ? identityOnEVM.arweave_address === address: identityOnExotic.arweave_address === address) {
+        if (isEVM ? identityOnEVM.arweave_address === arweaveAddress: identityOnExotic.arweave_address === arweaveAddress) {
           setLinkModal(true)
           return setLinkingOverlay('linked')
         } else {
@@ -290,7 +248,7 @@ const Home: NextPage = () => {
         console.log(e)
        }
     })();
-  }, [isEVM, address, activeNetwork, activeExoticNetwork]);
+  }, [isEVM, arweaveAddress, activeNetwork, activeExoticNetwork]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -351,7 +309,7 @@ const Home: NextPage = () => {
     }
   }, [isEVM])
 
-  const linkButtonIsDisabled = address && isEVM ? (!eth.address || !!linkingOverlay)
+  const linkButtonIsDisabled = arweaveAddress && isEVM ? (!ethereumAddress || !!linkingOverlay)
     : (!account || !!linkingOverlay);
 
   const chainInfo = convertedNetworks ? 
@@ -469,7 +427,7 @@ const Home: NextPage = () => {
                 </ChainTicker>
               </ChainName>
             </WalletChainLogo>
-            {(address && <ANS address={address} onClick={() => disconnect()} />) || (
+            {(arweaveAddress && <ANS address={arweaveAddress} onClick={() => disconnect()} />) || (
               <ConnectButton
                 secondary
                 onClick={() => connect()}
@@ -484,34 +442,24 @@ const Home: NextPage = () => {
           </LinkSymbol>
           <Spacer y={1} />
           <WalletContainer>
-            <WalletChainLogo>
-              {chainInfo &&
-                <>
-                  <Image src={chainInfo.iconURL} width={30} height={30} draggable={false} />
-                  <ChainName>
-                    {chainInfo.name}
-                    <ChainTicker>
-                      {chainInfo.ticker}
-                    </ChainTicker>
-                  </ChainName>
-                </>
-              }
-            </WalletChainLogo>
-            {isEVM ? (
-              <ConnectButton secondary style={{ textTransform: eth.address ? "none" : undefined }} onClick={() => {
-                if (!eth.address) {
-                  ethModal.setState(true)
-                } else {
-                  eth.disconnect();
-                }
-              }}>
-                {(eth.address && (
+            {!isEVM && (
+              <WalletChainLogo>
+                {chainInfo &&
                   <>
-                    <Image src={`/${eth.provider}.png`} width={25} height={25} draggable={false} />
-                    {eth.ens || formatAddress(eth.address, 8)}
+                    <Image src={chainInfo.iconURL} width={30} height={30} draggable={false} />
+                    <ChainName>
+                      {chainInfo.name}
+                      <ChainTicker>
+                        {chainInfo.ticker}
+                      </ChainTicker>
+                    </ChainName>
                   </>
-                )) || "Connect"}
-              </ConnectButton>
+                }
+              </WalletChainLogo>
+
+            )}
+            {isEVM ? (
+              <ConnectRainbowKitButton label="Connect Wallet" accountStatus="full" chainStatus={{ smallScreen: "icon", largeScreen: "full" }} showBalance={false} />
             ):(
               <>
                 {/* @ts-ignore */}
@@ -542,7 +490,7 @@ const Home: NextPage = () => {
                       formatAddress(
                         EXMState?.identities?.find((identity: Identity) => 
                           identity?.addresses?.find((address: Address) => 
-                            (isEVM ? (address.address === eth.address) : (address.address === accountId))
+                            (isEVM ? (address.address === ethereumAddress) : (address.address === accountId))
                           )
                         ).arweave_address || ""
                       )
@@ -607,24 +555,8 @@ const Home: NextPage = () => {
           </Faq>
         </FAQCard>
       </Page>
-      <Modal title="Choose a wallet" {...ethModal.bindings}>
-        <MetamaskButton onClick={() => connectEth(metaMask)} fullWidth>
-          <Image src="/metamask.png" width={25} height={25} />
-          Metamask
-        </MetamaskButton>
-        <Spacer y={1} />
-        <WalletConnectButton onClick={() => connectEth(walletConnect)} fullWidth>
-          <Image src="/walletconnect.png" width={25} height={25} />
-          Wallet Connect
-        </WalletConnectButton>
-        <Spacer y={1} />
-        <CoinbaseButton onClick={() => connectEth(coinbaseWallet)} fullWidth>
-          <Image src="/coinbase.png" width={25} height={25} />
-          Coinbase Wallet
-        </CoinbaseButton>
-      </Modal>
       {isEVM ? (
-        <Network isDisabled={!isEVM || (eth.address ? false : true)} isDevMode={isDevMode} isEVM={isEVM} value={activeNetwork} onChange={(e) => setActiveNetwork((val) => {
+        <Network isDisabled={!isEVM || (ethereumAddress ? false : true)} isDevMode={isDevMode} isEVM={isEVM} value={activeNetwork} onChange={(e) => setActiveNetwork((val) => {
           setPreviousNetwork(val);
           return Number(e.target.value);
         })} />        

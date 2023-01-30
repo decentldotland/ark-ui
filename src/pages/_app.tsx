@@ -3,29 +3,58 @@ import Script from "next/script";
 import styled, { ThemeProvider } from "styled-components";
 import Header from "../components/Header";
 import "../styles/globals.css";
+import '@rainbow-me/rainbowkit/styles.css';
+
+import {
+  getDefaultWallets,
+  RainbowKitProvider,
+} from '@rainbow-me/rainbowkit';
+import { configureChains, createClient, WagmiConfig } from 'wagmi';
+import { bsc, mainnet, evmos, avalanche, fantom, optimism, arbitrum, polygon, } from 'wagmi/chains';
+import { publicProvider } from 'wagmi/providers/public';
 
 function App({ Component, pageProps }: AppProps) {
+  const { chains, provider } = configureChains(
+    [bsc, mainnet, evmos, avalanche, fantom, optimism, arbitrum, polygon],
+    [publicProvider()]
+  );
+
+  const { connectors } = getDefaultWallets({
+    appName: 'Ark Protocol',
+    chains
+  });
+
+  const wagmiClient = createClient({
+    autoConnect: true,
+    connectors,
+    provider
+  })
+
   return (
-    <ThemeProvider theme={{
-    //  primary: "17, 157, 121",
-      primary: "38, 191, 168",
-      secondaryText: "#d3d3d3",
-      tertiaryText: "#a3a3a3"
-    }}>
-      <Script async src="https://www.googletagmanager.com/gtag/js?id=G-8YC0E9HXM6" />
-      <Script strategy="beforeInteractive">
-        {`
-          // Google tag (gtag.js)
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', 'G-8YC0E9HXM6');
-        `}
-      </Script>
-      <Header />
-      <Gradient />
-      <Component {...pageProps} />
-    </ThemeProvider>
+    <WagmiConfig client={wagmiClient}>
+      <RainbowKitProvider chains={chains}>
+        <ThemeProvider theme={{
+        //  primary: "17, 157, 121",
+          primary: "38, 191, 168",
+          secondaryText: "#d3d3d3",
+          tertiaryText: "#a3a3a3"
+        }}>
+          <Script async src="https://www.googletagmanager.com/gtag/js?id=G-8YC0E9HXM6" />
+          <Script strategy="beforeInteractive">
+            {`
+              // Google tag (gtag.js)
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-8YC0E9HXM6');
+            `}
+          </Script>
+          <Header />
+          <Gradient />
+          <Component {...pageProps} />
+        </ThemeProvider>
+      </RainbowKitProvider>
+    </WagmiConfig>
   );
 }
 
