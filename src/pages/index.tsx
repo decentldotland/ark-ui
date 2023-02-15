@@ -459,7 +459,9 @@ const Home: NextPage = () => {
 
             )}
             {isEVM ? (
-              <ConnectRainbowKitButton label="Connect Wallet" accountStatus="full" chainStatus={{ smallScreen: "icon", largeScreen: "full" }} showBalance={false} />
+              <div className="w-full flex justify-center">
+                <ConnectRainbowKitButton label="Connect Wallet" accountStatus="full" chainStatus={{ smallScreen: "icon", largeScreen: "full" }} showBalance={false} />
+              </div>
             ):(
               <>
                 {/* @ts-ignore */}
@@ -555,12 +557,7 @@ const Home: NextPage = () => {
           </Faq>
         </FAQCard>
       </Page>
-      {isEVM ? (
-        <Network isDisabled={!isEVM || (ethereumAddress ? false : true)} isDevMode={isDevMode} isEVM={isEVM} value={activeNetwork} onChange={(e) => setActiveNetwork((val) => {
-          setPreviousNetwork(val);
-          return Number(e.target.value);
-        })} />        
-      ) : (
+      {!isEVM && (
         <ExoticNetwork onChange={() => setActiveExoticNetwork} value={activeExoticNetwork} isDisabled={false} />
       )}
       <Footer />
