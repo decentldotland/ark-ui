@@ -20,35 +20,36 @@ const RainbowKitButton:FC<any> = () => {
         const ready = mounted && authenticationStatus !== 'loading';
         const connected = ready && account && chain;
         return (
-          <div
-            className="w-full"
-            {...(!ready && {
-              'aria-hidden': true,
-              'style': {
-                opacity: 0,
-                pointerEvents: 'none',
-                userSelect: 'none',
-                width: 'max-content'
-              },
-            })}
-          >
+          <>
             {(() => {
               if (!connected) {
                 return (
-                  <button onClick={openConnectModal} className="w-full bg-gray-200" type="button">
-                    Connect Wallet
-                  </button>
+                  <div className="w-full" {...(!ready && {
+                    'aria-hidden': true,
+                    'style': {
+                      opacity: 0,
+                      pointerEvents: 'none',
+                      userSelect: 'none',
+                      width: 'max-content'
+                    },
+                    })} 
+                    onClick={openConnectModal}
+                  >
+                    <Button fullWidth>
+                      Connect Wallet
+                    </Button>
+                  </div>
                 );
               }
               if (chain.unsupported) {
                 return (
-                  <button onClick={openChainModal} className="w-full bg-gray-200" type="button">
+                  <Button fullWidth onClick={openChainModal}>
                     Wrong network
-                  </button>
+                  </Button>
                 );
               }
               return (
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexShrink: 0 }}>
+                <div className="flex justify-between gap-x-3 shrink-0">
                   <Button onClick={openChainModal}>
                     {chain.hasIcon && (
                       <div
@@ -78,7 +79,7 @@ const RainbowKitButton:FC<any> = () => {
                 </div>
               );
             })()}
-          </div>
+          </>
         );
       }}
     </ConnectButton.Custom>
