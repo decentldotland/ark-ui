@@ -6,7 +6,6 @@ import "../styles/globals.css";
 import '@rainbow-me/rainbowkit/styles.css';
 
 import {
-  getDefaultWallets,
   midnightTheme,
   RainbowKitProvider,
 } from '@rainbow-me/rainbowkit';
@@ -18,41 +17,42 @@ import {
 } from '@rainbow-me/rainbowkit/wallets';
 import { connectorsForWallets } from '@rainbow-me/rainbowkit';
 
+const { chains, provider } = configureChains(
+  [bsc, mainnet, evmos, avalanche, fantom, optimism, arbitrum, polygon],
+  [publicProvider()]
+);
+
+const connectors = connectorsForWallets([
+  {
+    groupName: 'Recommended',
+    wallets: [
+      metaMaskWallet({ chains, shimDisconnect: true }),
+      ledgerWallet({ chains }),
+      trustWallet({ chains }),
+      injectedWallet({ chains }),
+      rainbowWallet({ chains }),
+    ],
+  },
+  {
+    groupName: 'Others',
+    wallets: [
+      coinbaseWallet({ chains, appName: 'My RainbowKit App' }),
+      braveWallet({ chains }),
+      walletConnectWallet({ chains }),
+      argentWallet({ chains }),
+      omniWallet({ chains }),
+      imTokenWallet({ chains }),
+    ],
+  },
+]);
+
+const wagmiClient = createClient({
+  autoConnect: false,
+  connectors,
+  provider
+})
+
 function App({ Component, pageProps }: AppProps) {
-  const { chains, provider } = configureChains(
-    [bsc, mainnet, evmos, avalanche, fantom, optimism, arbitrum, polygon],
-    [publicProvider()]
-  );
-
-  const connectors = connectorsForWallets([
-    {
-      groupName: 'Recommended',
-      wallets: [
-        metaMaskWallet({ chains }),
-        ledgerWallet({ chains }),
-        trustWallet({ chains }),
-        injectedWallet({ chains }),
-        rainbowWallet({ chains }),
-      ],
-    },
-    {
-      groupName: 'Others',
-      wallets: [
-        coinbaseWallet({ chains, appName: 'My RainbowKit App' }),
-        braveWallet({ chains }),
-        walletConnectWallet({ chains }),
-        argentWallet({ chains }),
-        omniWallet({ chains }),
-        imTokenWallet({ chains }),
-      ],
-    },
-  ]);
-
-  const wagmiClient = createClient({
-    autoConnect: true,
-    connectors,
-    provider
-  })
 
   return (
     <WagmiConfig client={wagmiClient}>
