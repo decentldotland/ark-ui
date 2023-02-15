@@ -51,7 +51,7 @@ const Home: NextPage = () => {
     address: '0xdE44d3fB118E0f007f2C0D8fFFE98b994383949A',
     abi: ArkNetwork.abi,
     functionName: 'linkIdentity',
-    args: [arweaveAddress],
+    args: [arweaveAddress || ''],
   })
   const { data: ethData, isLoading, isSuccess, write } = useContractWrite(config)
 
@@ -408,15 +408,15 @@ const Home: NextPage = () => {
         </Modal>
         <IdentityCard>
           <Spacer y={.25} />
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between">
             <CardSubtitle>
               Link identity
             </CardSubtitle>
             {linkingOverlay && (
-              <button className="relative" onClick={() => setLinkModal(true)}>
-                <BellAlertIcon className="text-[#26bfa8] h-4 w-4" />
-                <div className="bg-yellow-400 animate-ping rounded-full w-1 h-1 absolute top-0 right-0"></div>
-              </button>
+              <button 
+                className="bg-yellow-400 animate-pulse rounded-full w-2 h-2"
+                onClick={() => setLinkModal(true)}
+              ></button>
             )}
           </div>
           <Spacer y={1.25} />
@@ -467,8 +467,8 @@ const Home: NextPage = () => {
               </WalletChainLogo>
 
             )}
-            {isEVM ? 
-              <RainbowKitButton /> 
+            {isEVM ?
+              <div className="w-full"><RainbowKitButton /></div>
               :
               <NearConnect modal={modal} selector={selector} account={account} accountId={accountId} loading={loading} />
             }
