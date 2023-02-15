@@ -7,11 +7,16 @@ import '@rainbow-me/rainbowkit/styles.css';
 
 import {
   getDefaultWallets,
+  midnightTheme,
   RainbowKitProvider,
 } from '@rainbow-me/rainbowkit';
 import { configureChains, createClient, WagmiConfig } from 'wagmi';
 import { bsc, mainnet, evmos, avalanche, fantom, optimism, arbitrum, polygon, } from 'wagmi/chains';
 import { publicProvider } from 'wagmi/providers/public';
+import {
+  argentWallet, braveWallet, coinbaseWallet, imTokenWallet, injectedWallet, ledgerWallet, metaMaskWallet, omniWallet, rainbowWallet, trustWallet, walletConnectWallet
+} from '@rainbow-me/rainbowkit/wallets';
+import { connectorsForWallets } from '@rainbow-me/rainbowkit';
 
 function App({ Component, pageProps }: AppProps) {
   const { chains, provider } = configureChains(
@@ -19,10 +24,29 @@ function App({ Component, pageProps }: AppProps) {
     [publicProvider()]
   );
 
-  const { connectors } = getDefaultWallets({
-    appName: 'Ark Protocol',
-    chains
-  });
+  const connectors = connectorsForWallets([
+    {
+      groupName: 'Recommended',
+      wallets: [
+        metaMaskWallet({ chains }),
+        ledgerWallet({ chains }),
+        trustWallet({ chains }),
+        injectedWallet({ chains }),
+        rainbowWallet({ chains }),
+      ],
+    },
+    {
+      groupName: 'Others',
+      wallets: [
+        coinbaseWallet({ chains, appName: 'My RainbowKit App' }),
+        braveWallet({ chains }),
+        walletConnectWallet({ chains }),
+        argentWallet({ chains }),
+        omniWallet({ chains }),
+        imTokenWallet({ chains }),
+      ],
+    },
+  ]);
 
   const wagmiClient = createClient({
     autoConnect: true,
@@ -32,7 +56,9 @@ function App({ Component, pageProps }: AppProps) {
 
   return (
     <WagmiConfig client={wagmiClient}>
-      <RainbowKitProvider chains={chains}>
+      <RainbowKitProvider chains={chains} theme={midnightTheme({
+        accentColor: '#26bfa8',
+      })}>
         <ThemeProvider theme={{
         //  primary: "17, 157, 121",
           primary: "38, 191, 168",
