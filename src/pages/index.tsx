@@ -1,6 +1,6 @@
 import axios from 'axios';
 import type { NextPage } from "next";
-import { ConnectButton as ConnectRainbowKitButton } from '@rainbow-me/rainbowkit';
+import RainbowKitButton from '../components/RainbowKitButton';
 import { useAccount, useNetwork } from 'wagmi';
 import { usePrepareContractWrite, useContractWrite } from 'wagmi';
 import { CloseIcon, LinkIcon } from "@iconicicons/react"
@@ -29,6 +29,7 @@ import Network, { ExoticNetwork } from "../components/Network";
 import Toggle from '../components/Toggle';
 import { EXMHandleNetworks } from '../utils/exm';
 import ArkNetwork from "../assets/ArkNetwork.json";
+import { BellAlertIcon } from '@heroicons/react/24/solid';
 
 const Home: NextPage = () => {
   const downloadWalletModal = useModal();
@@ -407,9 +408,17 @@ const Home: NextPage = () => {
         </Modal>
         <IdentityCard>
           <Spacer y={.25} />
-          <CardSubtitle>
-            Link identity
-          </CardSubtitle>
+          <div className="flex justify-between items-center">
+            <CardSubtitle>
+              Link identity
+            </CardSubtitle>
+            {linkingOverlay && (
+              <button className="relative" onClick={() => setLinkModal(true)}>
+                <BellAlertIcon className="text-[#26bfa8] h-4 w-4" />
+                <div className="bg-yellow-400 animate-ping rounded-full w-1 h-1 absolute top-0 right-0"></div>
+              </button>
+            )}
+          </div>
           <Spacer y={1.25} />
           <div className="flex items-center justify-center items-row text-white gap-x-4">
             <div className={`cursor-pointer ${isEVM && ""}`} onClick={() => setIsEVM(true)}>{"EVM"}</div>
@@ -458,16 +467,11 @@ const Home: NextPage = () => {
               </WalletChainLogo>
 
             )}
-            {isEVM ? (
-              <div className="w-full flex justify-center">
-                <ConnectRainbowKitButton label="Connect Wallet" accountStatus="full" chainStatus={{ smallScreen: "icon", largeScreen: "full" }} showBalance={false} />
-              </div>
-            ):(
-              <>
-                {/* @ts-ignore */}
-                <NearConnect modal={modal} selector={selector} account={account} accountId={accountId} loading={loading} />
-              </>
-            )}
+            {isEVM ? 
+              <RainbowKitButton /> 
+              :
+              <NearConnect modal={modal} selector={selector} account={account} accountId={accountId} loading={loading} />
+            }
           </WalletContainer>
           <Spacer y={2.5} />
           <Button secondary fullWidth disabled={linkButtonIsDisabled} onClick={() => link()}>
