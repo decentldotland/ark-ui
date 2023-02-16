@@ -414,7 +414,7 @@ const Home: NextPage = () => {
             </CardSubtitle>
             {linkingOverlay && (
               <button 
-                className="bg-yellow-400 animate-pulse rounded-full w-2 h-2"
+                className="bg-[#26bfa8] animate-pulse rounded-full w-2 h-2"
                 onClick={() => setLinkModal(true)}
               ></button>
             )}
@@ -510,7 +510,7 @@ const Home: NextPage = () => {
                     </p>
                     <p>Tweet a screenshot of this page at <a 
                         href={`
-                          https://twitter.com/intent/tweet?text=I+am+whitelisting+for+the+Arweave+Name+Services+mint+on+Feb+17+with+address+${address}+%21
+                          https://twitter.com/intent/tweet?text=I+am+whitelisting+for+the+Arweave+Name+Services+mint+on+Feb+17+with+address+${arweaveAddress}+%21
                         `} //Hi+%40decentdotland%2C+I+just+linked+my+%23${chainInfo?.name || "blockchain"}+address+on+Ark+Network%21
                         className="twitterLink"
                         target="_blank" 

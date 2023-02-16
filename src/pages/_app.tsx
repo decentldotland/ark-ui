@@ -26,17 +26,17 @@ const connectors = connectorsForWallets([
   {
     groupName: 'Recommended',
     wallets: [
-      metaMaskWallet({ chains, shimDisconnect: true }),
+      metaMaskWallet({ chains }),
       ledgerWallet({ chains }),
       trustWallet({ chains }),
+      coinbaseWallet({ chains, appName: 'Ark Protocol' }),
       injectedWallet({ chains }),
-      rainbowWallet({ chains }),
     ],
   },
   {
     groupName: 'Others',
     wallets: [
-      coinbaseWallet({ chains, appName: 'My RainbowKit App' }),
+      rainbowWallet({ chains }),
       braveWallet({ chains }),
       walletConnectWallet({ chains }),
       argentWallet({ chains }),
@@ -47,7 +47,7 @@ const connectors = connectorsForWallets([
 ]);
 
 const wagmiClient = createClient({
-  autoConnect: false,
+  autoConnect: true,
   connectors,
   provider
 })
