@@ -414,7 +414,7 @@ const Home: NextPage = () => {
             </CardSubtitle>
             {linkingOverlay && (
               <button 
-                className="bg-yellow-400 animate-pulse rounded-full w-2 h-2"
+                className="bg-[#26bfa8] animate-pulse rounded-full w-2 h-2"
                 onClick={() => setLinkModal(true)}
               ></button>
             )}
