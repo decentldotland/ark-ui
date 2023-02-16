@@ -4,7 +4,6 @@ import { arweave, useArconnect } from "../utils/arconnect"
 import type { NextPage } from "next";
 import Card, { CardSubtitle } from "../components/Card";
 import { Modal, useModal, Close } from "../components/Modal";
-import { addChain, ETHConnector, useETH } from "../utils/eth";
 import { useEffect, useState } from "react";
 import { ACTIVE_NETWORK_STORE, Identity, Address, NETWORKS, TEST_NETWORKS } from "../utils/constants";
 import { AnimatePresence, motion } from "framer-motion";
@@ -31,8 +30,6 @@ const Migrate: NextPage = () => {
   const [isDevMode, setIsDevMode] = useState<boolean>(false);
 
   const [status, setStatus] = useState<{ type: StatusType, message: string }>();
-  const [activeConnector, setActiveConnector] = useState<ETHConnector>();
-  const eth = useETH(setActiveConnector, activeNetwork);
 
   const [EXMUsers, setEXMUsers] = useState<Identity[]>([]);
   const [legacyUsers, setLegacyUsers] = useState<any>();

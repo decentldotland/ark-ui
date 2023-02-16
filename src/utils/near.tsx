@@ -189,7 +189,7 @@ export const useNear = () => {
 };
 
 
-const NearConnect: React.FC = (props: any) => {
+const NearConnect: React.FC<any> = ( props ) => {
   const { modal, selector, account, accountId, loading } = props;
 
   const handleSignIn = () => {
