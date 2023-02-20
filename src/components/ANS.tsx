@@ -1,22 +1,29 @@
 import { MouseEventHandler, useEffect, useState } from "react";
 import { formatAddress } from "../utils/format";
 import styled from "styled-components";
-import ColorHash from "color-hash";
-import { ANS_STATS_URL } from '../utils/constants';
+import { ANS_EXM_CONTRACT, EXM_OPEN_READ, EXM_READ_URL } from "../utils/constants";
 
 const ANS = ({ address, onClick }: { address: string, onClick?: MouseEventHandler<HTMLDivElement> }) => {
   const [avatar, setAvatar] = useState<string>();
+  const [color, setColor] = useState<string>('');
   const [label, setLabel] = useState<string>();
 
   useEffect(() => {
     (async () => {
+      const EXMStateFindOwnerByAddress = (state: any, arweave_address: string) =>
+        state.balances.find((balance: any) => balance.address === arweave_address);
+
       try {
-        const res = await fetch(ANS_STATS_URL + address);
+        const res = await fetch(EXM_OPEN_READ);
         const ans = await res.json();
 
-        if (!ans) return;
-        if (ans.avatar) setAvatar(ans.avatar);
-        if (ans.currentLabel) setLabel(ans.currentLabel);
+        if (!ans || Object.keys(ans).length === 0) return;
+        // if (ans.avatar) setAvatar(ans.avatar);
+        const user = EXMStateFindOwnerByAddress(ans, address);
+        if (!user) return;
+        if (Object.keys(user).length === 0 || (user?.ownedDomains?.length || 0) === 0) return;
+        if (user.primary_domain) setLabel(user.primary_domain);
+        setColor(user.ownedDomains.find((domain: any) => domain.domain === user.primary_domain).color)
       } catch {}
     })();
   }, [address]);
@@ -25,7 +32,7 @@ const ANS = ({ address, onClick }: { address: string, onClick?: MouseEventHandle
     <Wrapper onClick={onClick}>
       {(avatar && (
         <AvatarImage src={`https://arweave.net/${avatar}`} draggable={false} />
-      )) || <GradientAvatar input={label || address} />}
+      )) || <GradientAvatar color={color} />}
       <Label>
         {label ? label + ".ar" : formatAddress(address, 12)}
       </Label>
@@ -55,14 +62,8 @@ const AvatarImage = styled.img`
   border-radius: 100%;
 `;
 
-const GradientAvatar = ({ input }: { input: string }) => {
-  const [color, setColor] = useState("");
-
-  useEffect(() => {
-    const colorHash = new ColorHash({ saturation: 0.5 });
-    setColor(colorHash.hex(input));
-  }, [input]);
-
+const GradientAvatar = ({ color }: { color: string }) => {
+  console.log(color)
   return <FakeAvatar style={{ background: `linear-gradient(120deg, ${color}44, ${color}ff)` }} />
 };
 
