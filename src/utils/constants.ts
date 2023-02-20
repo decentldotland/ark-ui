@@ -160,9 +160,9 @@ export const BASE_ARK_API_URL = "https://ark-core.decent.land/";
 export const RESOLVE_ARK_ADDRESS_URL = BASE_ARK_API_URL + "v2/address/resolve/";
 
 // https://github.com/decentldotland/ark-protocol#7--soark-only-domains
-export const RESOLVE_ARK_ADDRESS_TO_DOMAINS_URL = BASE_ARK_API_URL + "/v2/domains/" // :network/:address
+export const RESOLVE_ARK_ADDRESS_TO_DOMAINS_URL = BASE_ARK_API_URL + "/v2/domains/"; // :network/:address
 
-export const ANS_STATS_URL = "https://ans-stats.decent.land/profile/" // ANS label goes here
+export const ANS_EXM_CONTRACT = "VGWeJLDLJ9ify3ezl9tW-9fhB0G-GIUd60FE-5Q-_VI";
 
 
 export const POAPS = process.env.ARK_EARLY_SUPPORTER_POAP_URLS
@@ -171,6 +171,7 @@ export const ARWEAVE_CONTRACT = "5H5Hj81G5j5P2raDhe5VFU-zkf08KDc588GJ8dtlHTw";
 export const EXM_ADDRESS = "Z7JzRRt2iTQWV5LziNhTV6SP51tVKkCf_qrUqtlwzpg";
 export const EXM_TOKEN = process.env.EXM_API_TOKEN;
 export const EXM_READ_URL = "https://api.exm.dev/read/";
+export const EXM_OPEN_READ = `https://${ANS_EXM_CONTRACT}.exm.run`
 export const EXM_WRITE_URL = "https://api.exm.dev/api/transactions?token=";
 
 export const EVM_ORACLES: Record<number, string> = {
