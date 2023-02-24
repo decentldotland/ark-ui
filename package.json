@@ -16,7 +16,6 @@
     "@near-wallet-selector/near-wallet": "^7.2.0",
     "@near-wallet-selector/sender": "^7.2.0",
     "@rainbow-me/rainbowkit": "^0.10.0",
-    "@types/color-hash": "^1.0.2",
     "arconnect": "^0.4.2",
     "ethers": "^5.7.2",
     "framer-motion": "^6.3.16",
