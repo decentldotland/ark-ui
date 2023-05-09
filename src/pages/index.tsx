@@ -558,7 +558,7 @@ const Home: NextPage = () => {
             </a>
           </Faq>
           <Faq title="Why is it called Ark?">
-            In the decent.land <a href="https://github.com/decentldotland/ark-network" target="_blank" rel="noopener noreferrer">lore</a>, settlers arrived on the planet on a fleet of arks - spaceships ranging in size from personal craft to floating cities. Like its spacefaring namesake, the Ark Protocol makes connections between distant environments.
+            In the decent.land <a href="https://leetyrrell.medium.com/list/a-decent-land-inprogress-novel-6f8c0bbf6a37" target="_blank" rel="noopener noreferrer">lore</a>, settlers arrived on the planet on a fleet of arks - spaceships ranging in size from personal craft to floating cities. Like its spacefaring namesake, the Ark Protocol makes connections between distant environments.
           </Faq>
         </FAQCard>
       </Page>
